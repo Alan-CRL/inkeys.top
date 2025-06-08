@@ -1,4 +1,4 @@
-# 这是用于构建智绘教Inkeys官网的 GitHub Actions 工作流程
+# 这是用于构建 智绘教Inkeys 官网的 GitHub Actions 工作流程
 
 name: Inkeys Website Build
 
@@ -11,12 +11,43 @@ permissions:
   actions: write
 
 jobs:
-  sync:
-    name: Sync
+  build:
+    name: Build
     runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build VitePress site
+        run: pnpm run docs:build
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: docs/dist
+
+  sync:
+    name: Sync
+    runs-on: windows-latest
+    needs: build
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: docs/dist
 
       - name: Install rclone
         shell: pwsh
