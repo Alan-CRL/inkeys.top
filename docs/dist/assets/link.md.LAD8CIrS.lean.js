@@ -1,0 +1,1 @@
+import{_ as a,c as r,o as t,ag as l}from"./chunks/framework.C78-raJP.js";const d=JSON.parse('{"title":"相关链接","description":"","frontmatter":{},"headers":[],"relativePath":"link.md","filePath":"link.md"}'),n={name:"link.md"};function i(o,e,s,c,h,p){return t(),r("div",null,e[0]||(e[0]=[l("",5)]))}const _=a(n,[["render",i]]);export{d as __pageData,_ as default};
