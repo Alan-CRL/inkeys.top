@@ -1,1 +1,0 @@
-import{_ as a,c as t,o as r,ag as s}from"./chunks/framework.C78-raJP.js";const g=JSON.parse('{"title":"下载","description":"","frontmatter":{},"headers":[],"relativePath":"download.md","filePath":"download.md"}'),n={name:"download.md"};function o(l,e,i,h,d,c){return r(),t("div",null,e[0]||(e[0]=[s("",13)]))}const k=a(n,[["render",o]]);export{g as __pageData,k as default};
