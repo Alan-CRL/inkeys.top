@@ -25,12 +25,14 @@ features:
     icon: 👏
     details: 简洁易用的界面下是强大的功能
   - title: 注重性能
-    icon: 
-      src: /cpp_logo.png
-    details: 由 C++ 驱动，专注于性能优化，极致绘图体验
+    icon: 🚀
+    details: 由 C++ 驱动，专注于性能优化，手搓UI和绘图库，极致绘图体验
+  - title: 兼容性 & 便携性
+    icon: ⚡
+    details: 支持 Win7(sp0) 及以上系统，支持 x86/x64/Arm64 架构。单文件设计，双击打开就能用。
   - title: 敬请期待
     icon: 🛠️
-    details: 网站持续打造中……
+    details: 本网站相关介绍持续打造中……
 ---
 
 ## 集锦

@@ -2,6 +2,9 @@
 
 本页面将帮助你下载软件。  
 
+## 平台兼容性
+智绘教Inkeys 支持 Windows 7(sp0) 及以上系统，支持 x86/x64/Arm64 架构。
+
 ## 下载 智绘教Inkeys
 
 ### [123 云盘](https://www.123pan.com/s/duk9-n4dAd.html)（更推荐）
