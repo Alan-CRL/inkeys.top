@@ -1,0 +1,57 @@
+# 这是用于构建智绘教Inkeys官网的 GitHub Actions 工作流程
+
+name: Inkeys Website Build
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+permissions:
+  actions: write
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install rclone
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://downloads.rclone.org/rclone-current-windows-amd64.zip" -OutFile "rclone.zip"
+          Expand-Archive -Path "rclone.zip" -DestinationPath "." -Force
+          $rclonePath = (Get-ChildItem -Path "." -Filter "rclone-*" -Directory | Select-Object -First 1).FullName
+          Copy-Item "$rclonePath\rclone.exe" -Destination "C:\Windows\System32\" -Force
+
+      - name: Configure rclone for WebDAV
+        shell: pwsh
+        run: |
+          $configDir = "$env:APPDATA\rclone"
+          if (!(Test-Path $configDir)) {
+            New-Item -ItemType Directory -Path $configDir -Force
+          }
+          $obscuredPassword = & rclone obscure "$env:WEBDAV_PASSWORD"
+
+          $configContent = @"
+          [webdav]
+          type = webdav
+          url = $env:WEBDAV_ADDRESS
+          vendor = other
+          user = $env:WEBDAV_USERNAME
+          pass = $obscuredPassword
+          "@
+
+          $configContent | Out-File -FilePath "$configDir\rclone.conf" -Encoding UTF8
+        env:
+          WEBDAV_ADDRESS: ${{ secrets.WEBDAV_API_ADDRESS }}
+          WEBDAV_USERNAME: ${{ secrets.WEBDAV_API_USERNAME }}
+          WEBDAV_PASSWORD: ${{ secrets.WEBDAV_API_TOKEN }}
+    
+      - name: Sync to WebDAV
+        timeout-minutes: 60
+        shell: pwsh
+        run: |
+          rclone sync ./docs/dist webdav:/Inkeys/Website/ --delete-during --fast-list --progress
