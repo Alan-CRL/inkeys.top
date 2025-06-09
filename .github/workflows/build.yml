@@ -30,7 +30,7 @@ jobs:
         run: pnpm install
 
       - name: Remove old dist folder
-        run: if exist docs\dist rmdir /s /q docs\dist
+        run: Remove-Item -Recurse -Force docs/dist
 
       - name: Build VitePress site
         run: pnpm run docs:build
