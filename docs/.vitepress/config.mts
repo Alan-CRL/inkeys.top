@@ -46,17 +46,25 @@ export default defineConfig({
     nav: [
       { text: '主页', link: '/' },
       { text: '下载', link: '/download' },
+      { text: '使用教程', link: '/tutorial/tutorial' },
+      { text: '碎碎念', link: '/jabber' },
       { text: '相关链接', link: '/link' }
     ],
     sidebar: [
+      { text: '主页', link: '/' },
+      { text: '下载', link: '/download' },
       {
-        text: '目录',
+        text: '使用教程',
         items: [
-          { text: '主页', link: '/' },
-          { text: '下载', link: '/download' },
-          { text: '相关链接', link: '/link' }
+          { text: '使用教程', link: '/tutorial/tutorial' },
+          { text: '---', link: '' },
+          { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
+          { text: 'Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案', link: '/tutorial/ppt-admin' },
+          { text: 'Microsoft Office 如何启用和正常播放 Flash 控件', link: '/tutorial/ppt-flash' },
         ]
-      }
+      },
+      { text: '碎碎念', link: '/jabber' },
+      { text: '相关链接', link: '/link' }
     ],
     
     search: {
