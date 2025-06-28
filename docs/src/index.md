@@ -13,6 +13,9 @@ hero:
     - theme: brand
       text: 下载最新版
       link: /download
+    - theme: brand
+      text: 使用教程
+      link: https://wiki.inkeys.top/
     - theme: alt
       text: 介绍视频
       link: https://space.bilibili.com/1330313497/lists/2210199

@@ -46,17 +46,19 @@ export default defineConfig({
     nav: [
       { text: '主页', link: '/' },
       { text: '下载', link: '/download' },
-      { text: '使用教程', link: '/tutorial/tutorial' },
+      { text: 'Wiki文档', link: 'https://wiki.inkeys.top/' },
+      { text: '开发者博客', link: '/tutorial/tutorial' },
       { text: '碎碎念', link: '/jabber' },
       { text: '相关链接', link: '/link' }
     ],
     sidebar: [
       { text: '主页', link: '/' },
       { text: '下载', link: '/download' },
+      { text: 'Wiki文档', link: 'https://wiki.inkeys.top/' },
       {
-        text: '使用教程',
+        text: '开发者博客',
         items: [
-          { text: '使用教程', link: '/tutorial/tutorial' },
+          { text: '开发者博客', link: '/tutorial/tutorial' },
           { text: '---', link: '' },
           { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
           { text: 'Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案', link: '/tutorial/ppt-admin' },
