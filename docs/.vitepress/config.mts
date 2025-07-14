@@ -49,6 +49,7 @@ export default defineConfig({
       { text: 'Wiki文档', link: 'https://wiki.inkeys.top/' },
       { text: '开发者博客', link: '/tutorial/tutorial' },
       { text: '碎碎念', link: '/jabber' },
+      { text: '社区名片', link: '/community' },
       { text: '相关链接', link: '/link' }
     ],
     sidebar: [
@@ -66,6 +67,7 @@ export default defineConfig({
         ]
       },
       { text: '碎碎念', link: '/jabber' },
+      { text: '社区名片', link: '/community' },
       { text: '相关链接', link: '/link' }
     ],
     
