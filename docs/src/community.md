@@ -5,7 +5,9 @@
 ## 社区伙伴
 - `AlanCRL` <Badge type="danger" text="创始开发者" />
 - `lh11117` <Badge type="warning" text="贡献者" />
-- `Flysoft` <Badge type="warning" text="贡献者" />
+- `Flysoft` <Badge type="warning" text="贡献者" /> <Badge type="tip" text="最佳群友" />
+- `Darion` <Badge type="tip" text="最佳群友" />
+- `Supra4E8C` <Badge type="tip" text="最佳群友" />
 - `2,2,3-三甲基戊烷` <Badge type="tip" text="最佳群友" />
 
 ## 赞助者
