@@ -39,9 +39,6 @@ features:
 ---
 
 ## 集锦
-::: warning 年代久远的视频
-这是 `20240619a` 的介绍视频（对应的是 `Inkeys1`）
-:::  
 
 <div style="
   max-width:900px;
@@ -54,7 +51,7 @@ features:
 ">
   <div style="position:relative;width:100%;padding-bottom:56.25%;">
     <iframe
-      src="//player.bilibili.com/player.html?isOutside=true&aid=1355926500&bvid=BV1Tz421z72e&cid=1593721412&p=1&autoplay=0"
+      src="//player.bilibili.com/player.html?isOutside=true&aid=114881164481373&bvid=BV17duZzYEsE&cid=25827154050&p=1"
       style="position:absolute;top:0;left:0;width:100%;height:100%;"
       frameborder="no"
       allowfullscreen="true"
