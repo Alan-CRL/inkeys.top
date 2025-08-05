@@ -1,5 +1,7 @@
 # 程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案
 
+<ArticleMetadata />
+
 ::: tip 提示
 本文章同步发布在 CSDN 上，作者均为 AlanCRL。
 :::

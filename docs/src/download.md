@@ -1,4 +1,6 @@
-# 下载
+# <i class="fa-solid fa-download"></i> 开始下载
+
+<ArticleMetadata />
 
 本页面将帮助你下载软件。  
 
@@ -36,5 +38,5 @@ Github Release 的下载速度可能较慢。
 第三方开发者提供的**修改版**和**定制版**等不属于智绘教Inkeys的官方版本，但可以参与智绘教Inkeys的**自动更新**，和通过软件内**修复功能**将软件修复为官方版本。  
 
 ::: warning **开发版本Dev**
-仅用于开发者和测试伙伴等，测试新功能和验证BUG修复时临时构建的版本，无法用于生产环境。([#](https://www.123912.com/s/duk9-BkEAd))  
+仅用于开发者和测试伙伴等，测试新功能和验证BUG修复时临时构建的版本，无法用于生产环境。 <a href="https://www.123912.com/s/duk9-BkEAd"><i class="fa-solid fa-download"></i></a>
 :::

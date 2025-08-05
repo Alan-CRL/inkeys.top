@@ -1,5 +1,7 @@
 # Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案
 
+<ArticleMetadata />
+
 ::: tip 提示
 本文章同步发布在 CSDN 上，作者均为 AlanCRL。
 :::
