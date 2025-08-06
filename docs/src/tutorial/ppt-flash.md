@@ -1,5 +1,7 @@
 # Microsoft Office 如何启用和正常播放 Flash 控件
 
+<ArticleMetadata />
+
 ::: tip 提示
 本文章同步发布在 CSDN 上，作者均为 AlanCRL。
 :::

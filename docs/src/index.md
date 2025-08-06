@@ -1,26 +1,25 @@
 ---
-# https://vitepress.dev/reference/default-theme-home-page
 layout: home
-
+titleTemplate: 全能型屏幕批注工具
 hero:
-  name: "智绘教Inkeys"
-  text: "全能型屏幕批注工具"
+  name: 智绘教Inkeys
+  text: 全能型屏幕批注工具
   tagline: 开源，免费，功能强大……
   image:
     src: /Inkeys.svg
     alt: 智绘教Inkeys
   actions:
     - theme: brand
-      text: 下载最新版
+      text: ⬇️ 开始下载
       link: /download
     - theme: brand
-      text: 使用教程
+      text: 📖 Wiki文档
       link: https://wiki.inkeys.top/
     - theme: alt
-      text: 介绍视频
+      text: 🎬 介绍视频
       link: https://space.bilibili.com/1330313497/lists/2210199
     - theme: alt
-      text: 相关链接
+      text: 🔗 相关链接
       link: /link
 
 features:
@@ -59,7 +58,6 @@ features:
 ## 集锦
 
 <div style="
-  max-width:900px;
   margin:32px auto;
   border: 2px solid #eee;
   border-radius: 12px;
@@ -69,7 +67,7 @@ features:
 ">
   <div style="position:relative;width:100%;padding-bottom:56.25%;">
     <iframe
-      src="//player.bilibili.com/player.html?isOutside=true&aid=114881164481373&bvid=BV17duZzYEsE&cid=25827154050&p=1&autoplay=0"
+      src="//player.bilibili.com/player.html?isOutside=true&aid=114881164481373&bvid=BV17duZzYEsE&cid=25827154050&p=1&high_quality=1&danmaku=1&autoplay=0"
       style="position:absolute;top:0;left:0;width:100%;height:100%;"
       frameborder="no"
       allowfullscreen="true"
@@ -79,6 +77,12 @@ features:
 
 ---
 
+<HomeUnderline />
+
 ::: tip Inkeys3 即将推出
-  迈向 Inkeys3，UI 设计和绘图库将得到极大进步，Coming Soon~
+迈向 Inkeys3，UI 设计和绘图库将得到极大进步，Coming Soon~
 :::
+
+<div align="center">
+本站总访问量 <span id="busuanzi_value_site_pv" /> 次 | 本站访客数 <span id="busuanzi_value_site_uv" /> 人次
+</div>

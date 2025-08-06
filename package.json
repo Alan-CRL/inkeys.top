@@ -7,5 +7,10 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "busuanzi.pure.js": "^1.0.3",
+    "medium-zoom": "^1.1.0"
   }
 }

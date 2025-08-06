@@ -137,3 +137,9 @@
   --docsearch-primary-color: var(--vp-c-brand-1) !important;
 }
 
+/* 全局覆盖Markdown图片样式 */
+.vp-doc img {
+  display: inline !important;
+  vertical-align: middle;
+  margin: 0 0.2em !important;
+}

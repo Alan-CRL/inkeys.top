@@ -1,14 +1,76 @@
-# 社区名片
+# <i class="fa-solid fa-people-group"></i> 社区名片
 
-智绘教Inkeys 前行路上，我们由衷的感谢所有的支持智绘教的朋友们！
+<ArticleMetadata />
+
+<script setup>
+import { VPTeamMembers } from 'vitepress/theme'
+
+const members = [
+  {
+    avatar: 'https://www.github.com/Alan-CRL.png',
+    name: 'Alan CRL',
+    title: '创始开发者',
+    links: [
+      { icon: 'github', link: 'https://github.com/Alan-CRL' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=2685549821' },
+      { icon: 'bilibili', link: 'https://space.bilibili.com/1330313497' },
+      { icon: 'maildotru', link: 'mailto:alan-crl@foxmail.com' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/lh11117.png',
+    name: 'lh11117',
+    title: '贡献者',
+    links: [
+      { icon: 'github', link: 'https://github.com/lh11117' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=1306425714' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/Flysoft.png',
+    name: 'Flysoft',
+    title: '贡献者&最佳群友',
+    links: [
+      { icon: 'github', link: 'https://github.com/Flysoft' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=1518192087' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/Darion.png',
+    name: 'Darion',
+    title: '最佳群友',
+    links: [
+      { icon: 'github', link: 'https://github.com/Darion' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=3421016150' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/LTbinglingfeng.png',
+    name: 'Supra4E8C',
+    title: '最佳群友',
+    links: [
+      { icon: 'github', link: 'https://github.com/LTbinglingfeng' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=2192013776' }
+    ]
+  },
+  {
+    avatar: 'https://www.github.com/2-2-3-trimethylpentane.png',
+    name: '2,2,3-三甲基戊烷',
+    title: '最佳群友',
+    links: [
+      { icon: 'github', link: 'https://github.com/2-2-3-trimethylpentane' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=3530309889' },
+      { icon: 'bilibili', link: 'https://space.bilibili.com/1448716783' }
+    ]
+  },
+]
+</script>
+
+> 智绘教Inkeys 前行路上，我们由衷的感谢所有的支持智绘教的朋友们！
 
 ## 社区伙伴
-- `AlanCRL` <Badge type="danger" text="创始开发者" />
-- `lh11117` <Badge type="warning" text="贡献者" />
-- `Flysoft` <Badge type="warning" text="贡献者" /> <Badge type="tip" text="最佳群友" />
-- `Darion` <Badge type="tip" text="最佳群友" />
-- `Supra4E8C` <Badge type="tip" text="最佳群友" />
-- `2,2,3-三甲基戊烷` <Badge type="tip" text="最佳群友" />
+
+<VPTeamMembers size="medium" :members="members" />
 
 ## 赞助者
 
@@ -16,7 +78,7 @@
 赞助者只有联系 AlanCRL 后才会在列表中显示，然而还有许多热心的匿名赞助者，在这里也一并感谢他们！
 :::
 
-- `郑子杰` Zijie Zheng <Badge type="tip" text="￥151.2" />
+- `郑子杰` <Badge type="tip" text="￥151.2" />
 - `bin` <Badge type="tip" text="￥100" />
 - `路人甲` <Badge type="tip" text="￥100" />
 - `启幕` <Badge type="tip" text="￥66" />
