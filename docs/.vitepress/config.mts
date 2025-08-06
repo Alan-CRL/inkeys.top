@@ -49,6 +49,7 @@ export default defineConfig({
       {
         text: '🌐 开发者博客',
         items: [
+          { text: '博客导航', link: '/tutorial/tutorial' },
           { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
           { text: 'Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案', link: '/tutorial/ppt-admin' },
           { text: 'Microsoft Office 如何启用和正常播放 Flash 控件', link: '/tutorial/ppt-flash' },
@@ -63,6 +64,7 @@ export default defineConfig({
       {
         text: '🌐 开发者博客',
         items: [
+          { text: '博客导航', link: '/tutorial/tutorial' },
           { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
           { text: 'Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案', link: '/tutorial/ppt-admin' },
           { text: 'Microsoft Office 如何启用和正常播放 Flash 控件', link: '/tutorial/ppt-flash' },
