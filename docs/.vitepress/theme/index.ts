@@ -1,19 +1,17 @@
 // https://vitepress.dev/guide/custom-theme
-import { h } from 'vue'
+import { h, onMounted, watch, nextTick } from 'vue'
 import type { Theme } from 'vitepress'
+import { inBrowser, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import './style.css'
 import './style/index.css'
-import mediumZoom from 'medium-zoom'
 import '@fortawesome/fontawesome-free/css/all.min.css'
-import { onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vitepress'
-import backtotop from "./components/backtotop.vue"
-import Linkcard from "./components/Linkcard.vue"
-import ArticleMetadata from "./components/ArticleMetadata.vue"
-import { inBrowser } from 'vitepress'
+import mediumZoom from 'medium-zoom'
 import busuanzi from 'busuanzi.pure.js'
-import HomeUnderline from "./components/HomeUnderline.vue"
+import backtotop from './components/backtotop.vue'
+import Linkcard from './components/Linkcard.vue'
+import ArticleMetadata from './components/ArticleMetadata.vue'
+import HomeUnderline from './components/HomeUnderline.vue'
 import GitHubCard from './components/GitHubCard.vue'
 
 export default {
