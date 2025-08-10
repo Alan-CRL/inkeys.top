@@ -125,7 +125,7 @@ export default defineConfig({
       label: "页面导航",
     },
     editLink: {
-      pattern: 'https://github.com/Alan-CRL/inkeys.top/tree/main/docs/:path',
+      pattern: 'https://github.com/Alan-CRL/inkeys.top/tree/main/docs/src/:path',
       text: '在 GitHub 上编辑此页面'
     },
     lastUpdated: {
