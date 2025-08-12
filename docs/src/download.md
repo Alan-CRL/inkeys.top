@@ -7,8 +7,9 @@
 ::: tip 提示
 前往 [快速上手](https://wiki.inkeys.top/start/start/)，查看更加详细的下载并使用步骤。 
 :::
+
 ## 平台兼容性
-智绘教Inkeys 支持 Windows 7(sp0) 及以上系统，支持 x86/x64/Arm64 架构。
+智绘教Inkeys 支持 **Windows 7** (RTM, 即原版 sp0) 及以上系统，支持 **x86/x64/Arm64** 架构。
 
 ## 下载 智绘教Inkeys
 

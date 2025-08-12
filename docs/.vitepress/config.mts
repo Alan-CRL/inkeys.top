@@ -46,20 +46,18 @@ export default defineConfig({
     nav: [
       { text: '⬇️ 开始下载', link: '/download' },
       { text: '📖 Wiki文档', link: 'https://wiki.inkeys.top/' },
-      {
-        text: '🌐 开发者博客',
-        items: [
-          { text: '博客导航', link: '/tutorial/tutorial' },
-          { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
-          { text: 'Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案', link: '/tutorial/ppt-admin' },
-          { text: 'Microsoft Office 如何启用和正常播放 Flash 控件', link: '/tutorial/ppt-flash' },
-        ]
-      },
+      { text: '🌐 开发者博客', link: '/tutorial/tutorial' },
       { text: '💳 社区名片', link: '/community' },
       { text: '🔗 相关链接', link: '/link' }
     ],
     sidebar: [
-      { text: '⬇️ 开始下载', link: '/download' },
+      {
+        text: '⬇️ 开始下载',
+        items: [
+          { text: '下载', link: '/download' },
+          { text: 'Inkeys3 兼容性调整', link: '/win7' },
+        ]
+      },
       { text: '📖 Wiki文档', link: 'https://wiki.inkeys.top/' },
       {
         text: '🌐 开发者博客',
