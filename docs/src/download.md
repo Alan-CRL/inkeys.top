@@ -8,6 +8,10 @@
 前往 [快速上手](https://wiki.inkeys.top/start/start/)，查看更加详细的下载并使用步骤。 
 :::
 
+::: tip 超前体验 Inkeys3 ？
+Inkeys3 将会先在 Canary 通道推出供体验，属于早期开发版本，不建议日常使用。[了解更多并下载](./win7)  
+:::
+
 ## 平台兼容性
 智绘教Inkeys 支持 **Windows 7** (RTM, 即原版 sp0) 及以上系统，支持 **x86/x64/Arm64** 架构。
 
@@ -37,7 +41,3 @@ Github Release 的下载速度可能较慢。
 程序内的自动更新通道分为 **正式通道(LTS)** 和 **预览通道(Insider)** 也和上方相互对应。  
 
 第三方开发者提供的**修改版**和**定制版**等不属于智绘教Inkeys的官方版本，但可以参与智绘教Inkeys的**自动更新**，和通过软件内**修复功能**将软件修复为官方版本。  
-
-::: warning **开发版本Dev**
-仅用于开发者和测试伙伴等，测试新功能和验证BUG修复时临时构建的版本，无法用于生产环境。 <a href="https://www.123912.com/s/duk9-BkEAd"><i class="fa-solid fa-download"></i></a>
-:::

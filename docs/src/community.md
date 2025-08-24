@@ -9,7 +9,7 @@ const members = [
   {
     avatar: 'https://www.github.com/Alan-CRL.png',
     name: 'Alan CRL',
-    title: '创始开发者',
+    title: '🚧 💻 🎨 📖 📹 👀 🎭 📦 🚇 ✅',
     links: [
       { icon: 'github', link: 'https://github.com/Alan-CRL' },
       { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=2685549821' },
@@ -18,49 +18,21 @@ const members = [
     ]
   },
   {
-    avatar: 'https://www.github.com/lh11117.png',
-    name: 'lh11117',
-    title: '贡献者',
-    links: [
-      { icon: 'github', link: 'https://github.com/lh11117' },
-      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=1306425714' }
-    ]
-  },
-  {
     avatar: 'https://www.github.com/Flysoft.png',
     name: 'Flysoft',
-    title: '贡献者&最佳群友',
+    title: '💻 🤔 💡',
     links: [
       { icon: 'github', link: 'https://github.com/Flysoft' },
       { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=1518192087' }
     ]
   },
   {
-    avatar: 'https://www.github.com/Darion.png',
-    name: 'Darion',
-    title: '最佳群友',
+    avatar: 'https://www.github.com/lh11117.png',
+    name: 'lh11117',
+    title: '💻 🤔',
     links: [
-      { icon: 'github', link: 'https://github.com/Darion' },
-      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=3421016150' }
-    ]
-  },
-  {
-    avatar: 'https://www.github.com/LTbinglingfeng.png',
-    name: 'Supra4E8C',
-    title: '最佳群友',
-    links: [
-      { icon: 'github', link: 'https://github.com/LTbinglingfeng' },
-      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=2192013776' }
-    ]
-  },
-  {
-    avatar: 'https://www.github.com/2-2-3-trimethylpentane.png',
-    name: '2,2,3-三甲基戊烷',
-    title: '最佳群友',
-    links: [
-      { icon: 'github', link: 'https://github.com/2-2-3-trimethylpentane' },
-      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=3530309889' },
-      { icon: 'bilibili', link: 'https://space.bilibili.com/1448716783' }
+      { icon: 'github', link: 'https://github.com/lh11117' },
+      { icon: 'qq', link: 'https://tool.gljlw.com/qq/?qq=1306425714' }
     ]
   },
 ]
@@ -71,6 +43,14 @@ const members = [
 ## 社区伙伴
 
 <VPTeamMembers size="medium" :members="members" />
+
+还有他们：  
+[ALTaleX](https://github.com/ALTaleX531) 🤔 💻 💡  
+[Leafuke](https://github.com/Leafuke) 🤔  
+[Darion](https://github.com/Darion) 🤔  
+[Supra4E8C](https://github.com/LTbinglingfeng) 🤔  
+[2,2,3-三甲基戊烷](https://github.com/2-2-3-trimethylpentane) 🤔 📝 📖 🌍  
+[Jursin](https://github.com/Jursin) 🤔 🎨  
 
 ## 赞助者
 
