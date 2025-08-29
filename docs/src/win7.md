@@ -21,6 +21,17 @@ KB2670838 更新增加一些新的系统组件，例如 Inkeys3 所需要的 D2D
 
 需要注意的是：一些电脑可能安装此版本后崩溃（据微软说明），请确认您的硬件是否支持，请先点击**详细内容**查看更新说明。  
 
+::: tip 如何确认系统是否安装了 KB2670838 ？
+1. 按下 WIN + R 输入 `powershell` 并按下回车打开 Powershell  
+2. 输入 `get-hotfix -id KB2670838` 并按下回车  
+3. 如果看到如下文字，则说明已经安装了 KB2670838
+
+| Source | Description | HotFixID | InstalledBy | InstalledOn |
+| :- | :- | :- | :- | :- |
+| <任意值> | Update | **KB2670838** | <任意值> | <任意值> |
+
+:::
+
 ### 我是 Windows 7 Sp1 用户该如何安装更新以支持
 通过 [下载更新包](https://www.microsoft.com/zh-cn/download/details.aspx?id=36805) 的 msu 文件，打开文件安装即可。  
 
