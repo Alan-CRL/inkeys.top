@@ -55,7 +55,7 @@ features:
     details: 本网站相关介绍持续打造中……
 ---
 
-## 集锦
+## 集锦（软件介绍）
 
 <div style="
   margin:32px auto;

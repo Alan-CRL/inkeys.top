@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: "智绘教Inkeys",
-  description: "智绘教Inkeys 是一款 Windows 屏幕批注工具，拥有高效批注和丰富功能， 让屏幕演示变得简单，让教学授课变得高效，适用于触摸设备和PC端。",
+  description: "将你的创意随心所欲地书写在屏幕的任意角落。智绘教Inkeys 拥有丝滑流畅的高性能画笔、丰富强大的功能，以及众多贴心小设计，全面提升你的效率与使用体验。",
   outDir: "dist", 
   srcDir: "src", 
 
@@ -44,23 +44,24 @@ export default defineConfig({
 
     logo: "/Inkeys.svg",
     nav: [
-      { text: '⬇️ 开始下载', link: '/download' },
-      { text: '📖 Wiki文档', link: 'https://wiki.inkeys.top/' },
-      { text: '🌐 开发者博客', link: '/tutorial/tutorial' },
-      { text: '💳 社区名片', link: '/community' },
-      { text: '🔗 相关链接', link: '/link' }
+      { text: '开始下载', link: '/download' },
+      { text: 'WIKI文档', link: 'https://wiki.inkeys.top/' },
+      { text: '开发者博客', link: '/tutorial/tutorial' },
+      { text: '社区名片', link: '/community' },
+      { text: '相关链接', link: '/link' }
     ],
     sidebar: [
       {
-        text: '⬇️ 开始下载',
+        text: '开始下载',
         items: [
-          { text: '下载', link: '/download' },
+          { text: '开始下载', link: '/download' },
+          { text: '使用条款', link: '/tos/zh-cn' },
           { text: 'Inkeys3 兼容性调整', link: '/win7' },
         ]
       },
-      { text: '📖 Wiki文档', link: 'https://wiki.inkeys.top/' },
+      { text: 'Wiki文档', link: 'https://wiki.inkeys.top/' },
       {
-        text: '🌐 开发者博客',
+        text: '开发者博客',
         items: [
           { text: '博客导航', link: '/tutorial/tutorial' },
           { text: '程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案', link: '/tutorial/ppt-com' },
@@ -68,9 +69,9 @@ export default defineConfig({
           { text: 'Microsoft Office 如何启用和正常播放 Flash 控件', link: '/tutorial/ppt-flash' },
         ]
       },
-      { text: '💬 碎碎念', link: '/jabber' },
-      { text: '💳 社区名片', link: '/community' },
-      { text: '🔗 相关链接', link: '/link' }
+      { text: '碎碎念', link: '/jabber' },
+      { text: '社区名片', link: '/community' },
+      { text: '相关链接', link: '/link' }
     ],
     
     search: {
@@ -109,7 +110,7 @@ export default defineConfig({
       { icon: 'csdn', link: 'https://gitcode.com/alan16356/Inkeys' }
     ],
     footer: {
-      message: `本项目基于 <a href="https://github.com/Alan-CRL/Inkeys?tab=GPL-3.0-1-ov-file#readme" target="_blank">GNU General Public License v3.0</a> 获得许可`,
+      message: `本项目基于 <a href="https://github.com/Alan-CRL/Inkeys/blob/main/LICENSE" target="_blank">GNU General Public License v3.0</a> 获得许可`,
       copyright: `Copyright © 2023-${new Date().getFullYear()} AlanCRL(陈润林) 工作室`,
     },
 
