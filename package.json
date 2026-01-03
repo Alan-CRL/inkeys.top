@@ -16,7 +16,6 @@
     "node": "^20.6.0 || >=22.0.0"
   },
   "scripts": {
-    "start": "pnpm run docs:dev",
     "docs:dev": "vuepress dev docs",
     "docs:dev-clean": "vuepress dev docs --clean-cache --clean-temp",
     "docs:build": "vuepress build docs --clean-cache --clean-temp",
@@ -32,7 +31,9 @@
     "vuepress-theme-plume": "1.0.0-rc.184"
   },
   "dependencies": {
+    "artplayer": "^5.3.0",
     "postprocessing": "^6.38.2",
+    "swiper": "^12.0.3",
     "three": "^0.182.0"
   }
 }

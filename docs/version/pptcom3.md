@@ -2,13 +2,23 @@
 title: PPT演示助手 3
 ---
 
+<script setup>
+import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
+</script>
+
 全新的 **PPT演示助手 3** 已经上线，本次更新使得COM注册损坏的设备也可以成功联动。提升兼容性的同时健壮了代码，适用于更多极端的场景。
 
 ## 重点升级
 
 - [x] 识别COM注册损坏的PPT。
-- [x] 动态切换，优先绑定最上层的放映窗口
+- [x] 动态切换，优先绑定最上层的放映窗口。
+
+@[artPlayer muted autoplay loop"](https://1709404.v.123pan.cn/1709404/image_resources/1.mp4)
+
 - [x] 兼容至 ==Microsoft PowerPoint 2007== 和 ==Kingsoft WPS 2013==。
+
+<Swiper :items="['pptcom3/1.png', 'pptcom3/2.png']" effect="flip" />
+
 - [x] 升级为轮询和事件注册双模式，应对COM损坏严重无法注册事件的情况。
 
 ## 其他升级
