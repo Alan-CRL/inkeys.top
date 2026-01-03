@@ -1,16 +1,38 @@
 {
-  "devDependencies": {
-    "vitepress": "^1.6.3"
+  "name": "inkeys.top",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "",
+  "packageManager": "pnpm@10.18.3",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "esbuild"
+    ]
+  },
+  "author": "",
+  "license": "",
+  "engines": {
+    "node": "^20.6.0 || >=22.0.0"
   },
   "scripts": {
-	"start": "pnpm run docs:dev",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "start": "pnpm run docs:dev",
+    "docs:dev": "vuepress dev docs",
+    "docs:dev-clean": "vuepress dev docs --clean-cache --clean-temp",
+    "docs:build": "vuepress build docs --clean-cache --clean-temp",
+    "docs:preview": "http-server docs/.vuepress/dist",
+    "vp-update": "pnpm dlx vp-update"
+  },
+  "devDependencies": {
+    "@vuepress/bundler-vite": "2.0.0-rc.26",
+    "http-server": "^14.1.1",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.26",
+    "vuepress": "2.0.0-rc.26",
+    "vuepress-theme-plume": "1.0.0-rc.184"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.7.2",
-    "busuanzi.pure.js": "^1.0.3",
-    "medium-zoom": "^1.1.0"
+    "postprocessing": "^6.38.2",
+    "three": "^0.182.0"
   }
 }
