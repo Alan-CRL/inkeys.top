@@ -147,6 +147,8 @@ export default defineUserConfig({
            },
       //   include: true,      // 在 Markdown 文件中导入其他 markdown 文件内容
       //   imageSize: 'local', // 启用 自动填充 图片宽高属性，避免页面抖动
+      mark: 'lazy',
+      timeline: true,
     },
 
     /**
@@ -182,5 +184,16 @@ export default defineUserConfig({
      * @see https://theme-plume.vuejs.press/guide/features/encryption/
      */
     // encrypt: {},
+
+    plugins: {
+      // 图片选择器
+      photoSwipe: {
+        selector: '.vp-doc :not(a) > img:not([no-view],.no-view,.ignore)',
+        download: true, // 是否显示下载按钮
+        fullscreen: true, // 是否显示全屏按钮
+        scrollToClose: false, // 是否在滚动时关闭当前图片
+      },
+    },
+
   }),
 });

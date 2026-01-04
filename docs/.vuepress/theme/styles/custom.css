@@ -3,12 +3,10 @@
   --vp-sidebar-width: 260px;
   /** 主题颜色 */
 
-  
   --vp-c-brand-1: #2670e6;
-  --vp-c-brand-2: #00C6FB;
+  --vp-c-brand-2: #246ada;
   --vp-c-brand-3: #478aff;
   --vp-c-brand-soft: rgba(131, 208, 218, 0.314);
- 
 
   /** 背景颜色 */
 
@@ -26,6 +24,7 @@
   --vp-c-text-2: rgba(60, 60, 67, 0.78);
   --vp-c-text-3: rgba(60, 60, 67, 0.56);
   */
+  
   --vp-home-hero-name-color: transparent;
   --vp-home-hero-name-background: linear-gradient(120deg, #00C6FB 20%, #2670e6 80%);
   --vp-home-hero-tagline: var(--vp-c-text-2);

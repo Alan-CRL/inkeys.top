@@ -65,12 +65,34 @@ export default defineThemeConfig({
    * 公告板
    * @see https://theme-plume.vuejs.press/guide/features/bulletin/
    */
-  // bulletin: {
-  //   layout: 'top-right',
-  //   contentType: 'markdown',
-  //   title: '公告板标题',
-  //   content: '公告板内容',
-  // },
+  bulletin: {
+    // 1. 必须提供唯一的 ID，用于在浏览器中记录“已关闭”状态
+    id: '1000k-announcement', 
+
+    // 2. 设置生命周期为 'once'，确保关闭后刷新或重新打开浏览器都不再显示
+    lifetime: 'once',
+
+    // 3. 通过函数判断当前页面是否为首页
+    // 假设你的 Page 对象中有 path 或 name 属性
+    enablePage: (page) => {
+      // 根据你的实际路由逻辑判断，通常首页是 '/' 或名为 'Index'
+      return page.path === '/' || page.path === '/index.html';
+    },
+
+    // 4. 其他内容配置
+    contentType: 'markdown',
+
+    title: '成功达成 1000 Stars！🎉',
+    content: `\
+![](/1000k.png)  
+
+感谢各位的一路陪伴与支持！  
+为 智绘教Inkeys [点亮 Stars](https://github.com/Alan-CRL/Inkeys)
+`,
+
+    layout: 'top-right',
+    border: false
+  },
 
   /* 过渡动画 @see https://theme-plume.vuejs.press/config/basic/#transition */
   transition: {
