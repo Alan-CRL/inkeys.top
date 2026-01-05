@@ -65,10 +65,12 @@
 
 .vp-home-doc-hero .name {
   font-size: 4rem !important;
+  line-height: 1.2 !important; 
 }
 
 .vp-home-doc-hero .text {
   font-size: 2.7rem !important;
+  margin-top: -5px !important; 
 }
 
 .vp-home-doc-hero .tagline {

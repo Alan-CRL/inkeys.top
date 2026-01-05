@@ -21,6 +21,7 @@ export const versionSidebar = [
             { text: '兼容性调整', link: '/win7' },
         ], 
     },
+    { text: '碎碎念', link: '/jabber' },
 ]
 
 export const tutorialSidebar = [

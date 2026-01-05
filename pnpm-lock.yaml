@@ -11,6 +11,9 @@ importers:
       artplayer:
         specifier: ^5.3.0
         version: 5.3.0
+      hls.js:
+        specifier: ^1.6.15
+        version: 1.6.15
       postprocessing:
         specifier: ^6.38.2
         version: 6.38.2(three@0.182.0)
@@ -38,7 +41,7 @@ importers:
         version: 2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
       vuepress-theme-plume:
         specifier: 1.0.0-rc.184
-        version: 1.0.0-rc.184(@algolia/client-search@5.46.2)(@types/markdown-it@14.1.2)(artplayer@5.3.0)(markdown-it@14.1.0)(postprocessing@6.38.2(three@0.182.0))(qrcode@1.5.4)(react@19.2.0)(search-insights@2.17.3)(swiper@12.0.3)(three@0.182.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
+        version: 1.0.0-rc.184(@algolia/client-search@5.46.2)(@types/markdown-it@14.1.2)(artplayer@5.3.0)(hls.js@1.6.15)(markdown-it@14.1.0)(postprocessing@6.38.2(three@0.182.0))(qrcode@1.5.4)(react@19.2.0)(search-insights@2.17.3)(swiper@12.0.3)(three@0.182.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
 
 packages:
 
@@ -1700,6 +1703,9 @@ packages:
   he@1.2.0:
     resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
     hasBin: true
+
+  hls.js@1.6.15:
+    resolution: {integrity: sha512-E3a5VwgXimGHwpRGV+WxRTKeSp2DW5DI5MWv34ulL3t5UNmyJWCQ1KmLEHbYzcfThfXG8amBL+fCYPneGHC4VA==}
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
@@ -4302,6 +4308,8 @@ snapshots:
 
   he@1.2.0: {}
 
+  hls.js@1.6.15: {}
+
   hookable@5.5.3: {}
 
   htm@3.1.1: {}
@@ -5171,7 +5179,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  vuepress-plugin-md-power@1.0.0-rc.184(@types/markdown-it@14.1.2)(artplayer@5.3.0)(esbuild@0.27.2)(markdown-it@14.1.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))):
+  vuepress-plugin-md-power@1.0.0-rc.184(@types/markdown-it@14.1.2)(artplayer@5.3.0)(esbuild@0.27.2)(hls.js@1.6.15)(markdown-it@14.1.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))):
     dependencies:
       '@mdit/plugin-attrs': 0.24.1(markdown-it@14.1.0)
       '@mdit/plugin-footnote': 0.22.3(markdown-it@14.1.0)
@@ -5199,12 +5207,13 @@ snapshots:
       vuepress: 2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
     optionalDependencies:
       artplayer: 5.3.0
+      hls.js: 1.6.15
       markdown-it: 14.1.0
     transitivePeerDependencies:
       - '@types/markdown-it'
       - typescript
 
-  vuepress-theme-plume@1.0.0-rc.184(@algolia/client-search@5.46.2)(@types/markdown-it@14.1.2)(artplayer@5.3.0)(markdown-it@14.1.0)(postprocessing@6.38.2(three@0.182.0))(qrcode@1.5.4)(react@19.2.0)(search-insights@2.17.3)(swiper@12.0.3)(three@0.182.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))):
+  vuepress-theme-plume@1.0.0-rc.184(@algolia/client-search@5.46.2)(@types/markdown-it@14.1.2)(artplayer@5.3.0)(hls.js@1.6.15)(markdown-it@14.1.0)(postprocessing@6.38.2(three@0.182.0))(qrcode@1.5.4)(react@19.2.0)(search-insights@2.17.3)(swiper@12.0.3)(three@0.182.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))):
     dependencies:
       '@iconify/utils': 3.1.0
       '@iconify/vue': 5.0.0(vue@3.5.26(typescript@5.9.3))
@@ -5246,7 +5255,7 @@ snapshots:
       picomatch: 4.0.3
       vue: 3.5.26(typescript@5.9.3)
       vuepress: 2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3))
-      vuepress-plugin-md-power: 1.0.0-rc.184(@types/markdown-it@14.1.2)(artplayer@5.3.0)(esbuild@0.27.2)(markdown-it@14.1.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
+      vuepress-plugin-md-power: 1.0.0-rc.184(@types/markdown-it@14.1.2)(artplayer@5.3.0)(esbuild@0.27.2)(hls.js@1.6.15)(markdown-it@14.1.0)(typescript@5.9.3)(vuepress@2.0.0-rc.26(@vuepress/bundler-vite@2.0.0-rc.26(@types/node@24.10.4)(typescript@5.9.3))(typescript@5.9.3)(vue@3.5.26(typescript@5.9.3)))
     optionalDependencies:
       postprocessing: 6.38.2(three@0.182.0)
       swiper: 12.0.3

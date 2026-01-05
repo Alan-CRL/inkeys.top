@@ -5,6 +5,7 @@ import { ref, onMounted } from 'vue'
 const loading = ref(true)
 const hasError = ref(false)
 const links = ref({
+  version: '',
   win32: '',
   win64: '',
   arm64: ''
@@ -15,13 +16,17 @@ const VERSION_JSON_URL = 'https://1709404.v.123pan.cn/1709404/Inkeys/Version/web
 
 onMounted(async () => {
   try {
-    const response = await fetch(VERSION_JSON_URL)
+    const timestamp = new Date().getTime()
+    const url = `${VERSION_JSON_URL}?t=${timestamp}`
+
+    const response = await fetch(url)
     if (!response.ok) throw new Error(`HTTP status: ${response.status}`)
 
     const data = await response.json()
 
     if (data.win32 && data.win64 && data.arm64) {
       links.value = data
+      
       // 为了避免闪一下，保留一点时间展示“解析中”
       setTimeout(() => {
         loading.value = false
@@ -44,7 +49,10 @@ onMounted(async () => {
       <img src="/Inkeys.svg" alt="Inkeys Logo" class="app-icon" />
 
       <!-- 标题 -->
-      <h1 class="title">下载 智绘教Inkeys</h1>
+      <h1 class="title">智绘教Inkeys</h1>
+
+      <!-- 版本 -->
+      <p class="version-text">{{ links.version }}</p>
 
       <!-- 加载中 -->
       <div v-if="loading" class="loading-container">
@@ -54,7 +62,7 @@ onMounted(async () => {
 
       <!-- 出错 -->
       <div v-else-if="hasError" class="error-msg">
-        解析失败，请尝试直接访问下方云盘或 Github。
+        解析失败，请尝试访问下方 云盘 或 Github Release
       </div>
 
       <!-- 下载按钮 -->
@@ -107,6 +115,15 @@ onMounted(async () => {
           rel="noopener noreferrer"
         >
           Github Release
+        </a>
+        <span class="divider">|</span>
+        <a
+          href="https://www.123pan.com/s/duk9-GJ9Ad.html"
+          class="link-item"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          历史版本
         </a>
       </div>
 
@@ -161,12 +178,18 @@ onMounted(async () => {
 
 .title {
   margin-top: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 0.2rem;
   font-size: 1.8rem;
   font-weight: bold;
   color: var(--vp-c-text-1);
   border: none;
   line-height: 1.2;
+}
+.version-text {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.0rem;
+  color: var(--vp-c-text-3);
 }
 
 /* 加载动画区域 */

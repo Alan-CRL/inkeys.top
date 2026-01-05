@@ -2,6 +2,8 @@ import { viteBundler } from '@vuepress/bundler-vite'
 import { defineUserConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 
+const isProd = process.env.NODE_ENV === 'production'
+
 export default defineUserConfig({
   base: "/",
   lang: "zh-CN",
@@ -177,7 +179,8 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    // replaceAssets: 'https://cdn.example.com',
+    //replaceAssets: isProd ? 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public/' : false,
+    replaceAssets: (url) => `https://1709404.v.123pan.cn/1709404/Inkeys/Website/public${url}`,
 
     /**
      * 加密功能
@@ -188,12 +191,8 @@ export default defineUserConfig({
     plugins: {
       // 图片选择器
       photoSwipe: {
-        selector: '.vp-doc :not(a) > img:not([no-view],.no-view,.ignore)',
-        download: true, // 是否显示下载按钮
-        fullscreen: true, // 是否显示全屏按钮
         scrollToClose: false, // 是否在滚动时关闭当前图片
       },
     },
-
   }),
 });

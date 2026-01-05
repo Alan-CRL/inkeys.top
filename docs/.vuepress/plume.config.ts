@@ -59,6 +59,7 @@ export default defineThemeConfig({
     '/win7': versionSidebar,
     '/inkeys3': versionSidebar,
     '/version': versionSidebar,
+    '/jabber': versionSidebar,
   },
 
   /**
