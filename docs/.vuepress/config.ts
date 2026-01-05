@@ -58,7 +58,7 @@ export default defineUserConfig({
     // editLink: true,
     // lastUpdated: true,
     contributors: false,
-    changelog: true,
+    changelog: false,
 
     /**
      * 编译缓存，加快编译速度
@@ -179,8 +179,8 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    //replaceAssets: isProd ? 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public/' : false,
-    replaceAssets: (url) => `https://1709404.v.123pan.cn/1709404/Inkeys/Website/public${url}`,
+    // replaceAssets: isProd ? 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public' : false,
+    // replaceAssets: 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public',
 
     /**
      * 加密功能

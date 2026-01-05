@@ -61,6 +61,16 @@ export default defineThemeConfig({
     '/version': versionSidebar,
     '/jabber': versionSidebar,
   },
+  // collections: [ 
+  //   { 
+  //     type: 'post', 
+  //     dir: 'changelog', 
+  //     title: '更新日志',
+  //     postList: true, // 启用文章列表页
+  //     link: '/changelog/', // 列表页链接
+  //     linkPrefix: '/changelog/', // 文章链接前缀 
+  //   },
+  // ],
 
   /**
    * 公告板

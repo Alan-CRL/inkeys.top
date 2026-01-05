@@ -1,1 +1,0 @@
-import { defineCollection, defineCollections } from "vuepress-theme-plume";

@@ -15,9 +15,9 @@ import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
 
 @[artPlayer muted autoplay loop"](https://1709404.v.123pan.cn/1709404/image_resources/1.mp4)
 
-- [x] 兼容至 ==Microsoft PowerPoint 2007== 和 ==Kingsoft WPS 2013==。
+- [x] 兼容至 **Microsoft PowerPoint 2007** 和 **Kingsoft WPS 2013**。
 
-<Swiper :items="['pptcom3/1.png', 'pptcom3/2.png']" effect="flip" />
+<Swiper :items="['/pptcom3/1.png', '/pptcom3/2.png']" effect="flip" />
 
 - [x] 升级为轮询和事件注册双模式，应对COM损坏严重无法注册事件的情况。
 
