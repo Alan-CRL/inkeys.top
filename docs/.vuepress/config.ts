@@ -1,6 +1,7 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defineUserConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
+import { redirectPlugin } from '@vuepress/plugin-redirect'
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -195,4 +196,15 @@ export default defineUserConfig({
       },
     },
   }),
+
+  plugins: [
+    redirectPlugin({
+      config: {
+        // key 是旧路径，value 是新路径
+        '/inkeys3': '/version/inkeys3',
+        '/win7': '/version/introduction/win7',
+      },
+    }),
+  ],
+
 });

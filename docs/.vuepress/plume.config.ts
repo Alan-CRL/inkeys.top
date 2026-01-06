@@ -57,20 +57,38 @@ export default defineThemeConfig({
     '/tutorial/': tutorialSidebar,
 
     '/win7': versionSidebar,
-    '/inkeys3': versionSidebar,
     '/version': versionSidebar,
     '/jabber': versionSidebar,
   },
-  // collections: [ 
-  //   { 
-  //     type: 'post', 
-  //     dir: 'changelog', 
-  //     title: '更新日志',
-  //     postList: true, // 启用文章列表页
-  //     link: '/changelog/', // 列表页链接
-  //     linkPrefix: '/changelog/', // 文章链接前缀 
-  //   },
-  // ],
+  collections: [ 
+    { 
+      type: 'post', 
+      dir: '/version/', 
+      title: '版本',
+
+      postList: true, // 启用文章列表页
+      link: '/version/', // 列表页链接
+      linkPrefix: '/version/', // 文章链接前缀
+      exclude: ['introduction/**'], // 排除代码片段文件
+
+      meta: {
+        tags: true, // 是否显示标签
+        createTime: false, // boolean | 'short' | 'long'
+        readingTime: true, // 是否显示阅读时间估算
+        wordCount: true, // 是否显示字数统计
+      },
+      autoFrontmatter: {
+        title: false, // 自动生成标题
+        createTime: false, // 自动生成创建时间
+        permalink: false, // 自动生成永久链接
+      },
+
+      tags: false,
+      archives: false,
+      categories: false,
+    },
+  ],
+
 
   /**
    * 公告板

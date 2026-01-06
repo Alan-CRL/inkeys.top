@@ -12,12 +12,13 @@ export const downloadSidebar = [
 ]
 
 export const versionSidebar = [
+    { text: '版本', link: '/version/' },
     {   
         text: 'Inkeys3', 
         link: '/inkeys3',
         badge: { text: '新', type: 'tip' },
         items: [
-            { text: 'PPT演示助手 3', link: '/version/pptcom3' },
+            { text: 'PPT演示助手 3', link: '/version/introduction/pptcom3' },
             { text: '兼容性调整', link: '/win7' },
         ], 
     },
