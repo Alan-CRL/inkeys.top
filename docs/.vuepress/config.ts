@@ -203,6 +203,7 @@ export default defineUserConfig({
         // key 是旧路径，value 是新路径
         '/inkeys3': '/version/inkeys3',
         '/win7': '/version/introduction/win7',
+        '/version/pptcom3': '/version/introduction/pptcom3',
       },
     }),
   ],
