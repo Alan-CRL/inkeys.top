@@ -8,7 +8,7 @@ export const downloadSidebar = [
             { text: 'English', link: '/tos/en-us' },
         ],
     },
-    { text: '新版本', link: '/inkeys3' },
+    { text: '新版本', link: '/version/inkeys3' },
 ]
 
 export const versionSidebar = [
