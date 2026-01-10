@@ -15,11 +15,11 @@ export const versionSidebar = [
     { text: '版本', link: '/version/' },
     {   
         text: 'Inkeys3', 
-        link: '/inkeys3',
+        link: '/version/inkeys3',
         badge: { text: '新', type: 'tip' },
         items: [
             { text: 'PPT演示助手 3', link: '/version/introduction/pptcom3' },
-            { text: '兼容性调整', link: '/win7' },
+            { text: '兼容性调整', link: '/version/introduction/win7' },
         ], 
     },
     { text: '碎碎念', link: '/jabber' },

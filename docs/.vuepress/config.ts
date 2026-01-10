@@ -180,13 +180,8 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    // replaceAssets: isProd ? 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public' : false,
-    replaceAssets: 
-    {
-      image: 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public',
-      media: 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public',
-    },
-
+    replaceAssets: 'cdn.example.com',
+    
     /**
      * 加密功能
      * @see https://theme-plume.vuejs.press/guide/features/encryption/
@@ -206,8 +201,11 @@ export default defineUserConfig({
       config: {
         // key 是旧路径，value 是新路径
         '/inkeys3': '/version/inkeys3',
+        '/inkeys3.html': '/version/inkeys3.html',
         '/win7': '/version/introduction/win7',
+        '/win7.html': '/version/introduction/win7.html',
         '/version/pptcom3': '/version/introduction/pptcom3',
+        '/version/pptcom3.html': '/version/introduction/pptcom3.html',
       },
     }),
   ],
