@@ -5,6 +5,7 @@ import navbar from './navbar'
 import { downloadSidebar } from './sidebar'
 import { versionSidebar } from './sidebar'
 import { tutorialSidebar } from './sidebar'
+import { wikiSidebar } from './sidebar'
 
 export default defineThemeConfig({
   logo: '/Inkeys.svg',
@@ -59,6 +60,8 @@ export default defineThemeConfig({
     '/win7': versionSidebar,
     '/version': versionSidebar,
     '/jabber': versionSidebar,
+
+    '/wiki': wikiSidebar,
   },
   collections: [ 
     { 

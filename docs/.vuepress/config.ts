@@ -65,7 +65,7 @@ export default defineUserConfig({
      * 编译缓存，加快编译速度
      * @see https://theme-plume.vuejs.press/config/basic/#cache
      */
-    // cache: "filesystem",
+    cache: "filesystem",
 
     /**
      * 为 markdown 文件自动添加 frontmatter 配置
@@ -149,7 +149,7 @@ export default defineUserConfig({
              size: true,       // 启用图片大小
            },
       //   include: true,      // 在 Markdown 文件中导入其他 markdown 文件内容
-      //   imageSize: 'local', // 启用 自动填充 图片宽高属性，避免页面抖动
+      imageSize: 'all', // 启用 自动填充 图片宽高属性，避免页面抖动
       mark: 'lazy',
       timeline: true,
     },
@@ -181,7 +181,7 @@ export default defineUserConfig({
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
     // replaceAssets: isProd ? 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public' : false,
-    // replaceAssets: 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public',
+    replaceAssets: 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public',
 
     /**
      * 加密功能

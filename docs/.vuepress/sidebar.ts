@@ -36,3 +36,20 @@ export const tutorialSidebar = [
     ],
   },
 ]
+
+export const wikiSidebar = [
+  {
+    text: '教程',
+    link: '/wiki/wiki',
+  },
+  {
+    text: '快速上手',
+    link: '/wiki/start/start',
+  },
+  {
+    text: '使用文档',
+    items: [
+        { text: '基础指南', link: '/wiki/guide/basic-guide' },
+    ],
+  },
+]

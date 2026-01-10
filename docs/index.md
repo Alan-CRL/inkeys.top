@@ -16,8 +16,8 @@ config:
           text: 下载
           link: /download
         - theme: brand
-          text: WIKI
-          link: https://wiki.inkeys.top/
+          text: 教程
+          link: /wiki/wiki
         - theme: alt
           text: 介绍视频
           link: https://space.bilibili.com/1330313497/lists/2210199
