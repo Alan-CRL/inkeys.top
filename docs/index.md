@@ -63,23 +63,8 @@ config:
 ---
 
 ## 集锦（软件介绍）
-<div style="
-  margin:32px auto;
-  border: 2px solid #eee;
-  border-radius: 12px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-  overflow: hidden;
-  background: #fafbfc;
-">
-  <div style="position:relative;width:100%;padding-bottom:56.25%;">
-    <iframe
-      src="//player.bilibili.com/player.html?isOutside=true&aid=114881164481373&bvid=BV17duZzYEsE&cid=25827154050&p=1&high_quality=1&danmaku=1&autoplay=0"
-      style="position:absolute;top:0;left:0;width:100%;height:100%;"
-      frameborder="no"
-      allowfullscreen="true"
-    ></iframe>
-  </div>
-</div>
+
+@[artPlayer poster="https://i0.hdslb.com/bfs/archive/8542868871ee67b16f385ae31ad36f52280dfc4b.jpg" type="m3u8" auto-mini](https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode)
 
 ---
 
