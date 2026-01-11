@@ -11,6 +11,9 @@ importers:
       artplayer:
         specifier: ^5.3.0
         version: 5.3.0
+      artplayer-plugin-ambilight:
+        specifier: ^1.0.0
+        version: 1.0.0
       hls.js:
         specifier: ^1.6.15
         version: 1.6.15
@@ -1314,6 +1317,9 @@ packages:
 
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+
+  artplayer-plugin-ambilight@1.0.0:
+    resolution: {integrity: sha512-7UxcQLI1XZXJBfv4gZsTd1YKNL9Y7Uw2w13FyqgHqgtKWT06+EEl72UHl/C/Je1s1GHlTnw+Hdg6CphZbQ9k/g==}
 
   artplayer@5.3.0:
     resolution: {integrity: sha512-yExO39MpEg4P+bxgChxx1eJfiUPE4q1QQRLCmqGhlsj+ANuaoEkR8hF93LdI5ZyrAcIbJkuEndxEiUoKobifDw==}
@@ -3901,6 +3907,8 @@ snapshots:
       sprintf-js: 1.0.3
 
   argparse@2.0.1: {}
+
+  artplayer-plugin-ambilight@1.0.0: {}
 
   artplayer@5.3.0:
     dependencies:

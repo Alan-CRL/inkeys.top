@@ -63,8 +63,36 @@ config:
 ---
 
 ## 集锦（软件介绍）
+<ArtPlayer
+  src="https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode"
+  type="m3u8"
+  poster="/Inkeys2.png"
+  :volume="0.5"
+  :setting="true"
+  :fullscreen="true"
+  :fullscreenWeb="true"
+  :pip="true"
+  :playbackRate="true"
+  :hotkey="true"
+  :quality="[
+    {
+      default: true,
+      html: '1080P',
+      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode',
+    },
+    {
+      html: '720P',
+      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=720p&suffix=mov&from=transcode',
+    },
+    {
+      html: '480P',
+      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=480p&suffix=mov&from=transcode',
+    },
+  ]"
+  style="width: 100%; aspect-ratio: 16 / 9;"
+/>
 
-@[artPlayer poster="https://i0.hdslb.com/bfs/archive/8542868871ee67b16f385ae31ad36f52280dfc4b.jpg" type="m3u8" auto-mini](https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode)
+
 
 ---
 
