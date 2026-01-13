@@ -2,10 +2,6 @@
 title: PPT演示助手 3
 ---
 
-<script setup>
-import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
-</script>
-
 全新的 **PPT演示助手 3** 已经上线，本次更新使得COM注册损坏的设备也可以成功联动。提升兼容性的同时健壮了代码，适用于更多极端的场景。
 
 ## 重点升级
@@ -14,7 +10,7 @@ import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
 - [x] 动态切换，优先绑定最上层的放映窗口。
 
 <ArtPlayer
-  src="https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode"
+  src="https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode"
   type="m3u8"
   :autoplay="true"
   :loop="true"
@@ -26,27 +22,31 @@ import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
   :quality="[
     {
       html: '1080P',
-      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode',
+      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode',
     },
     {
       html: '720P',
-      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=720p&suffix=mp4&from=transcode',
+      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=720p&suffix=mp4&from=transcode',
     },
     {
       default: true,
       html: '480P',
-      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode',
+      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode',
     },
   ]"
   style="width: 100%; aspect-ratio: 16 / 9;"
+/>  
+
+- [x] 兼容至 **Microsoft PowerPoint 2007** 和 **Kingsoft WPS 2013**。  
+
+<SwiperSelf
+  :items='["/pptcom3/1.png", "/pptcom3/2.png"]' 
+  effect="flip"
+  :height="450"
 />
 
-- [x] 兼容至 **Microsoft PowerPoint 2007** 和 **Kingsoft WPS 2013**。
-
-<Swiper :items="['/pptcom3/1.png', '/pptcom3/2.png']" effect="flip" />
-
-- [x] 升级为轮询和事件注册双模式，应对COM损坏严重无法注册事件的情况。
-
+- [x] 升级为轮询和事件注册双模式，应对COM损坏严重无法注册事件的情况。  
+  
 ## 其他升级
 
 - [x] 在 WPS 未勾选“兼容第三方系统和软件”的时候连接到 WPS
