@@ -5,7 +5,7 @@ import GitHubCard from './theme/components/GitHubCard.vue'
 // import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
 import './theme/styles/custom.css'
 
-//import ArtPlayerWrapper from './theme/components/ArtPlayerWrapper.vue' 
+import VideoPlayerAmbilight from './theme/components/VideoPlayerAmbilight.vue' 
 
 export default defineClientConfig({
   enhance({ app }) {
@@ -13,7 +13,7 @@ export default defineClientConfig({
     app.component('DownloadCard', DownloadCard)
     app.component('GitHubCard', GitHubCard)
 
-    //app.component('ArtPlayerWrapper', ArtPlayerWrapper) 
+    app.component('VideoPlayerAmbilight', VideoPlayerAmbilight) 
   },
   layouts: {
     Layout,

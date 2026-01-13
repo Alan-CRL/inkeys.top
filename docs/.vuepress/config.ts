@@ -180,7 +180,10 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    replaceAssets: 'cdn.example.com',
+    replaceAssets: { 
+      find: /^\/.*\.(jpg|jpeg|png|gif|svg|webp|avif)$/,
+      replacement: url => `https://1709404.v.123pan.cn/1709404/Inkeys/Website/public${url}`
+    },
     
     /**
      * 加密功能

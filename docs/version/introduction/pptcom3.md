@@ -13,7 +13,33 @@ import Swiper from 'vuepress-theme-plume/features/Swiper.vue'
 - [x] 识别COM注册损坏的PPT。
 - [x] 动态切换，优先绑定最上层的放映窗口。
 
-@[artPlayer muted autoplay loop"](https://1709404.v.123pan.cn/1709404/image_resources/1.mp4)
+<ArtPlayer
+  src="https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode"
+  type="m3u8"
+  :autoplay="true"
+  :loop="true"
+  :muted="true"
+  :fullscreen="true"
+  :fullscreenWeb="true"
+  :hotkey="true"
+  :isLive="true"
+  :quality="[
+    {
+      html: '1080P',
+      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode',
+    },
+    {
+      html: '720P',
+      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=720p&suffix=mp4&from=transcode',
+    },
+    {
+      default: true,
+      html: '480P',
+      url: 'https://vip.123pan.cn/1709404/transcode/version-introduction-pptcom3-1%20%282%29.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode',
+    },
+  ]"
+  style="width: 100%; aspect-ratio: 16 / 9;"
+/>
 
 - [x] 兼容至 **Microsoft PowerPoint 2007** 和 **Kingsoft WPS 2013**。
 
@@ -86,5 +112,10 @@ ROT 的目标被设置为 PowerPoint.Application 的经典 GUID 和含有类似 
 最后，很高兴我终于解决了这个问题！这一切都是值得的，使我对这一技术栈又有了新的理解，并且积累了更加丰富的经验。
 
 有人会问我为啥不用 ai 直接帮我写？当然，期间我尝试使用 Gimini 3 pro gpt5.2 claude4.5 分别来帮我找错，肯定是有帮助的，不过感觉很浪费时间，甚至在难题上完全乱说话，每次回答给出的方案都不一样，并且都不能解决问题。所以我认为，现阶段这些ai还是适合给你打打杂，例如写个方法模板，查查文档之类的，编码还得靠自己，就像林大佬说的：“不能让 AI 带着跑，而是带着 AI 跑才能正常开发”。
+
+## 相关代码
+<https://github.com/Alan-CRL/Inkeys/blob/main/PptCOM/PptCOM.cs>  
+
+---
 
 最后，感谢您能阅读到最后！
