@@ -14,6 +14,10 @@ export default defineUserConfig({
 
   head: [
     [
+      'meta', 
+      { name: 'baidu-site-verification', content: 'codeva-7hhLidgMFB' }
+    ],
+    [
       "link",
       {
         rel: "apple-touch-icon",
