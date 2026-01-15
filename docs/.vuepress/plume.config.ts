@@ -97,6 +97,8 @@ export default defineThemeConfig({
    * 公告板
    * @see https://theme-plume.vuejs.press/guide/features/bulletin/
    */
+
+  /*
   bulletin: {
     // 1. 必须提供唯一的 ID，用于在浏览器中记录“已关闭”状态
     id: '1000k-announcement', 
@@ -124,7 +126,7 @@ export default defineThemeConfig({
 
     layout: 'top-right',
     border: false
-  },
+  }, */
 
   /* 过渡动画 @see https://theme-plume.vuejs.press/config/basic/#transition */
   transition: {
