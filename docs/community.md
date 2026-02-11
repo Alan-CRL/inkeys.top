@@ -44,6 +44,14 @@ title: 社区名片
 [2,2,3-三甲基戊烷](https://github.com/2-2-3-trimethylpentane) 🤔 📝 📖 🌍  
 [Jursin](https://github.com/Jursin) 🤔 🎨  
 
+> 还有许多朋友直接或间接的为 智绘教Inkeys 提供了帮助，也一并感谢他们。  
+
+> **关于本站**  
+> [Jursin](https://github.com/Jursin) 为本站的设计和维护付出了很多，[2,2,3-三甲基戊烷](https://github.com/2-2-3-trimethylpentane) 为本站编写了 Inkeys2 的教程，还有许多朋友对本站提供过帮助。在这里一并感谢他们！  
+
+> **关于服务器**  
+> 软件更新服务器（线路一）由 [智教联盟](https://forum.smart-teach.cn/) 提供。
+
 ## 赞助者
 
 ::: tip 提示
@@ -67,7 +75,7 @@ title: 社区名片
 
 ![](/SettingSponsor.png)
 
-成功赞助后，可以联系作者添加社区名片赞助列表中的昵称。
+成功赞助后，可以联系作者将您的昵称和赞助的金额添加到社区名片中以表示感谢。
 
 <style scoped>
 .card-content {

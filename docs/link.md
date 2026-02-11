@@ -24,4 +24,10 @@ import RepoCard from 'vuepress-theme-plume/features/RepoCard.vue'
 
 ---
 
+<LinkCard href="https://github.com/Alan-CRL/Inkeys" title="主仓库备链（适用于上方卡片无法加载的情况）" description="https://github.com/Alan-CRL/Inkeys" icon="https://toolb.cn/favicon/github.com"/>
+
 <LinkCard href="https://gitcode.com/alan16356/Inkeys" title="GitCode 仓库（备用仓库）" description="https://gitcode.com/alan16356/Inkeys" icon="https://toolb.cn/favicon/gitcode.com"/>
+
+---
+
+> 本站基于 Vuepress 2 的 [Plume](https://theme-plume.vuejs.press/) 主题构建。感谢优秀的 Web 技术搭建了眼前这么出色的网站！  

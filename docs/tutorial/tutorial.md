@@ -2,7 +2,7 @@
 title: 知识库
 ---
 
-查找使用教程？[前往我们的 Wiki文档](https://wiki.inkeys.top/)  
+查找使用教程？前往我们的 [教程](/wiki/wiki)  
 
 ---
 
