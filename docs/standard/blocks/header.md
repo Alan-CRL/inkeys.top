@@ -2,58 +2,36 @@
 title: Header 块
 ---
 
-## 总体结构
+- Type ID: 0
+- Type: Array
 
-Header 由 **两部分组成**：
+## 结构
 
-```
-Header = [
-    CoreHeader,      // 固定长度
-    ExtensionBlock   // 可变长度
-]
-```
-
-* Header 外层为 **array(2)**
-* CoreHeader 固定结构，支持原地更新
-* ExtensionBlock 可变，用于扩展信息
-
-## 具体结构
-
-### CoreHeader 块（固定块）
+### Header 块（固定块）
 
 ```
-CoreHeader = array(4)
+Header = array(5)
 ```
 
 | 索引 | 键名 | 类型 | MessagePack 类型 | 字节长度 | 是否可原地更新 |
 | -- | ------- | ---------- | -------------- | -------- | ------- |
-| 0  | `version` | uint16     | uint16         | 2 bytes  | 不支持 |
-| 1  | `guid`    | string(36) | str8           | 36 bytes | 不支持 |
-| 2  | `pageNum` | uint16     | uint16         | 2 bytes  | 是 |
-| 3  | `time`    | uint64     | uint64         | 8 bytes  | 是 |
+| 0  | `type`   | uint16      | uint16      | 2 bytes | 不支持 |
+| 1  | `version` | uint16     | uint16         | 2 bytes  | 不支持 |
+| 2  | `guid`    | string(36) | str8           | 36 bytes | 不支持 |
+| 3  | `pageNum` | uint16     | uint16         | 2 bytes  | 是 |
+| 4  | `time`    | uint64     | uint64         | 8 bytes  | 是 |
 
 ::: tip 提示
 区域长度固定，字段顺序必须严格保持一致。
 :::
 
-### ExtensionBlock 块（扩展块）
-
-```
-ExtensionBlock = map | nil
-```
-
-若不存在扩展信息：`nil` | 若存在扩展：`map(n)`  
-
-| 键名          | 类型     | 字节长度 |
-| ------------- | ------ | ---- |
-| `name`        | string | 自由长度 |
-| `explanation` | string | 自由长度 |
-| `bindingName` | string | 自由长度 |
-| `extra`       | string | 自由长度 |
-
 ### 键名具体说明
 
 :::: field-group
+
+::: field name="type" required
+格式对应的[块类型](#)固定为 0  
+:::
 
 ::: field name="version" required
 格式对应的[规范版本号](#)  
@@ -76,29 +54,11 @@ ExtensionBlock = map | nil
 Unix UTC 时间戳（单位：秒）  
 :::
 
-::: field name="name" optional
-文件名称  
-:::
-
-::: field name="explanation" optional
-文件描述  
-:::
-
-::: field name="bindingName" optional
-绑定对象名称  
-:::
-
-::: field name="extra" optional
-私有扩展文本（可存储 JSON / XML / 自定义序列化内容等）  
-:::
-
 ::::
 
 ## 设计原则
 
-### CoreHeader 块设计原则
-
-* 数组长度固定为 4
+* 数组长度固定为 5
 * 所有数值类型固定宽度
 * 禁止使用最小整数自动编码
 * 支持通过文件定位后直接覆盖写：
@@ -106,80 +66,30 @@ Unix UTC 时间戳（单位：秒）
   * pageNum
   * time
 
-### Extension 块设计规则
-
-* 扩展字段长度不限制
-* 可任意增加新字段
-* 不影响 CoreHeader 原地更新
-* 推荐使用字符串键（便于跨语言调试）
-
 ## 示例
-::: tabs
 
-@tab 完全拓展
 
-```
+``` json
 [
-  [
+    0,
     10,
     "5fe30f46-be92-49b6-b921-a60706febf10",
     12,
     1700000000
-  ],
-  {
-    "name": "CJK's Secret  Notes",
-    "explanation": "Some secret photos are hidden inside.",
-    "bindingName": "xxx.pptx",
-    "extra": "..."
-  }
 ]
 ```
-
-@tab 部分拓展
-
-```
-[
-  [
-    10,
-    "5fe30f46-be92-49b6-b921-a60706febf10",
-    12,
-    1700000000
-  ],
-  {
-    "name": "CJK's Secret  Notes",
-    "explanation": "Some secret photos are hidden inside."
-  }
-]
-```
-
-@tab 不含拓展
-
-```
-[
-  [
-    10,
-    "5fe30f46-be92-49b6-b921-a60706febf10",
-    12,
-    1700000000
-  ],
-  nil
-]
-```
-
-:::
 
 ## 原地更新说明
 
 允许安全原地更新字段：
 
-* CoreHeader[2] → pageNum
-* CoreHeader[3] → time
+* Header[3] → pageNum
+* Header[4] → time
 
 禁止原地修改（需要重新完整写入）：
 
 * `guid`
 * `version`
-* ExtensionBlock 结构
 
 ## 相关流程说明
 

@@ -9,52 +9,40 @@ flowchart TB
     subgraph "InkData.uink"
         direction TB
 
-        subgraph B0 ["Header Block (Array[2])"]
-            direction TB
+        B0_Core["Header 块 (Array)"]
+        B0_Ext["Header Extension 块
+         (Map)"]
+        B0_Core --> B0_Ext
 
-            subgraph B0_Core ["CoreHeader Block (Array[4])"]
-                direction LR
-                B0_Ver["Version (uint16)"]
-                B0_GUID["GUID (string 36)"]
-                B0_PageNum["PageNum (uint16)"]
-                B0_Time["Time (uint64)"]
-            end
+        A1_Ctx["Canvas 块 1 (Map)"]
+        A1_B1["Ink 块 1 (Map)"]
+        A1_B2["Ink 块 2 (Map)"]
+        A1_B3["..."]
+        B0_Ext --> A1_Ctx
+        A1_Ctx --> A1_B1
+        A1_B1 --> A1_B2
+        A1_B2 --> A1_B3
 
-            B0_Ext["Extension Block (map | nil)"]
-
-            B0_Core --> B0_Ext
-        end
-
-        subgraph A1 ["Canvas Block 1 (Map)"]
-            direction TB
-            A1_Ctx["Canvas Header"]
-            subgraph A1_Strokes ["Ink"]
-                direction TB
-                A1_B1["Ink Block B1"]
-                A1_B2["Ink Block B2"]
-                A1_B3["..."]
-            end
-            A1_Ctx --> A1_Strokes
-        end
-
-        subgraph A2 ["Canvas Block 2 (Map)"]
-            direction TB
-            A2_Ctx["Canvas Header B0"]
-            subgraph A2_Strokes ["Ink"]
-                direction TB
-                A2_B1["Ink Block B1"]
-                A2_B2["Ink Block B2"]
-                A2_B3["..."]
-            end
-            A2_Ctx --> A2_Strokes
-        end
-
-        FileStart("File Start") --> B0
-        B0 --> A1
-        A1 --> A2
-        A2 -- "..." --> FileEnd("File EOF")
+        A2_Ctx["Canvas 块 2 (Map)"]
+        A2_B1["Ink 块 1 (Map)"]
+        A2_B2["Media 块 2 (Map)"]
+        A2_B3["Ink 块 3 (Map)"]
+        A2_B4["..."]
+        A1_B3 --> A2_Ctx
+        A2_Ctx --> A2_B1
+        A2_B1 --> A2_B2
+        A2_B2 --> A2_B3
+        A2_B3 --> A2_B4
+         
+        FileStart("File Start") --> B0_Core
+        A2_B4 -- "..." --> FileEnd("File EOF")
     end
 ```
+
+## 结构规范
+1. Header 块是必须的，且必须位于文件开头  
+2. Header Extension 块是可选的，但如果有则需要位于 Header 块的下一个块。
+3. 1 个 Canvas 块与后方的 n 个 Ink 块组成一个画布。（不允许在第一个 Canvas 块前出现 Ink 块）
 
 ## 存储规范
 逻辑上拥有相关性的一组墨迹。
@@ -69,19 +57,34 @@ flowchart TB
 
 - **演示文稿/白板场景**：文件内可包含多个 Canvas 块，分别表示每一页或表示每一页中的不同图层。（以逻辑上的一个白板/或对应的一个 PPT 文件作为分隔多个 .uink 文件的标准）  
 
-### Header 块
-存储对当前墨迹文件的相关说明等。
-
-[详细说明](../blocks/header.md)  
-
-### Canvas 块
-用于存储墨迹上下文和画布内容。  
-
+### 顺序
 ::: warning 注意
-特别地，Canvas 块的呈现顺序是**无序的**。  
+特别地，Canvas 块的呈现顺序是**无序的**。但应将 Canvas 块与后方的 n 个块（直至下一个 Canvas 块或文件末尾前）视为一个整体。  
 
-不会依据`Canvas Header`中的逻辑页码或图层层级进行排序。此设计旨在优化墨迹存储阶段的流式增量写入性能。如果需要构建画布逻辑结构，则应该读取 Canvas 块中的墨迹上下文后自行建立画布结构。  
+块们不会依据`Canvas 块`中的逻辑页码或图层层级进行排序。此设计旨在优化墨迹存储阶段的流式增量写入性能。如果需要构建画布逻辑结构，则应该读取 Canvas 块中的墨迹上下文后自行建立画布结构。  
 :::
 
-#### 墨迹归属
-存储于`Canvas Header`中，包含其所属的页面编号或该页面下的特定图层索引。  
+### 画布表示
+Canvas 块与后方的 n 个 Ink 块 / Media 块（直至下一个 Canvas 块或文件末尾前）视为一个整体，表示为一个画布。  
+
+后方的 n 个 Ink 块/ Media 块则按顺序从 Z 序下层至上次表示画布上的内容。简单来讲，按照这些块的正序绘制到画布上，则可以绘制出正确的画布。
+
+这么做的好处是支持[增量写入](../incremental)。  
+
+## 块规范
+
+### [Header 块](../blocks/header.md)
+存储对当前墨迹文件的信息等。
+
+### [Header Extension 块](../blocks/headerExtension.md)
+存储对当前墨迹文件的相关说明和绑定 PPT 名称等。  
+
+### [Canvas 块](#)
+用于存储墨迹信息和画布内容。  
+
+### [Ink 块](#)
+存储一条墨迹。
+
+## 相关属性
+
+[块类型（Type ID）](../type.md)  

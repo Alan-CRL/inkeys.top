@@ -105,10 +105,9 @@ export default defineThemeConfig({
         permalink: false, // 自动生成永久链接
       },
       sidebar: [
-        {
-          text: '规范介绍',
-          link: '/standard/intro',
-        },
+        { text: '规范介绍', link: '/standard/intro', },
+        { text: '块类型', link: '/standard/type', },
+        { text: '增量写入', link: '/standard/incremental', },
         {
           text: '文件',
           items: [
@@ -117,9 +116,10 @@ export default defineThemeConfig({
           ],
         },
         {
-          text: '结构块',
+          text: '块规范',
           items: [
-            { text: 'Header 块', link: '/standard/blocks/header' },
+            { text: 'Header 类', link: '/standard/blocks/header' },
+            { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
             { text: 'Canvas 块', link: '' },
             { text: 'Ink 块', link: '' },
           ],
