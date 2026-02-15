@@ -90,6 +90,36 @@ export default defineThemeConfig({
       archives: false,
       categories: false,
     },
+    { 
+      type: 'doc', 
+      dir: '/standard/', 
+      title: '规范',
+      meta: {
+        tags: true, // 是否显示标签
+        readingTime: true, // 是否显示阅读时间估算
+        wordCount: true, // 是否显示字数统计
+      },
+      autoFrontmatter: {
+        title: true, // 自动生成标题
+        createTime: false, // 自动生成创建时间
+        permalink: false, // 自动生成永久链接
+      },
+      sidebar: [
+        {
+          text: '规范介绍',
+          link: '/standard/intro',
+        },
+        {
+          text: '墨迹文件',
+          items: [
+            { text: '墨迹主文件', link: '/standard/file/main' },
+            { text: '墨迹拓展文件', link: '/standard/file/extra' },
+          ],
+        },
+      ],
+      sidebarScrollbar: true, // 显示侧边栏滚动条
+      sidebarCollapsed: true,
+    },
   ],
 
 
