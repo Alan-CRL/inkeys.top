@@ -69,7 +69,7 @@ ExtensionBlock = map | nil
 当前表示的总页数  
 
 ::: warning 注意
-此字段表示逻辑页数，而非 Canvas 块数量（因为一页可能包含多个图层，因此 Canvas 块数 $\seq$ 逻辑页数）。  
+此字段表示逻辑页数，而非 Canvas 块数量（因为一页可能包含多个图层，因此 Canvas 块数 $\geq$ 逻辑页数）。  
 :::
 
 ::: field name="time" required

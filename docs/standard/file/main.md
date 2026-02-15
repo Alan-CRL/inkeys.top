@@ -20,12 +20,12 @@ flowchart TB
                 B0_Time["Time (uint64)"]
             end
 
-            B0_Ext["ExtensionBlock Block (map | nil)"]
+            B0_Ext["Extension Block (map | nil)"]
 
             B0_Core --> B0_Ext
         end
 
-        subgraph A1 ["Canvas 1 (Map)"]
+        subgraph A1 ["Canvas Block 1 (Map)"]
             direction TB
             A1_Ctx["Canvas Header"]
             subgraph A1_Strokes ["Ink"]
