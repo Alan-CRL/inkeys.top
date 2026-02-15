@@ -6,36 +6,44 @@ title: 墨迹主文件
 
 ```mermaid
 flowchart TB
-    subgraph "文件 (InkData.uink)"
+    subgraph "InkData.uink"
         direction TB
 
-        subgraph B0 ["Header (Map)"]
-            direction LR
-            B0_GUID["GUID"]
-            B0_PageNum["Canvas Number(uint32)"]
-            B0_Time["Time(uint64)"]
-            B0_Name["Name(Optional)"]
+        subgraph B0 ["Header Block (Array[2])"]
+            direction TB
+
+            subgraph B0_Core ["CoreHeader Block (Array[4])"]
+                direction LR
+                B0_Ver["Version (uint16)"]
+                B0_GUID["GUID (string 36)"]
+                B0_PageNum["PageNum (uint16)"]
+                B0_Time["Time (uint64)"]
+            end
+
+            B0_Ext["ExtensionBlock Block (map | nil)"]
+
+            B0_Core --> B0_Ext
         end
 
         subgraph A1 ["Canvas 1 (Map)"]
             direction TB
-            A1_Ctx["墨迹上下文 B0"]
-            subgraph A1_Strokes ["墨迹"]
+            A1_Ctx["Canvas Header"]
+            subgraph A1_Strokes ["Ink"]
                 direction TB
-                A1_B1["墨迹 B1"]
-                A1_B2["墨迹 B2"]
+                A1_B1["Ink Block B1"]
+                A1_B2["Ink Block B2"]
                 A1_B3["..."]
             end
             A1_Ctx --> A1_Strokes
         end
 
-        subgraph A2 ["Canvas 2 (Map)"]
+        subgraph A2 ["Canvas Block 2 (Map)"]
             direction TB
-            A2_Ctx["墨迹上下文 B0"]
-            subgraph A2_Strokes ["墨迹"]
+            A2_Ctx["Canvas Header B0"]
+            subgraph A2_Strokes ["Ink"]
                 direction TB
-                A2_B1["墨迹 B1"]
-                A2_B2["墨迹 B2"]
+                A2_B1["Ink Block B1"]
+                A2_B2["Ink Block B2"]
                 A2_B3["..."]
             end
             A2_Ctx --> A2_Strokes
@@ -61,14 +69,19 @@ flowchart TB
 
 - **演示文稿/白板场景**：文件内可包含多个 Canvas 块，分别表示每一页或表示每一页中的不同图层。（以逻辑上的一个白板/或对应的一个 PPT 文件作为分隔多个 .uink 文件的标准）  
 
-### Canvas 块 A
-用于存储墨迹上下文和画布内容。  
+### Header 块
+存储对当前墨迹文件的相关说明等。
 
-#### 墨迹归属
-存储于`墨迹上下文 B0`中，包含其所属的页面编号或该页面下的特定图层索引。  
+[详细说明](../blocks/header.md)  
+
+### Canvas 块
+用于存储墨迹上下文和画布内容。  
 
 ::: warning 注意
 特别地，Canvas 块的呈现顺序是**无序的**。  
 
-其不会依据`墨迹上下文 B0`中的逻辑页码或图层层级进行排序。此设计旨在优化墨迹存储阶段的流式增量写入性能。如果需要构建画布逻辑结构，则应该读取 Canvas 块中的墨迹上下文后自行建立画布结构。  
+不会依据`Canvas Header`中的逻辑页码或图层层级进行排序。此设计旨在优化墨迹存储阶段的流式增量写入性能。如果需要构建画布逻辑结构，则应该读取 Canvas 块中的墨迹上下文后自行建立画布结构。  
 :::
+
+#### 墨迹归属
+存储于`Canvas Header`中，包含其所属的页面编号或该页面下的特定图层索引。  
