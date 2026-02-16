@@ -106,6 +106,7 @@ export default defineThemeConfig({
       },
       sidebar: [
         { text: '规范介绍', link: '/standard/intro', },
+        { text: '规范版本', link: '/standard/version', },
         { text: '块类型', link: '/standard/type', },
         { text: '增量写入', link: '/standard/incremental', },
         {
@@ -118,7 +119,7 @@ export default defineThemeConfig({
         {
           text: '块规范',
           items: [
-            { text: 'Header 类', link: '/standard/blocks/header' },
+            { text: 'Header 块', link: '/standard/blocks/header' },
             { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
             { text: 'Canvas 块', link: '' },
             { text: 'Ink 块', link: '' },

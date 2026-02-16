@@ -3,7 +3,7 @@ title: Header Extension 块
 ---
 
 - Type ID: 1
-- Type: Array
+- Type: Map
 
 ## 结构
 
@@ -24,7 +24,7 @@ Extension = map
 :::: field-group
 
 ::: field name="type" required
-格式对应的[块类型](#)固定为 1  
+格式对应的[块类型](../type)固定为 1  
 :::
 
 ::: field name="name" optional

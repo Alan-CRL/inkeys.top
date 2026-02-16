@@ -30,11 +30,11 @@ Header = array(5)
 :::: field-group
 
 ::: field name="type" required
-格式对应的[块类型](#)固定为 0  
+格式对应的[块类型](../type)固定为 0  
 :::
 
 ::: field name="version" required
-格式对应的[规范版本号](#)  
+格式对应的[规范版本号](../version)  
 :::
 
 ::: field name="guid" required
@@ -67,7 +67,6 @@ Unix UTC 时间戳（单位：秒）
   * time
 
 ## 示例
-
 
 ``` json
 [
