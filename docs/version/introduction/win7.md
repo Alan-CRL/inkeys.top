@@ -8,7 +8,9 @@ Inkeys3 将会推出全新的 UI 界面与绘图库，使用 D2D1.1 的相关功
 ---
   
 ::: tip 您的版本是最新的
-Inkeys3 LTS 正式版尚未发布，目前最新版本为 Inkeys2 的 `20260206a`  
+Inkeys3 LTS 正式版尚未发布，目前最新版本为 Inkeys2 的 `20260214a`。  
+
+新动态：Inkeys3 的早期版本已经在 Canary 通道发布！  
 :::
 
 ## 系统环境要求
@@ -45,6 +47,6 @@ KB2670838 更新增加一些新的系统组件，例如 Inkeys3 所需要的 D2D
 
 ---
 
-::: tip 超前体验 Inkeys3 ？
-Inkeys3 将会先在 Canary 通道推出供体验，属于早期开发版本，不建议日常使用。[下载](https://www.123912.com/s/duk9-L8EAd)  
+::: tip 一些杂物
+Inkeys3 的相关测试模块构建([#](https://www.123912.com/s/duk9-L8EAd))  
 :::
