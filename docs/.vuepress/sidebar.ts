@@ -35,6 +35,10 @@ export const tutorialSidebar = [
         { text: 'Office 启用 Flash 控件', link: '/tutorial/ppt-flash' },
     ],
   },
+  {
+    text: 'PptxVideoProcessing',
+    link: '/tutorial/pptx-video-processing',
+  },
 ]
 
 export const wikiSidebar = [

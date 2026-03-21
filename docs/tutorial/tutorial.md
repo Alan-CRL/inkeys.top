@@ -11,3 +11,10 @@ title: 知识库
 - [程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方案](ppt-com.md)  
 - [Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方案](ppt-admin.md)  
 - [Microsoft Office 如何启用和正常播放 Flash 控件](ppt-flash.md)  
+
+---
+
+一些开发者的其他小项目：
+
+- [PptxVideoProcessing](pptx-video-processing)  
+> 提取并处理 Pptx 文件中的视频的编码和帧率，以适用于老设备。  
