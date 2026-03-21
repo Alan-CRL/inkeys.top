@@ -214,6 +214,8 @@ export default defineUserConfig({
         '/win7.html': '/version/introduction/win7.html',
         '/version/pptcom3': '/version/introduction/pptcom3',
         '/version/pptcom3.html': '/version/introduction/pptcom3.html',
+        '/pptx-video-processing': '/tutorial/pptx-video-processing',
+        '/pptx-video-processing.html': '/tutorial/pptx-video-processing.html',
       },
     }),
   ],
