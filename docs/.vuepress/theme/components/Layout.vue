@@ -2,6 +2,7 @@
 import { Layout } from 'vuepress-theme-plume/client'
 import PageContextMenu from 'vuepress-theme-plume/features/PageContextMenu.vue'
 import AsideNav from './AsideNav.vue'
+import SiteVisitCounter from './SiteVisitCounter.vue'
 </script>
 
 <template>
@@ -11,6 +12,9 @@ import AsideNav from './AsideNav.vue'
     </template>
     <template #doc-title-after>
       <PageContextMenu />
+    </template>
+    <template #footer-content>
+      <SiteVisitCounter />
     </template>
   </Layout>
 </template>

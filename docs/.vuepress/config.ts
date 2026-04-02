@@ -18,6 +18,13 @@ export default defineUserConfig({
       { name: 'baidu-site-verification', content: 'codeva-7hhLidgMFB' }
     ],
     [
+      'script',
+      {
+        defer: 'defer',
+        src: 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js',
+      },
+    ],
+    [
       "link",
       {
         rel: "apple-touch-icon",
