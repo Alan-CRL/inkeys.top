@@ -216,6 +216,15 @@ onMounted(async () => {
         >
           历史版本
         </a>
+        <span class="divider">|</span>
+        <a
+          href="/version/"
+          class="link-item"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          更新日志
+        </a>
       </div>
 
       <!-- 使用条款与系统要求 -->
