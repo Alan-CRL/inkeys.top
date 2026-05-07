@@ -4,6 +4,41 @@ import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
 
 const isProd = process.env.NODE_ENV === 'production'
+const imageCdnBase = 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public'
+const imageFallbackScript = `
+;(() => {
+  const cdnBase = ${JSON.stringify(imageCdnBase)}
+  const cdnUrl = new URL(cdnBase)
+  const cdnPathPrefix = cdnUrl.pathname.replace(/\\/$/, '')
+
+  const getLocalImageUrl = (src) => {
+    try {
+      const url = new URL(src, window.location.href)
+      if (url.origin !== cdnUrl.origin || !url.pathname.startsWith(cdnPathPrefix + '/'))
+        return ''
+
+      return url.pathname.slice(cdnPathPrefix.length) + url.search + url.hash
+    }
+    catch {
+      return ''
+    }
+  }
+
+  document.addEventListener('error', (event) => {
+    const image = event.target
+    if (!(image instanceof HTMLImageElement) || image.dataset.localFallback === 'true')
+      return
+
+    const localUrl = getLocalImageUrl(image.currentSrc || image.src)
+    if (!localUrl)
+      return
+
+    image.dataset.localFallback = 'true'
+    image.removeAttribute('srcset')
+    image.src = localUrl
+  }, true)
+})()
+`.trim()
 
 export default defineUserConfig({
   base: "/",
@@ -44,6 +79,7 @@ export default defineUserConfig({
       },
     ],
     [ "link", { rel: "shortcut icon", href: "/Inkeys.svg" } ],
+    [ "script", {}, imageFallbackScript ],
   ],
 
   bundler: viteBundler(),
@@ -185,9 +221,8 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    replaceAssets: { 
-      find: /^\/.*\.(jpg|jpeg|png|gif|svg|webp|avif)$/,
-      replacement: url => `https://1709404.v.123pan.cn/1709404/Inkeys/Website/public${url}`
+    replaceAssets: {
+      image: url => `${imageCdnBase}${url}`
     },
     
     /**
