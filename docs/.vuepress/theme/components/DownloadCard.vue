@@ -26,6 +26,16 @@ const isUpperCase = ref(false) // 默认为小写
 // 你的版本 JSON 地址
 const VERSION_JSON_URL = 'https://1709404.v.123pan.cn/1709404/Inkeys/Version/website_version.json'
 
+const downloadLinks = {
+  cquMirror: 'https://mirrors.cqu.edu.cn/github-release/Alan-CRL/Inkeys/',
+  pan123: 'https://www.123pan.com/s/duk9-n4dAd.html',
+  githubRelease: 'https://github.com/Alan-CRL/Inkeys/releases',
+  history: 'https://www.123pan.com/s/duk9-GJ9Ad.html',
+  version: '/version/'
+}
+
+const openDropdown = ref(null)
+
 // 计算属性：根据开关显示大写或小写
 const displayHash = computed(() => {
   if (!currentHash.value) return ''
@@ -69,6 +79,16 @@ const closeInfo = () => {
 // 切换大小写
 const toggleCase = () => {
   isUpperCase.value = !isUpperCase.value
+}
+
+const toggleDropdown = (name) => {
+  openDropdown.value = openDropdown.value === name ? null : name
+}
+
+const closeDropdown = (name) => {
+  if (openDropdown.value === name) {
+    openDropdown.value = null
+  }
 }
 
 onMounted(async () => {
@@ -119,7 +139,7 @@ onMounted(async () => {
 
       <!-- 出错 -->
       <div v-else-if="hasError" class="error-msg">
-        解析失败，请尝试访问下方 云盘 或 Github Release
+        解析失败，请尝试访问下方更多下载地址
       </div>
 
       <!-- 下载区域 -->
@@ -190,41 +210,85 @@ onMounted(async () => {
 
       <!-- 其它下载方式 -->
       <div class="link-group">
-        <a
-          href="https://www.123pan.com/s/duk9-n4dAd.html"
-          class="link-item"
-          target="_blank"
-          rel="noopener noreferrer"
+        <div
+          class="link-dropdown link-dropdown-download"
+          :class="{ 'is-open': openDropdown === 'download' }"
+          @mouseleave="closeDropdown('download')"
         >
-          云盘下载
-        </a>
-        <span class="divider">|</span>
-        <a
-          href="https://github.com/Alan-CRL/Inkeys/releases"
-          class="link-item"
-          target="_blank"
-          rel="noopener noreferrer"
+          <div class="split-link">
+            <a
+              :href="downloadLinks.cquMirror"
+              class="link-main"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              通过 重庆大学开源软件镜像站 下载
+            </a>
+            <button
+              type="button"
+              class="dropdown-toggle"
+              :aria-expanded="openDropdown === 'download'"
+              aria-label="显示更多下载地址"
+              @click.stop="toggleDropdown('download')"
+            >
+              <span class="dropdown-arrow"></span>
+            </button>
+          </div>
+          <div class="dropdown-menu">
+            <a
+              :href="downloadLinks.pan123"
+              class="dropdown-item"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              通过 123云盘 下载
+            </a>
+            <a
+              :href="downloadLinks.githubRelease"
+              class="dropdown-item"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              通过 Github Release 下载
+            </a>
+          </div>
+        </div>
+
+        <div
+          class="link-dropdown link-dropdown-history"
+          :class="{ 'is-open': openDropdown === 'history' }"
+          @mouseleave="closeDropdown('history')"
         >
-          Github Release
-        </a>
-        <span class="divider">|</span>
-        <a
-          href="https://www.123pan.com/s/duk9-GJ9Ad.html"
-          class="link-item"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          历史版本
-        </a>
-        <span class="divider">|</span>
-        <a
-          href="/version/"
-          class="link-item"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          更新日志
-        </a>
+          <div class="split-link">
+            <a
+              :href="downloadLinks.version"
+              class="link-main"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              更新日志
+            </a>
+            <button
+              type="button"
+              class="dropdown-toggle"
+              :aria-expanded="openDropdown === 'history'"
+              aria-label="显示历史版本"
+              @click.stop="toggleDropdown('history')"
+            >
+              <span class="dropdown-arrow"></span>
+            </button>
+          </div>
+          <div class="dropdown-menu">
+            <a
+              :href="downloadLinks.history"
+              class="dropdown-item"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              历史版本
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- 使用条款与系统要求 -->
@@ -492,28 +556,186 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
+  gap: 0.9rem;
   margin-top: 1rem;
   padding-top: 1.5rem;
   border-top: 1px solid var(--vp-c-divider);
+  flex-wrap: wrap;
 }
 
-.link-item {
+.link-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.link-dropdown:hover,
+.link-dropdown.is-open {
+  border-color: var(--vp-c-divider);
+  background-color: var(--vp-c-bg);
+}
+
+.link-dropdown-download {
+  min-width: 280px;
+}
+
+.link-dropdown-history {
+  min-width: 140px;
+}
+
+.split-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.link-dropdown:hover .split-link,
+.link-dropdown.is-open .split-link {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.link-main {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 10px;
   color: var(--vp-c-text-2);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  transition: color 0.2s;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
-.link-item:hover {
+.link-main:visited {
+  color: var(--vp-c-text-2);
+}
+
+.link-main:hover {
   color: var(--vp-c-brand);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
-.divider {
-  color: var(--vp-c-divider);
-  font-size: 0.8rem;
+.dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 0 8px 8px 0;
+  background: transparent;
+  color: var(--vp-c-text-3);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.dropdown-toggle:hover {
+  color: var(--vp-c-brand);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.dropdown-arrow {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.2s ease;
+}
+
+.link-dropdown:hover .dropdown-arrow,
+.link-dropdown.is-open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 3px;
+  right: 3px;
+  z-index: 10;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+  background-color: var(--vp-c-bg);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  transition: max-height 0.24s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+.link-dropdown:hover .dropdown-menu,
+.link-dropdown.is-open .dropdown-menu {
+  max-height: 120px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 10px;
+  color: var(--vp-c-text-2);
+  text-align: left;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.dropdown-item:visited {
+  color: var(--vp-c-text-2);
+}
+
+.dropdown-item:hover {
+  color: var(--vp-c-brand);
+  background-color: var(--vp-c-bg-soft);
+  text-decoration: none;
+}
+
+.dropdown-item + .dropdown-item {
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+@media (max-width: 640px) {
+  .link-group {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .link-dropdown {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .split-link {
+    min-width: 0;
+  }
+
+  .link-main {
+    flex: 1;
+    white-space: normal;
+  }
 }
 
 /* 底部说明 */
