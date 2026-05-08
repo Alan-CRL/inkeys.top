@@ -4,27 +4,32 @@ import { ref, onMounted, computed } from 'vue'
 // 定义响应式数据
 const loading = ref(true)
 const hasError = ref(false)
-const links = ref({
+const releaseInfo = ref({
   version: '',
-  win32: '',
-  win64: '',
-  arm64: '',
-  "win32 name": '',
-  "win64 name": '',
-  "arm64 name": '',
-  "win32 sha256": '',
-  "win64 sha256": '',
-  "arm64 sha256": ''
+  channels: [],
+  properties: {
+    Win32: { name: '', sha256: '' },
+    Win64: { name: '', sha256: '' },
+    Arm64: { name: '', sha256: '' }
+  }
 })
 
 // 控制下载详情块的状态
 const showDownloadInfo = ref(false)
 const currentFileName = ref('')
 const currentHash = ref('')
+const currentSupplier = ref('')
 const isUpperCase = ref(false) // 默认为小写
+const downloadErrorMessage = ref('')
 
 // 你的版本 JSON 地址
-const VERSION_JSON_URL = 'https://1709404.v.123pan.cn/1709404/Inkeys/Version/website_version.json'
+const VERSION_JSON_URLS = [
+  '/Inkeys/Version/website_version_2.json',
+  '//home.alan-crl.top/Inkeys/Version/website_version_2.json',
+  'https://1709404.v.123pan.cn/1709404/Inkeys/Version/website_version_2.json'
+]
+
+const ARCHITECTURES = ['Win32', 'Win64', 'Arm64']
 
 const downloadLinks = {
   cquMirror: 'https://mirrors.cqu.edu.cn/github-release/Alan-CRL/Inkeys/',
@@ -36,6 +41,90 @@ const downloadLinks = {
 
 const openDropdown = ref(null)
 
+const getText = (value) => {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+const fetchWithTimeout = async (url, options = {}, timeout = 8000) => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+const normalizeReleaseInfo = (data) => {
+  if (!data || typeof data !== 'object') {
+    throw new Error('JSON 格式无效')
+  }
+
+  const rawChannels = Array.isArray(data.Channels) ? data.Channels : []
+  const channels = rawChannels.map((channel) => {
+    const links = {}
+    ARCHITECTURES.forEach((arch) => {
+      links[arch] = getText(channel?.[arch]?.Link)
+    })
+
+    return {
+      supplier: getText(channel?.Supplier),
+      links
+    }
+  }).filter((channel) => ARCHITECTURES.some((arch) => channel.links[arch]))
+
+  const properties = {}
+  ARCHITECTURES.forEach((arch) => {
+    const item = data.Properties?.[arch] || {}
+    properties[arch] = {
+      name: getText(item.Name) || `Inkeys-${arch}`,
+      sha256: getText(item.Sha256) || 'SHA256 not available'
+    }
+  })
+
+  if (!channels.length) {
+    throw new Error('JSON 缺少可用下载通道')
+  }
+
+  ARCHITECTURES.forEach((arch) => {
+    if (!channels.some((channel) => channel.links[arch])) {
+      throw new Error(`JSON 缺少 ${arch} 下载地址`)
+    }
+  })
+
+  const version = [getText(data.Version), getText(data.Channel)].filter(Boolean).join(' ')
+  if (!version) {
+    throw new Error('JSON 缺少版本信息')
+  }
+
+  return {
+    version,
+    channels,
+    properties
+  }
+}
+
+const fetchReleaseInfo = async () => {
+  const timestamp = new Date().getTime()
+
+  for (const baseUrl of VERSION_JSON_URLS) {
+    try {
+      const response = await fetchWithTimeout(`${baseUrl}?t=${timestamp}`, { cache: 'no-store' })
+      if (!response.ok) throw new Error(`HTTP status: ${response.status}`)
+
+      return normalizeReleaseInfo(await response.json())
+    } catch (e) {
+      console.warn(`解析版本 JSON 失败：${baseUrl}`, e)
+    }
+  }
+
+  throw new Error('所有版本 JSON 地址均解析失败')
+}
+
 // 计算属性：根据开关显示大写或小写
 const displayHash = computed(() => {
   if (!currentHash.value) return ''
@@ -44,31 +133,104 @@ const displayHash = computed(() => {
     : currentHash.value.toLowerCase()
 })
 
-// 点击下载按钮的处理函数
-const handleDownload = async (url, nameKey, hashKey) => {
-  if (!url) return
-  
+const prepareInfoPanel = async () => {
   // 如果当前详情框已经是打开状态，需要实现“先关闭旧的，再打开新的”动画效果
   if (showDownloadInfo.value) {
     showDownloadInfo.value = false
     // 等待 CSS transition 动画结束 (0.4s)
     await new Promise(resolve => setTimeout(resolve, 400))
   }
+}
 
-  // 1. 设置文件名 (直接从 JSON 对应字段获取)
-  currentFileName.value = links.value[nameKey] || 'Inkeys-setup'
-  
-  // 2. 设置 Hash 值
-  currentHash.value = links.value[hashKey] || 'SHA256 not available'
-  
-  // 3. 重置大小写为默认（小写）
-  isUpperCase.value = false
-  
-  // 4. 展开信息块
-  // 使用 requestAnimationFrame 确保 Vue 已经处理完 false 状态
-  requestAnimationFrame(() => {
-    showDownloadInfo.value = true
-  })
+const checkDownloadLink = async (url) => {
+  try {
+    const response = await fetchWithTimeout(url, { method: 'HEAD', cache: 'no-store' }, 5000)
+    if (response.ok || response.type === 'opaque') return true
+  } catch (e) {
+    // 继续尝试 no-cors，用于无法暴露 CORS 响应头的下载站点
+  }
+
+  try {
+    const response = await fetchWithTimeout(url, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' }, 5000)
+    return response.ok || response.type === 'opaque'
+  } catch (e) {
+    return false
+  }
+}
+
+const openDownloadTab = () => {
+  const tab = window.open('', '_blank')
+  if (tab) {
+    tab.opener = null
+  }
+  return tab
+}
+
+const closeDownloadTab = (tab) => {
+  if (tab && !tab.closed) {
+    tab.close()
+  }
+}
+
+const triggerDownload = (url, tab) => {
+  if (tab && !tab.closed) {
+    tab.location.href = url
+    return
+  }
+
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.target = '_blank'
+  anchor.rel = 'noopener noreferrer'
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
+}
+
+// 点击下载按钮的处理函数
+const handleDownload = async (arch) => {
+  const downloadTab = openDownloadTab()
+  const property = releaseInfo.value.properties[arch] || {}
+  const fileName = property.name || `Inkeys-${arch}`
+
+  downloadErrorMessage.value = ''
+
+  for (const channel of releaseInfo.value.channels) {
+    const url = channel.links[arch]
+    if (!url) continue
+
+    const canDownload = await checkDownloadLink(url)
+    if (!canDownload) continue
+
+    await prepareInfoPanel()
+
+    // 1. 设置文件名 (直接从 JSON 对应字段获取)
+    currentFileName.value = fileName
+
+    // 2. 设置 Hash 值
+    currentHash.value = property.sha256 || 'SHA256 not available'
+
+    // 3. 设置下载通道说明
+    currentSupplier.value = channel.supplier || ''
+
+    // 4. 重置大小写为默认（小写）
+    isUpperCase.value = false
+
+    // 5. 展开信息块
+    // 使用 requestAnimationFrame 确保 Vue 已经处理完 false 状态
+    requestAnimationFrame(() => {
+      showDownloadInfo.value = true
+    })
+
+    triggerDownload(url, downloadTab)
+    return
+  }
+
+  closeDownloadTab(downloadTab)
+  showDownloadInfo.value = false
+  currentSupplier.value = ''
+  downloadErrorMessage.value = '下载失败，请尝试访问下方更多下载地址'
 }
 
 // 关闭信息块
@@ -93,24 +255,12 @@ const closeDropdown = (name) => {
 
 onMounted(async () => {
   try {
-    const timestamp = new Date().getTime()
-    const url = `${VERSION_JSON_URL}?t=${timestamp}`
+    releaseInfo.value = await fetchReleaseInfo()
 
-    const response = await fetch(url)
-    if (!response.ok) throw new Error(`HTTP status: ${response.status}`)
-
-    const data = await response.json()
-
-    if (data.win32 && data.win64 && data.arm64) {
-      links.value = data
-      
-      // 为了避免闪一下，保留一点时间展示“解析中”
-      setTimeout(() => {
-        loading.value = false
-      }, 500)
-    } else {
-      throw new Error('JSON 缺少必要字段')
-    }
+    // 为了避免闪一下，保留一点时间展示“解析中”
+    setTimeout(() => {
+      loading.value = false
+    }, 500)
   } catch (e) {
     console.error(e)
     loading.value = false
@@ -129,7 +279,7 @@ onMounted(async () => {
       <h1 class="title">智绘教Inkeys</h1>
 
       <!-- 版本 -->
-      <p class="version-text">{{ links.version }}</p>
+      <p class="version-text">{{ releaseInfo.version }}</p>
 
       <!-- 加载中 -->
       <div v-if="loading" class="loading-container">
@@ -146,36 +296,31 @@ onMounted(async () => {
       <div v-else>
         <!-- 下载按钮组 -->
         <div class="download-group">
-          <!-- 
-            注意：
-            1. 移除了 target="_blank"，避免闪烁新标签页。
-            2. download 属性直接绑定 JSON 中的 name 字段。
-            3. @click 触发动画逻辑。
-          -->
-          <a
-            :href="links.win32"
+          <button
+            type="button"
             class="inkeys-download-btn"
-            :download="links['win32 name']"
-            @click="handleDownload(links.win32, 'win32 name', 'win32 sha256')"
+            @click="handleDownload('Win32')"
           >
             下载 32位
-          </a>
-          <a
-            :href="links.win64"
+          </button>
+          <button
+            type="button"
             class="inkeys-download-btn"
-            :download="links['win64 name']"
-            @click="handleDownload(links.win64, 'win64 name', 'win64 sha256')"
+            @click="handleDownload('Win64')"
           >
             下载 64位
-          </a>
-          <a
-            :href="links.arm64"
+          </button>
+          <button
+            type="button"
             class="inkeys-download-btn"
-            :download="links['arm64 name']"
-            @click="handleDownload(links.arm64, 'arm64 name', 'arm64 sha256')"
+            @click="handleDownload('Arm64')"
           >
             下载 Arm64
-          </a>
+          </button>
+        </div>
+
+        <div v-if="downloadErrorMessage" class="download-error-msg">
+          {{ downloadErrorMessage }}
         </div>
 
         <!-- 动态显示的下载信息块 -->
@@ -202,6 +347,9 @@ onMounted(async () => {
                 <button class="case-toggle-btn" @click="toggleCase" title="切换大小写">
                   Aa
                 </button>
+              </div>
+              <div v-if="currentSupplier" class="supplier-row">
+                <span class="supplier-value">{{ currentSupplier }}</span>
               </div>
             </div>
           </div>
@@ -263,8 +411,6 @@ onMounted(async () => {
             <a
               :href="downloadLinks.version"
               class="link-main"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               更新日志
             </a>
@@ -407,6 +553,9 @@ onMounted(async () => {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
+  font-family: inherit;
+  line-height: 1.4;
+  border: 0;
   border-radius: 8px;
   min-width: 120px;
   cursor: pointer;
@@ -429,6 +578,12 @@ onMounted(async () => {
   filter: brightness(0.9);
   transform: translateY(1px);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.download-error-msg {
+  color: #dc2626;
+  margin: -0.25rem 0 1rem;
+  font-size: 0.9rem;
 }
 
 /* --- 新增：下载详情块样式 --- */
@@ -491,7 +646,7 @@ onMounted(async () => {
   color: var(--vp-c-text-2); /* 灰色字体 */
 }
 
-.file-name-row, .hash-row {
+.file-name-row, .hash-row, .supplier-row {
   display: flex;
   align-items: center;
   line-height: 1.6;
@@ -507,6 +662,10 @@ onMounted(async () => {
   justify-content: space-between; /* Hash文字在左，按钮在右 */
   align-items: center;
   gap: 8px;
+}
+
+.supplier-row {
+  margin-top: 4px;
 }
 
 .hash-text-group {
@@ -529,6 +688,10 @@ onMounted(async () => {
 
 .value {
   font-weight: 400;
+}
+
+.supplier-value {
+  color: var(--vp-c-text-3);
 }
 
 /* Aa 切换按钮 */
