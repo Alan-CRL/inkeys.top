@@ -45,6 +45,10 @@ const getText = (value) => {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+const getNewTab = (channel) => {
+  return channel?.NewTab === true || channel?.newTab === true || channel?.newtab === true
+}
+
 const fetchWithTimeout = async (url, options = {}, timeout = 8000) => {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
@@ -73,6 +77,7 @@ const normalizeReleaseInfo = (data) => {
 
     return {
       supplier: getText(channel?.Supplier),
+      newTab: getNewTab(channel),
       links
     }
   }).filter((channel) => ARCHITECTURES.some((arch) => channel.links[arch]))
@@ -172,25 +177,31 @@ const closeDownloadTab = (tab) => {
   }
 }
 
-const triggerDownload = (url, tab) => {
-  if (tab && !tab.closed) {
-    tab.location.href = url
+const triggerDownload = (url, newTab, tab) => {
+  if (newTab) {
+    if (tab && !tab.closed) {
+      tab.location.href = url
+      return
+    }
+
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.target = '_blank'
+    anchor.rel = 'noopener noreferrer'
+    anchor.style.display = 'none'
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
     return
   }
 
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.target = '_blank'
-  anchor.rel = 'noopener noreferrer'
-  anchor.style.display = 'none'
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
+  closeDownloadTab(tab)
+  window.location.href = url
 }
 
 // 点击下载按钮的处理函数
 const handleDownload = async (arch) => {
-  const downloadTab = openDownloadTab()
+  let downloadTab = null
   const property = releaseInfo.value.properties[arch] || {}
   const fileName = property.name || `Inkeys-${arch}`
 
@@ -199,6 +210,10 @@ const handleDownload = async (arch) => {
   for (const channel of releaseInfo.value.channels) {
     const url = channel.links[arch]
     if (!url) continue
+
+    if (channel.newTab && !downloadTab) {
+      downloadTab = openDownloadTab()
+    }
 
     const canDownload = await checkDownloadLink(url)
     if (!canDownload) continue
@@ -223,7 +238,7 @@ const handleDownload = async (arch) => {
       showDownloadInfo.value = true
     })
 
-    triggerDownload(url, downloadTab)
+    triggerDownload(url, channel.newTab, downloadTab)
     return
   }
 
