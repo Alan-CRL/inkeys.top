@@ -177,7 +177,7 @@ const closeDownloadTab = (tab) => {
   }
 }
 
-const triggerDownload = (url, newTab, tab) => {
+const triggerDownload = (url, newTab, tab, fileName) => {
   if (newTab) {
     if (tab && !tab.closed) {
       tab.location.href = url
@@ -196,7 +196,13 @@ const triggerDownload = (url, newTab, tab) => {
   }
 
   closeDownloadTab(tab)
-  window.location.href = url
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = fileName
+  anchor.style.display = 'none'
+  document.body.appendChild(anchor)
+  anchor.click()
+  document.body.removeChild(anchor)
 }
 
 // 点击下载按钮的处理函数
@@ -238,7 +244,7 @@ const handleDownload = async (arch) => {
       showDownloadInfo.value = true
     })
 
-    triggerDownload(url, channel.newTab, downloadTab)
+    triggerDownload(url, channel.newTab, downloadTab, fileName)
     return
   }
 
