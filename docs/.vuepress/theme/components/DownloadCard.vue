@@ -177,6 +177,31 @@ const closeDownloadTab = (tab) => {
   }
 }
 
+const getPrimaryChannel = (arch) => {
+  return releaseInfo.value.channels.find((channel) => channel.links[arch])
+}
+
+const getFileName = (arch) => {
+  return releaseInfo.value.properties[arch]?.name || `Inkeys-${arch}`
+}
+
+const getPrimaryDownloadUrl = (arch) => {
+  return getPrimaryChannel(arch)?.links[arch] || null
+}
+
+const getPrimaryDownloadName = (arch) => {
+  const channel = getPrimaryChannel(arch)
+  return channel && !channel.newTab ? getFileName(arch) : null
+}
+
+const getPrimaryDownloadTarget = (arch) => {
+  return getPrimaryChannel(arch)?.newTab ? '_blank' : null
+}
+
+const getPrimaryDownloadRel = (arch) => {
+  return getPrimaryChannel(arch)?.newTab ? 'noopener noreferrer' : null
+}
+
 const triggerDownload = (url, newTab, tab, fileName) => {
   if (newTab) {
     if (tab && !tab.closed) {
@@ -205,13 +230,43 @@ const triggerDownload = (url, newTab, tab, fileName) => {
   document.body.removeChild(anchor)
 }
 
+const showDownloadDetails = async (channel, property, fileName) => {
+  await prepareInfoPanel()
+
+  // 1. 设置文件名 (直接从 JSON 对应字段获取)
+  currentFileName.value = fileName
+
+  // 2. 设置 Hash 值
+  currentHash.value = property.sha256 || 'SHA256 not available'
+
+  // 3. 设置下载通道说明
+  currentSupplier.value = channel.supplier || ''
+
+  // 4. 重置大小写为默认（小写）
+  isUpperCase.value = false
+
+  // 5. 展开信息块
+  // 使用 requestAnimationFrame 确保 Vue 已经处理完 false 状态
+  requestAnimationFrame(() => {
+    showDownloadInfo.value = true
+  })
+}
+
 // 点击下载按钮的处理函数
-const handleDownload = async (arch) => {
-  let downloadTab = null
+const handleDownload = async (arch, event) => {
   const property = releaseInfo.value.properties[arch] || {}
-  const fileName = property.name || `Inkeys-${arch}`
+  const fileName = getFileName(arch)
+  const primaryChannel = getPrimaryChannel(arch)
 
   downloadErrorMessage.value = ''
+
+  if (primaryChannel && !primaryChannel.newTab && primaryChannel.links[arch]) {
+    await showDownloadDetails(primaryChannel, property, fileName)
+    return
+  }
+
+  event?.preventDefault()
+  let downloadTab = null
 
   for (const channel of releaseInfo.value.channels) {
     const url = channel.links[arch]
@@ -224,25 +279,7 @@ const handleDownload = async (arch) => {
     const canDownload = await checkDownloadLink(url)
     if (!canDownload) continue
 
-    await prepareInfoPanel()
-
-    // 1. 设置文件名 (直接从 JSON 对应字段获取)
-    currentFileName.value = fileName
-
-    // 2. 设置 Hash 值
-    currentHash.value = property.sha256 || 'SHA256 not available'
-
-    // 3. 设置下载通道说明
-    currentSupplier.value = channel.supplier || ''
-
-    // 4. 重置大小写为默认（小写）
-    isUpperCase.value = false
-
-    // 5. 展开信息块
-    // 使用 requestAnimationFrame 确保 Vue 已经处理完 false 状态
-    requestAnimationFrame(() => {
-      showDownloadInfo.value = true
-    })
+    await showDownloadDetails(channel, property, fileName)
 
     triggerDownload(url, channel.newTab, downloadTab, fileName)
     return
@@ -317,27 +354,36 @@ onMounted(async () => {
       <div v-else>
         <!-- 下载按钮组 -->
         <div class="download-group">
-          <button
-            type="button"
+          <a
+            :href="getPrimaryDownloadUrl('Win32')"
+            :download="getPrimaryDownloadName('Win32')"
+            :target="getPrimaryDownloadTarget('Win32')"
+            :rel="getPrimaryDownloadRel('Win32')"
             class="inkeys-download-btn"
-            @click="handleDownload('Win32')"
+            @click="handleDownload('Win32', $event)"
           >
             下载 32位
-          </button>
-          <button
-            type="button"
+          </a>
+          <a
+            :href="getPrimaryDownloadUrl('Win64')"
+            :download="getPrimaryDownloadName('Win64')"
+            :target="getPrimaryDownloadTarget('Win64')"
+            :rel="getPrimaryDownloadRel('Win64')"
             class="inkeys-download-btn"
-            @click="handleDownload('Win64')"
+            @click="handleDownload('Win64', $event)"
           >
             下载 64位
-          </button>
-          <button
-            type="button"
+          </a>
+          <a
+            :href="getPrimaryDownloadUrl('Arm64')"
+            :download="getPrimaryDownloadName('Arm64')"
+            :target="getPrimaryDownloadTarget('Arm64')"
+            :rel="getPrimaryDownloadRel('Arm64')"
             class="inkeys-download-btn"
-            @click="handleDownload('Arm64')"
+            @click="handleDownload('Arm64', $event)"
           >
             下载 Arm64
-          </button>
+          </a>
         </div>
 
         <div v-if="downloadErrorMessage" class="download-error-msg">
