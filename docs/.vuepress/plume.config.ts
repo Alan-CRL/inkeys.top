@@ -113,7 +113,7 @@ export default defineThemeConfig({
           text: '文件',
           items: [
             { text: '墨迹主文件', link: '/standard/file/main' },
-            { text: '墨迹拓展文件', link: '' },
+            { text: '墨迹拓展文件', link: '/standard/intro#墨迹拓展文件' },
           ],
         },
         {
@@ -121,8 +121,10 @@ export default defineThemeConfig({
           items: [
             { text: 'Header 块', link: '/standard/blocks/header' },
             { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
-            { text: 'Canvas 块', link: '' },
-            { text: 'Ink 块', link: '' },
+            { text: 'Device 块', link: '/standard/blocks/device' },
+            { text: 'Canvas 块', link: '/standard/blocks/canvas' },
+            { text: 'Ink 块', link: '/standard/blocks/ink' },
+            { text: 'Media 块', link: '/standard/blocks/media' },
           ],
         },
       ],

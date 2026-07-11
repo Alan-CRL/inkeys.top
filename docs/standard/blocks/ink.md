@@ -2,12 +2,209 @@
 title: Ink 块
 ---
 
-- Type ID: 3
+- Type ID: 4
 - Type: Map
 
-## 结构
+Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔都是 Ink 的渲染类型，不再使用独立的 `penType` 或 Eraser 顶层块。
 
-```
-Ink = map
+## 字段
+
+| 字段 | 类型 | 要求 | 说明 |
+| --- | --- | --- | --- |
+| `type` | uint16 | Required | 固定为 `4` |
+| `contentId` | uint32 | Required | Canvas 内 Ink/Media 共享的连续内容编号 |
+| `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
+| `inkType` | int32 | Required | 墨迹渲染类型 |
+| `color` | Color Map | Required | 块级颜色与 HDR 回退信息 |
+| `opacity` | float32 | Required | 块级透明度，范围 `0`–`1` |
+| `texture` | int32 | Required | 纹理编号 |
+| `points` | `Array<Map>` | Required | 至少一个轨迹点 |
+| `renderOnlyWhenLatest` | bool | Optional | 缺失时为 `false` |
+| `extra` | Map | Optional | 私有扩展 |
+
+`contentId` 与 Media 共用同一编号空间，并严格按照物理块顺序从 0 连续递增。`undoId` 从 0 开始且只允许不递减；相同 `undoId` 的连续内容块构成一次撤回操作。
+
+## `inkType`
+
+| 值 | 名称 | 语义 |
+| --- | --- | --- |
+| `0` | Erase | 擦除墨迹 |
+| `1` | Pen | 普通笔 |
+| `2` | Highlighter | 荧光笔 |
+| `3` | Advanced Highlighter | 高级荧光笔 |
+| `4`–`127` | Reserved | UInk 后续版本保留 |
+| `128` 及以上 | Private | 软件私有墨迹类型 |
+
+私有实现可以按自己的类型渲染。其他读取器遇到未知或不支持的 `inkType` 时，必须保留基础几何并按 `inkType = 1` 普通笔回退。
+
+### 四种通用渲染规则
+
+- Erase 保存完整擦除形状，并按记录顺序作用于其下方内容。具体擦除对象、裁剪算法以及透明或背景色效果由软件决定。
+- Pen 使用块级颜色，并忽略 `opacity`，以完全不透明方式绘制。
+- Highlighter 使用块级 `color` 和 `opacity`。
+- Advanced Highlighter 可以由部分点提供颜色与透明度锚点；没有任何点级样式时回退块级样式。
+
+## Color Map
+
+Color Map 同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。
+
+| 字段 | 类型 | 要求 | 说明 |
+| --- | --- | --- | --- |
+| `fallback` | uint32 | Required | `0xRRGGBB` sRGB 回退色 |
+| `space` | string | Conditional | 与 `components` 成对出现 |
+| `components` | `Array<float32>(3)` | Conditional | 颜色空间中的三个分量 |
+
+注册的 `space`：
+
+- `srgb`：三个分量范围为 `0`–`1`；
+- `scrgb`：三个分量使用线性 float32，可使用大于 `1` 的 HDR 值，只要求为有限数。
+
+读取器不认识 `space`，或扩展分量缺失、长度错误、包含 NaN/Infinity 时，必须使用 `fallback`。写入器应确保 fallback 不超过 `0xFFFFFF`；容错读取时可以只取低 24 位。
+
+```jsonc
+{
+  "fallback": 16763904,
+  "space": "scrgb",
+  "components": [1.8, 0.65, 0.1]
+}
 ```
 
+## `texture`
+
+| 值 | 语义 |
+| --- | --- |
+| `0` | 默认普通纹理 |
+| `1`–`127` | UInk 标准纹理保留区 |
+| `128` 及以上 | 软件私有纹理 |
+
+读取器不认识某个纹理时必须按 `texture = 0` 回退，不得丢弃整条 Ink。
+
+## 轨迹点
+
+每个点使用 Map：
+
+| 字段 | 类型 | 要求 | 说明 |
+| --- | --- | --- | --- |
+| `x` | float32 | Required | 首点为绝对 X，后续点为相对前一点的 X 位移 |
+| `y` | float32 | Required | 首点为绝对 Y，后续点为相对前一点的 Y 位移 |
+| `width` | float32 | Required | 该点处笔迹的完整直径，必须大于 0 |
+| `color` | Color Map | Conditional | 高级荧光笔的点级颜色 |
+| `opacity` | float32 | Conditional | 高级荧光笔的点级透明度 |
+
+点级 `color` 和 `opacity` 必须成对出现。首个样式锚点之前延用首个锚点，最后一个锚点之后延用最后一个锚点；锚点之间必须平滑过渡，但具体插值方法由软件决定。
+
+UInk 1.0 不注册压力、时间、倾斜、朝向、速度、加速度或预测点。读取器必须忽略不认识的点键，以便后续版本增加可选输入参数。
+
+::: tip float32 范围
+float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精度。首点绝对、后续相对的设计用于减少位移数值范围，同时仍保留亚像素精度。
+:::
+
+## 条件渲染与撤回
+
+`renderOnlyWhenLatest = true` 的 Ink 通常不渲染；只有它们构成当前 Canvas 末尾连续的一组 Ink 时才渲染。判断时只考虑后续 Ink，Media 不会使这组墨迹失去“最新”状态。
+
+该机制适用于形状修正：软件先保存多条原始墨迹并为其设置标记，再保存美化结果。撤回美化结果并完整重写后，原始墨迹成为末尾连续记录，从而重新显示。
+
+撤回时必须完整重写并移除已撤回的内容。UInk 不承诺在保存并关闭后保留 Redo 历史。
+
+## 擦除模型
+
+### 擦除墨迹
+
+`inkType = 0` 保存完整的擦除轨迹，可以像其他 Ink 一样在抬笔后追加。它不会要求修改此前的内容块；读取器按物理顺序将其作用于下方内容。
+
+### 普通板擦
+
+软件也可以采用会切断旧墨迹的普通板擦。此时保存多条剩余的完整 Ink 是合法的，但必须完整重写文件，不得通过追加制造旧笔画与新片段并存的错误画面。开发者可以让多个片段共享同一个 `undoId`，实现一步撤回全部片段。
+
+## 示例
+
+以下均为 MessagePack Map 的可读伪 JSON 表示。
+
+::: tabs
+
+@tab 普通笔
+
+```jsonc
+{
+  "type": 4,
+  "contentId": 0,
+  "undoId": 0,
+  "inkType": 1,
+  "color": { "fallback": 255 },
+  "opacity": 0.4,
+  "texture": 0,
+  "points": [
+    { "x": 120.0, "y": 240.0, "width": 6.0 },
+    { "x": 4.5, "y": 1.0, "width": 6.2 }
+  ]
+  // 普通笔忽略 opacity，仍按完全不透明绘制
+}
+```
+
+@tab 高级荧光笔与 HDR
+
+```jsonc
+{
+  "type": 4,
+  "contentId": 1,
+  "undoId": 1,
+  "inkType": 3,
+  "color": { "fallback": 16776960 },
+  "opacity": 0.35,
+  "texture": 0,
+  "points": [
+    {
+      "x": 100.0,
+      "y": 100.0,
+      "width": 24.0,
+      "color": {
+        "fallback": 16763904,
+        "space": "scrgb",
+        "components": [1.8, 0.65, 0.1]
+      },
+      "opacity": 0.25
+    },
+    { "x": 12.0, "y": 3.0, "width": 25.0 },
+    {
+      "x": 10.0,
+      "y": 4.0,
+      "width": 26.0,
+      "color": { "fallback": 65535 },
+      "opacity": 0.6
+    }
+  ]
+}
+```
+
+@tab 擦除墨迹
+
+```jsonc
+{
+  "type": 4,
+  "contentId": 2,
+  "undoId": 2,
+  "inkType": 0,
+  "color": { "fallback": 0 },
+  "opacity": 1.0,
+  "texture": 0,
+  "points": [
+    { "x": 320.0, "y": 180.0, "width": 32.0 },
+    { "x": 8.0, "y": -2.0, "width": 32.0 }
+  ]
+}
+```
+
+:::
+
+## 容错
+
+- 有限但越界的 opacity 应钳制到 `0`–`1`；NaN/Infinity 使对应字段无效。
+- Ink 没有点、点结构损坏或缺少必填字段时，读取器应跳过该 Ink，报告警告并继续读取后续内容。
+- 写入器必须把块级私有字段放入 `extra`；读取器仍应容错忽略未知顶层键。
+
+## 相关说明
+
+- [墨迹主文件与混合顺序](../file/main)
+- [增量写入](../incremental)
+- [Canvas 块](canvas)
