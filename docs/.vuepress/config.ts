@@ -4,7 +4,7 @@ import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
 
 const isProd = process.env.NODE_ENV === 'production'
-const imageCdnBase = 'https://1709404.v.123pan.cn/1709404/Inkeys/Website/public'
+const imageCdnBase = 'https://1709404.cdn.123clouddisk.com/1709404/Inkeys/Website/public'
 const imageFallbackScript = `
 ;(() => {
   const cdnBase = ${JSON.stringify(imageCdnBase)}

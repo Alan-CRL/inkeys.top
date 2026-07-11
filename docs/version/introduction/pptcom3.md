@@ -10,7 +10,7 @@ title: PPT演示助手 3
 - [x] 动态切换，优先绑定最上层的放映窗口。
 
 <ArtPlayer
-  src="https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode"
+  src="https://1709404.cdn.123clouddisk.com/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode"
   type="m3u8"
   :autoplay="true"
   :loop="true"
@@ -22,16 +22,16 @@ title: PPT演示助手 3
   :quality="[
     {
       html: '1080P',
-      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=1080p&suffix=mp4&from=transcode',
     },
     {
       html: '720P',
-      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=720p&suffix=mp4&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=720p&suffix=mp4&from=transcode',
     },
     {
       default: true,
       html: '480P',
-      url: 'https://vip.123pan.cn/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/pptcom3re.m3u8?extParams=m3u8&resolutions=480p&suffix=mp4&from=transcode',
     },
   ]"
   style="width: 100%; aspect-ratio: 16 / 9;"

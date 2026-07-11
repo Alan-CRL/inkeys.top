@@ -23,23 +23,28 @@ Extension = map
 
 :::: field-group
 
-::: field name="type" required
+::: field type
+@required
 格式对应的[块类型](../type)固定为 1  
 :::
 
-::: field name="name" optional
+::: field name
+@optional
 文件名称  
 :::
 
-::: field name="explanation" optional
+::: field explanation
+@optional
 文件描述  
 :::
 
-::: field name="bindingName" optional
+::: field bindingName
+@optional
 绑定对象名称  
 :::
 
-::: field name="extra" optional
+::: field extra
+@optional
 私有扩展文本（可存储 JSON / XML / 自定义序列化内容等）  
 :::
 

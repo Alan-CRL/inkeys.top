@@ -5,8 +5,13 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import Artplayer from 'artplayer';
-import artplayerPluginAmbilight from 'artplayer-plugin-ambilight';
+import ambilightPluginModule from 'artplayer-plugin-ambilight';
 import Hls from 'hls.js';
+
+// 兼容新版 Vite 对该 CommonJS 插件产生的嵌套 default 导出。
+const artplayerPluginAmbilight = ambilightPluginModule?.default?.default
+  ?? ambilightPluginModule?.default
+  ?? ambilightPluginModule;
 
 // 定义接收的参数，尽量覆盖你之前用到的参数
 const props = defineProps({
@@ -21,6 +26,14 @@ const props = defineProps({
 
 const artRef = ref(null);
 let artInstance = null;
+let hlsInstance = null;
+
+function destroyHls() {
+  if (hlsInstance) {
+    hlsInstance.destroy();
+    hlsInstance = null;
+  }
+}
 
 onMounted(() => {
   nextTick(() => {
@@ -43,10 +56,11 @@ onMounted(() => {
       // 核心：处理 m3u8 流
       customType: {
         m3u8: function (video, url) {
+          destroyHls();
           if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(url);
-            hls.attachMedia(video);
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(video);
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = url;
           }
@@ -67,6 +81,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  destroyHls();
   if (artInstance && artInstance.destroy) {
     artInstance.destroy(false);
   }

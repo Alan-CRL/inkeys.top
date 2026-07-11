@@ -29,28 +29,33 @@ Header = array(5)
 
 :::: field-group
 
-::: field name="type" required
+::: field type
+@required
 格式对应的[块类型](../type)固定为 0  
 :::
 
-::: field name="version" required
+::: field version
+@required
 格式对应的[规范版本号](../version)  
 :::
 
-::: field name="guid" required
+::: field guid
+@required
 固定 36 字符 UUID（格式 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`）  
 
 此标识用于唯一标识该墨迹，创建文件时应使用随机生成器生成 GUID 并确定此值，以防止重复。
 :::
 
-::: field name="pageNum" required
+::: field pageNum
+@required
 当前表示的总页数  
 
 ::: warning 注意
 此字段表示逻辑页数，而非 Canvas 块数量（因为一页可能包含多个图层，因此 Canvas 块数 $\geq$ 逻辑页数）。  
 :::
 
-::: field name="time" required
+::: field time
+@required
 Unix UTC 时间戳（单位：秒）  
 :::
 

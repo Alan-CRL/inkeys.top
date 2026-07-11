@@ -1,0 +1,13 @@
+# pnpm 11 的项目级安装配置统一放在此文件中。
+shamefullyHoist: true
+shellEmulator: true
+
+# Plume rc.204 已使用 KaTeX 0.17，但其数学插件的 peer 范围尚未同步。
+peerDependencyRules:
+  allowedVersions:
+    '@vuepress/plugin-markdown-math@2.0.0-rc.131>katex': ^0.17.0
+
+# 仅允许 Plume 依赖链中确实需要安装脚本的包执行构建。
+allowBuilds:
+  esbuild: true
+  vue-demi: true

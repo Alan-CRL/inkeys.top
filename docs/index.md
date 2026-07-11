@@ -64,7 +64,7 @@ config:
 
 ## 集锦（软件介绍）
 <VideoPlayerAmbilight
-  src="https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode"
+  src="https://1709404.cdn.123clouddisk.com/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode"
   type="m3u8"
   poster="/Inkeys2.png"
   :volume="0.5"
@@ -72,15 +72,15 @@ config:
     {
       default: true,
       html: '1080P',
-      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=1080p&suffix=mov&from=transcode',
     },
     {
       html: '720P',
-      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=720p&suffix=mov&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=720p&suffix=mov&from=transcode',
     },
     {
       html: '480P',
-      url: 'https://vip.123pan.cn/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=480p&suffix=mov&from=transcode',
+      url: 'https://1709404.cdn.123clouddisk.com/1709404/transcode/Inkeys2.m3u8?extParams=m3u8&resolutions=480p&suffix=mov&from=transcode',
     },
   ]"
 />

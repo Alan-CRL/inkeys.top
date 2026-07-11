@@ -26,7 +26,7 @@ const downloadErrorMessage = ref('')
 const VERSION_JSON_URLS = [
   '/Inkeys/Version/website_version_2.json',
   '//home.alan-crl.top/Inkeys/Version/website_version_2.json',
-  'https://1709404.v.123pan.cn/1709404/Inkeys/Version/website_version_2.json'
+  'https://1709404.cdn.123clouddisk.com/1709404/Inkeys/Version/website_version_2.json'
 ]
 
 const ARCHITECTURES = ['Win32', 'Win64', 'Arm64']
