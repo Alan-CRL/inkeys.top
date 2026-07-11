@@ -10,7 +10,7 @@ Header 是墨迹主文件的固定首块，保存文件身份、规范版本和�
 ## 结构
 
 ```text
-Header = array(6)
+Header = array(7)
 ```
 
 | 索引 | 字段 | 类型 | MessagePack 类型 | 字节长度 | 可原地更新 |
@@ -19,8 +19,9 @@ Header = array(6)
 | 1 | `version` | uint16 | uint16 | 2 bytes | 否 |
 | 2 | `guid` | string(36) | str8 | 36 bytes | 否 |
 | 3 | `deviceNum` | uint32 | uint32 | 4 bytes | 是 |
-| 4 | `pageNum` | uint32 | uint32 | 4 bytes | 是 |
-| 5 | `time` | uint64 | uint64 | 8 bytes | 是 |
+| 4 | `workspaceNum` | uint32 | uint32 | 4 bytes | 是 |
+| 5 | `pageNum` | uint32 | uint32 | 4 bytes | 是 |
+| 6 | `time` | uint64 | uint64 | 8 bytes | 是 |
 
 ::: warning 固定布局
 数组长度、字段顺序和数值宽度必须严格保持一致。写入器不得使用 MessagePack 的最小整数自动编码替代上表指定的固定宽度类型。
@@ -49,12 +50,17 @@ UInk 文件首次创建时生成的 36 字符 UUID，格式为 `xxxxxxxx-xxxx-xx
 
 ::: field deviceNum
 @required
-[Device 块](device)总数。创建、追加 Device 或完整重写后必须更新。
+[Header Extension](headerExtension) 中 Device 注册项总数，Display 与 Window 均计入。使用隐式默认 Device 时固定为 `1`。
+:::
+
+::: field workspaceNum
+@required
+Workspace 注册项总数。使用隐式默认 Workspace 时固定为 `1`。
 :::
 
 ::: field pageNum
 @required
-各 Device 逻辑页数之和。同一 Device 中相同 `pageIndex` 的多个图层只计为一页；空白 Canvas 所表示的页面也必须计入。
+各 Workspace 逻辑页数之和。同一 Workspace 中共享 `pageGuid` 的多个设备或图层只计一页；空白页也必须计入。
 :::
 
 ::: field time
@@ -66,25 +72,18 @@ UInk 文件首次创建时生成的 36 字符 UUID，格式为 `xxxxxxxx-xxxx-xx
 
 ## 示例
 
-以下是 MessagePack Array 的可读表示：
-
 ```json
 [
   0,
   10,
   "5fe30f46-be92-49b6-b921-a60706febf10",
   2,
-  24,
+  1,
+  12,
   1700000000
 ]
 ```
 
 ## 原地更新
 
-允许按固定偏移覆盖：
-
-- Header[3] → `deviceNum`
-- Header[4] → `pageNum`
-- Header[5] → `time`
-
-`guid` 和 `version` 不得原地修改。需要改变规范版本时，应当按照新版本规则完整重写文件。
+允许按固定偏移覆盖 Header[3] 至 Header[6] 的计数与时间。`guid` 和 `version` 不得原地修改；注册表内容改变时仍必须完整重写文件。

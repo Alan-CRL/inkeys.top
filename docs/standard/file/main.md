@@ -2,109 +2,121 @@
 title: 墨迹主文件
 ---
 
-墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流，保存文件元数据、设备坐标、页面/图层结构以及 Ink/Media 的混合处理顺序。
+墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。Header Extension 注册 Device 与 Workspace，后续扁平 Canvas 通过 UUID 引用两者并管理各自的 Ink/Media。
 
 ## 文件结构
 
 ```mermaid
 flowchart TB
-  Start["File Start"] --> H["Header · Type 0"]
-  H --> HE["Header Extension · Type 1<br/>可选且最多一个"]
-  H -. "无扩展" .-> D1
-  HE --> D1["Device 0 · Type 2"]
-  D1 --> C1["Canvas 0 · Type 3"]
-  C1 --> B1["Ink / Media · Type 4 / 5"]
-  B1 --> C2["Canvas 1 · Type 3"]
-  C2 --> B2["Ink / Media · Type 4 / 5"]
-  B2 --> D2["Device 1 · Type 2"]
-  D2 --> C3["Canvas 0 · Type 3"]
-  C3 --> B3["Ink / Media · Type 4 / 5"]
-  B3 --> EOF["File EOF"]
+  H["Header · Type 0"] --> HE["Header Extension · Type 1<br/>可选且最多一个"]
+  H -. "无扩展" .-> C1
+  HE --> C1["Canvas · Type 2"]
+  C1 --> B1["Ink / Media · Type 3 / 4"]
+  B1 --> C2["Canvas · Type 2"]
+  C2 --> B2["Ink / Media · Type 3 / 4"]
+  B2 --> EOF["File EOF"]
 ```
 
 结构规则：
 
-1. [Header](../blocks/header)必须位于文件开头。
-2. [Header Extension](../blocks/headerExtension)可选且最多一个；存在时必须紧跟 Header。
-3. 第一个 [Device](../blocks/device)必须紧跟 Header Extension，或在无扩展时紧跟 Header。
-4. 每个 Device 至少管理一个 [Canvas](../blocks/canvas)，其作用域到下一个 Device 或文件末尾。
-5. Canvas 管理其后的 Ink/Media，直到下一个 Canvas、Device 或文件末尾。
-6. 第一个 Device 前不得出现 Canvas，第一个 Canvas 前不得出现 Ink/Media。
+1. Header 必须位于文件开头。
+2. Header Extension 可选且最多一个；存在时必须紧跟 Header。
+3. Device 只存在于 Header Extension 的 `devices` 注册表，不是顶级块。
+4. Canvas 管理其后的 Ink/Media，直到下一个 Canvas 或文件末尾。
+5. 第一个 Canvas 前不得出现 Ink/Media。
+6. Canvas 可以为空，用于保存空白页或空白图层。
 
-## 文件级场景与多显示器
+## 两棵注册树与扁平 Canvas
 
-一个 UInk 文件只描述一个屏幕批注、白板或 PPT 宿主。场景与可选 `hostId` 写在 Header Extension，多显示器则写多个 Device。
+Device 树描述空间：Display 是系统绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树独立，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们。
 
-多显示器 PPT 中，各 Device 可以包含相同 `slideId` 的独立 Canvas。它们共享同一个文件级 PPT 绑定，但坐标、内容编号和撤回历史分别属于各自 Device/Canvas。
+一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级合成顺序由软件决定。Canvas 始终填满所引用的 Device，不保存自己的几何。
 
-## Canvas 结构
+## 页面与多显示器
 
-Canvas 的逻辑页和图层由 `pageIndex`、`layerIndex` 决定，不依赖物理块顺序。写入器应按页、层递增写入；读取器仍必须根据字段建立结构。
+`pageGuid` 是页面的永久身份，`pageIndex` 是 Workspace 内可重排的当前顺序。同一 Workspace 中，跨设备或跨图层表示同一逻辑页的 Canvas 必须共享二者。
 
-- Header.pageNum 是各 Device 逻辑页数之和，同页多图层不重复计数。
-- 空白 Canvas 是合法页面或图层，必须保留并计数。
-- Fullscreen Canvas 继承 Device 几何；Window Canvas 使用相对 Device 原点的独立几何。
+- 同步白板：多个 Device 引用同一 Workspace 和同一页面身份，只同步页序与翻页；各 Canvas 的绘制内容独立。
+- 独立白板：不同 Device 使用不同 Workspace，各自维护页面序列。
+- PPT：Workspace 保存宿主 `hostId`，Canvas 保存 `slideId`；跨设备的同一幻灯片共享 pageGuid 和 slideId。
 
-## 内容顺序
+Header.pageNum 是各 Workspace 不重复 pageGuid 的总数。空白页计数，同页多设备或多图层不重复计数。
 
-同一 Canvas 中的 Ink 与 Media 必须严格按照物理块顺序混合处理。`contentId` 也必须按这一顺序从 0 连续递增。
+## 内容与撤回顺序
 
-对普通 Ink 和视觉 Media，这一顺序可以理解为由下至上的绘制顺序；对擦除 Ink，它是作用于下方内容的操作顺序。擦除具体影响哪些内容、使用裁剪、透明还是背景色，由软件决定。
+同一 Canvas 中 Ink 与 Media 按物理块顺序混合处理，`contentId` 按此顺序从 0 连续递增。擦除 Ink 按顺序作用于其下方内容；读取器不得按块类型重新排序。
 
-```text
-Ink(contentId=0) → Media(contentId=1) → Erase Ink(contentId=2) → Ink(contentId=3)
-```
-
-读取器不得先绘制所有 Media 再绘制所有 Ink，也不得仅按块类型重新排序。
-
-## 撤回顺序
-
-`undoId` 在同一 Canvas 的 Ink/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。
-
-撤回或重做会改变有效历史，必须[完整重写](../incremental#必须完整重写的情况)。重写后的文件只保存当前有效内容，不承诺保存跨会话 Redo 历史。
+`undoId` 在同一 Canvas 的 Ink/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。撤回或重做必须完整重写，重写后的文件只保存当前有效内容。
 
 ## `.uink.extra`
 
-Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；所有资源顺序、几何、播放和撤回信息都由 `.uink` 中的 Media 块决定。
+Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；资源顺序、几何、播放、PDF 页状态和撤回信息均由 Media 块决定。
 
-`.uink.extra` 缺失或资源无法读取时，基础墨迹仍必须正常加载。读取器应提示资源缺失，可以显示占位符或跳过媒体。
+资源包缺失时基础墨迹必须正常加载。视觉媒体保留布局占位；PDF 还可以使用可选 pageCount/pageIndex 显示页数占位信息。
 
-## 未知与损坏块
+## 容错
 
 - 未知 Type ID：跳过当前 MessagePack 对象并继续。
-- 缺字段的 Device：可以用当前运行环境的全屏区域和临时 UUID 加载，且不得回写容错值。
-- 缺编号的 Canvas：可以按 Device 内物理顺序生成临时独立页面。
-- 无效 Ink/Media：跳过单个内容块、报告警告并继续。
-- 写入器必须把私有块级数据放入 `extra`；读取器仍应忽略未知顶层键。
+- 未知 workspaceType：按通用白板加载，不执行未知宿主逻辑。
+- 未知 deviceType：按临时根显示面加载。
+- Device/Workspace 循环：断开问题父引用，作为临时根项加载。
+- Canvas 引用缺失：构造临时 Workspace 或根 Device 并警告。
+- 无效 Ink/Media：跳过单块、报告警告并继续。
+- 所有临时容错结果都不得回写源文件。
 
-## 完整多显示器 PPT 示例
-
-以下伪序列展示同一 PPT 的两个显示器。两个 Canvas 使用相同 `slideId`，但属于不同 Device：
+## 多显示器 PPT 可读示例
 
 ```jsonc
-[
-  [0, 10, "5fe30f46-be92-49b6-b921-a60706febf10", 2, 2, 1700000000],
-  { "type": 1, "sceneType": 2, "hostId": "INKKEYS-PPT-7B58E2A1" },
-  { "type": 2, "guid": "11111111-1111-4111-8111-111111111111", "deviceType": 0,
-    "x": 0, "y": 0, "width": 3840, "height": 2160 },
-  { "type": 3, "canvasId": 0, "pageIndex": 0, "pageNumber": 1,
-    "layerIndex": 0, "layerNumber": 0, "slideId": 256 },
-  // Device 0 的 Ink / Media
-  { "type": 2, "guid": "22222222-2222-4222-8222-222222222222", "deviceType": 0,
-    "x": 3840, "y": 0, "width": 1920, "height": 1080 },
-  { "type": 3, "canvasId": 0, "pageIndex": 0, "pageNumber": 1,
-    "layerIndex": 0, "layerNumber": 0, "slideId": 256 }
-  // Device 1 的 Ink / Media
-]
+[0, 10, "5fe30f46-be92-49b6-b921-a60706febf10", 2, 1, 1, 1700000000]
+{
+  "type": 1,
+  "devices": [
+    { "guid": "11111111-1111-4111-8111-111111111111", "deviceType": 0,
+      "x": 0, "y": 0, "width": 3840, "height": 2160 },
+    { "guid": "22222222-2222-4222-8222-222222222222", "deviceType": 0,
+      "x": 3840, "y": 0, "width": 1920, "height": 1080 }
+  ],
+  "workspaces": [
+    { "guid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", "workspaceType": 2,
+      "hostId": "INKKEYS-PPT-7B58E2A1", "currentPageIndex": 0 }
+  ]
+}
+{
+  "type": 2,
+  "workspaceGuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "deviceGuid": "11111111-1111-4111-8111-111111111111",
+  "pageGuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
+  "slideId": 256
+}
+// 第一个 Canvas 的 Ink / Media
+{
+  "type": 2,
+  "workspaceGuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "deviceGuid": "22222222-2222-4222-8222-222222222222",
+  "pageGuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
+  "slideId": 256
+}
+// 第二个 Canvas 的独立 Ink / Media
 ```
 
-该代码只是多个 MessagePack 对象的可读表示，不表示实际文件外层还存在一个 Array。
+以上是连续 MessagePack 对象的可读表示，文件本身没有包裹这些对象的外层 Array。
+
+## 其他关键场景
+
+- **Window Device 上的画布**：在 `devices` 注册 Window，并让 Canvas 引用其 GUID；Canvas 本身不写 x/y/width/height。
+- **嵌套白板**：子 Workspace 使用 `parentWorkspaceGuid`，其空间位置由 Canvas 引用的 Device 决定。
+- **空白页**：只写 Canvas，不跟随 Ink/Media。
+- **PDF 缺失**：保留 Media 的 width/height/transform 以及可选页信息，继续渲染其他内容。
+- **HDR 回退**：Ink 的未知或无效色彩空间使用 Color Map 的 fallback。
 
 ## 相关页面
 
 - [块类型](../type)
 - [增量写入](../incremental)
-- [Device 块](../blocks/device)
+- [Header Extension](../blocks/headerExtension)
+- [Device 结构](../blocks/device)
 - [Canvas 块](../blocks/canvas)
 - [Ink 块](../blocks/ink)
 - [Media 块](../blocks/media)

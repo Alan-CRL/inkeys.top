@@ -2,7 +2,7 @@
 title: Ink 块
 ---
 
-- Type ID: 4
+- Type ID: 3
 - Type: Map
 
 Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔都是 Ink 的渲染类型，不再使用独立的 `penType` 或 Eraser 顶层块。
@@ -11,7 +11,7 @@ Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔�
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
-| `type` | uint16 | Required | 固定为 `4` |
+| `type` | uint16 | Required | 固定为 `3` |
 | `contentId` | uint32 | Required | Canvas 内 Ink/Media 共享的连续内容编号 |
 | `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
 | `inkType` | int32 | Required | 墨迹渲染类型 |
@@ -127,7 +127,7 @@ float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精�
 
 ```jsonc
 {
-  "type": 4,
+  "type": 3,
   "contentId": 0,
   "undoId": 0,
   "inkType": 1,
@@ -146,7 +146,7 @@ float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精�
 
 ```jsonc
 {
-  "type": 4,
+  "type": 3,
   "contentId": 1,
   "undoId": 1,
   "inkType": 3,
@@ -181,7 +181,7 @@ float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精�
 
 ```jsonc
 {
-  "type": 4,
+  "type": 3,
   "contentId": 2,
   "undoId": 2,
   "inkType": 0,
