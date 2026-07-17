@@ -32,7 +32,7 @@ const VERSION_JSON_URLS = [
 const ARCHITECTURES = ['Win32', 'Win64', 'Arm64']
 
 const downloadLinks = {
-  cquMirror: 'https://mirrors.cqu.edu.cn/github-release/Alan-CRL/Inkeys/',
+  haeduMirror: 'https://mirrors.ha.edu.cn/github-release/Alan-CRL/Inkeys/',
   pan123: 'https://www.123pan.com/s/duk9-n4dAd.html',
   githubRelease: 'https://github.com/Alan-CRL/Inkeys/releases',
   history: 'https://www.123pan.com/s/duk9-GJ9Ad.html',
@@ -432,12 +432,12 @@ onMounted(async () => {
         >
           <div class="split-link">
             <a
-              :href="downloadLinks.cquMirror"
+              :href="downloadLinks.haeduMirror"
               class="link-main"
               target="_blank"
               rel="noopener noreferrer"
             >
-              通过 重庆大学开源软件镜像站 下载
+              通过 河南省教育科研网镜像站 下载
             </a>
             <button
               type="button"
