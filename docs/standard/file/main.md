@@ -30,7 +30,15 @@ flowchart TB
 
 Device 树描述空间：Display 是系统绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树独立，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们。
 
-一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级合成顺序由软件决定。Canvas 始终填满所引用的 Device，不保存自己的几何。
+一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级合成顺序由软件决定。Canvas 的显示视口始终填满所引用的 Device，但 Canvas 可以通过可选 viewport 保存该 Device 正在查看的世界坐标区域。
+
+## Device 与 Canvas viewport
+
+Device 回答“显示视口位于屏幕或父 Device 的哪里”，Canvas.viewport 回答“该视口正在查看 Canvas 世界坐标的哪里”。两者的 `x/y` 属于不同坐标空间，不得混用。
+
+Canvas.viewport 使用左上角 Canvas 世界坐标 `x/y` 和统一 `scale`。内容坐标不随 viewport 改变；平移和缩放只影响 Ink、Shape、Media 到 Device 局部坐标的显示映射。viewport 缺失时按 `{ x: 0, y: 0, scale: 1 }` 加载。
+
+viewport 归属于 `(workspaceGuid, deviceGuid, pageGuid)`。同页同 Device 的所有图层必须共享该值，不同 Device 可以分别保存自己的最终视口。
 
 ## 页面与多显示器
 
@@ -87,7 +95,8 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
   "deviceGuid": "11111111-1111-4111-8111-111111111111",
   "pageGuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
-  "slideId": 256
+  "slideId": 256,
+  "viewport": { "x": -320.0, "y": 180.0, "scale": 1.5 }
 }
 // 第一个 Canvas 的 Ink / Shape / Media
 {
@@ -96,7 +105,8 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
   "deviceGuid": "22222222-2222-4222-8222-222222222222",
   "pageGuid": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
   "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
-  "slideId": 256
+  "slideId": 256,
+  "viewport": { "x": 0.0, "y": 0.0, "scale": 1.0 }
 }
 // 第二个 Canvas 的独立 Ink / Shape / Media
 ```
@@ -105,7 +115,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
 
 ## 其他关键场景
 
-- **Window Device 上的画布**：在 `devices` 注册 Window，并让 Canvas 引用其 GUID；Canvas 本身不写 x/y/width/height。
+- **Window Device 上的画布**：在 `devices` 注册 Window，并让 Canvas 引用其 GUID；Canvas 不重复保存 Device 的 x/y/width/height，只用 viewport 保存窗口左上角对应的 Canvas 世界坐标与统一缩放。
 - **嵌套白板**：子 Workspace 使用 `parentWorkspaceGuid`，其空间位置由 Canvas 引用的 Device 决定。
 - **空白页**：只写 Canvas，不跟随 Ink/Shape/Media。
 - **PDF 缺失**：保留 Media 的 width/height/transform 以及可选页信息，继续渲染其他内容。

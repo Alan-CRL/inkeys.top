@@ -10,7 +10,7 @@ UInk 允许在不修改此前对象流的前提下，把完整的新块追加到
 
 - 文件末尾最后一个 Canvas 中已经完整结束的 [Ink](blocks/ink) 或 [Shape](blocks/shape)；
 - 无需改变历史顺序的新 [Media](blocks/media)；
-- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，随后逐个追加其完整 Ink/Shape/Media。
+- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，连同其最终 viewport 一起写入，随后逐个追加完整 Ink/Shape/Media。
 
 尚未完成的轨迹不得写入；MessagePack Map 不允许只写一部分后等待补齐。只有文件末尾最后一个 Canvas 可以继续追加内容，不能在末尾重复旧 Canvas 来模拟对旧页的补丁。
 
@@ -32,12 +32,15 @@ UInk 允许在不修改此前对象流的前提下，把完整的新块追加到
 - 返回旧页、旧图层或更早 Canvas 修改；
 - 普通板擦切断已经保存的旧墨迹；
 - 修改、移动、删除既有 Media，包括切换既有 PDF 的 `pageIndex`；
+- 修改既有页面的 Canvas viewport；
 - 改变页面、图层、pageIndex 或 pageGuid 结构；
 - 任何无法保证追加结果与当前画面一致的情况。
 
 新增 Workspace 时，必须在同一次完整重写中注册 Workspace 并写入其至少一个 Canvas。
 
 完整重写必须只保存当前有效内容，移除已撤回块，重新整理各 Canvas 的 contentId 与 undoId，并重新计算三个 Header 计数。文件永久 `Header.guid`、既有 Workspace/Device GUID 与既有页面 `pageGuid` 均不得改变。
+
+完整重写只保存每个页面的最终 viewport。viewport 不产生 `contentId` 或 `undoId`，不属于 Ink/Shape/Media 的撤回历史；软件在撤回内容时是否调整 viewport 由软件决定。复制页面时，新页面继承源页面 viewport。
 
 ::: warning 两种擦除模式
 擦除墨迹是新的完整 Ink，可以直接追加；普通板擦会修改旧墨迹并生成剩余片段，因此必须完整重写。

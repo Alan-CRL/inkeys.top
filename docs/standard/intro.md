@@ -17,7 +17,7 @@ UInk 规范旨在解决本地绘图软件墨迹存储与跨端预览的一致性
 2. 支持[增量写入](incremental)，在保持顺序可靠时逐块追加完整内容。
 3. 墨迹主文件使用 MessagePack 对象流，兼具高性能、体积和可扩展性。
 4. Ink、Shape 与 Media 按物理顺序混合处理，并共享内容编号和撤回分组。
-5. Device 与 Canvas 解耦：Device 注册表描述空间，Workspace 注册表描述页面与宿主，Canvas 通过 UUID 引用两者。
+5. Device 与 Canvas 解耦：Device 注册表描述显示视口在系统或父 Device 中的位置，Workspace 注册表描述页面与宿主，Canvas 通过 UUID 引用两者并可保存 viewport 平移与缩放状态。
 6. 擦除、普通笔和两类荧光笔统一使用 [Ink 块](blocks/ink)，未知样式可以安全回退。
 
 ## 文件

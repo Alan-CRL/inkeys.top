@@ -5,7 +5,9 @@ title: Device 结构
 - Type: Map
 - Registry Entry
 
-Device 是 [Header Extension](headerExtension) 的 `devices` 数组中的显示面注册项，不是顶级块，也不形成文件流作用域。Canvas 通过 `deviceGuid` 引用一个 Device，并始终填满该显示面。
+Device 是 [Header Extension](headerExtension) 的 `devices` 数组中的显示面注册项，不是顶级块，也不形成文件流作用域。Canvas 通过 `deviceGuid` 引用一个 Device，其显示视口始终填满该显示面。
+
+Device 只描述显示面在系统或父 Device 中的位置与大小，不保存页面正在查看的 Canvas 世界坐标。Canvas 的平移和缩放状态由 [Canvas.viewport](canvas#viewport-map) 保存；Device 的 `x/y` 不得作为 viewport 的默认值或替代值。
 
 ## 公共字段
 
@@ -80,3 +82,8 @@ Device 树禁止循环。父项缺失或产生循环时，读取器应断开问�
   }
 ]
 ```
+
+## 相关说明
+
+- [Canvas 块与 viewport](canvas)
+- [墨迹主文件](../file/main)

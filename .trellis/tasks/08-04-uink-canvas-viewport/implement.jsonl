@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"VuePress 规范内容修改的入口约定"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"UInk 文档目录与页面组织约定"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"文档构建和最终质量检查要求"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"viewport 需要跨 Canvas、Device、主文件和增量写入保持一致"}
