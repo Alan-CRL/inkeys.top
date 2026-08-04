@@ -2,7 +2,7 @@
 title: 墨迹主文件
 ---
 
-墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。Header Extension 注册 Device 与 Workspace，后续扁平 Canvas 通过 UUID 引用两者并管理各自的 Ink/Media。
+墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。Header Extension 注册 Device 与 Workspace，后续扁平 Canvas 通过 UUID 引用两者并管理各自的 Ink/Shape/Media。
 
 ## 文件结构
 
@@ -11,9 +11,9 @@ flowchart TB
   H["Header · Type 0"] --> HE["Header Extension · Type 1<br/>可选且最多一个"]
   H -. "无扩展" .-> C1
   HE --> C1["Canvas · Type 2"]
-  C1 --> B1["Ink / Media · Type 3 / 4"]
+  C1 --> B1["Ink / Shape / Media · Type 3 / 4 / 5"]
   B1 --> C2["Canvas · Type 2"]
-  C2 --> B2["Ink / Media · Type 3 / 4"]
+  C2 --> B2["Ink / Shape / Media · Type 3 / 4 / 5"]
   B2 --> EOF["File EOF"]
 ```
 
@@ -22,8 +22,8 @@ flowchart TB
 1. Header 必须位于文件开头。
 2. Header Extension 可选且最多一个；存在时必须紧跟 Header。
 3. Device 只存在于 Header Extension 的 `devices` 注册表，不是顶级块。
-4. Canvas 管理其后的 Ink/Media，直到下一个 Canvas 或文件末尾。
-5. 第一个 Canvas 前不得出现 Ink/Media。
+4. Canvas 管理其后的 Ink/Shape/Media，直到下一个 Canvas 或文件末尾。
+5. 第一个 Canvas 前不得出现 Ink/Shape/Media。
 6. Canvas 可以为空，用于保存空白页或空白图层。
 
 ## 两棵注册树与扁平 Canvas
@@ -44,9 +44,9 @@ Header.pageNum 是各 Workspace 不重复 pageGuid 的总数。空白页计数�
 
 ## 内容与撤回顺序
 
-同一 Canvas 中 Ink 与 Media 按物理块顺序混合处理，`contentId` 按此顺序从 0 连续递增。擦除 Ink 按顺序作用于其下方内容；读取器不得按块类型重新排序。
+同一 Canvas 中 Ink、Shape 与 Media 按物理块顺序混合处理，`contentId` 按此顺序从 0 连续递增。擦除 Ink 按顺序作用于其下方内容；读取器不得按块类型重新排序。
 
-`undoId` 在同一 Canvas 的 Ink/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。撤回或重做必须完整重写，重写后的文件只保存当前有效内容。
+`undoId` 在同一 Canvas 的 Ink/Shape/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。撤回或重做必须完整重写，重写后的文件只保存当前有效内容。
 
 ## `.uink.extra`
 
@@ -61,7 +61,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
 - 未知 deviceType：按临时根显示面加载。
 - Device/Workspace 循环：断开问题父引用，作为临时根项加载。
 - Canvas 引用缺失：构造临时 Workspace 或根 Device 并警告。
-- 无效 Ink/Media：跳过单块、报告警告并继续。
+- 无效 Ink/Shape/Media：跳过单块、报告警告并继续。
 - 所有临时容错结果都不得回写源文件。
 
 ## 多显示器 PPT 可读示例
@@ -89,7 +89,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
   "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
   "slideId": 256
 }
-// 第一个 Canvas 的 Ink / Media
+// 第一个 Canvas 的 Ink / Shape / Media
 {
   "type": 2,
   "workspaceGuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -98,7 +98,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
   "pageIndex": 0, "pageNumber": 1, "layerIndex": 0, "layerNumber": 0,
   "slideId": 256
 }
-// 第二个 Canvas 的独立 Ink / Media
+// 第二个 Canvas 的独立 Ink / Shape / Media
 ```
 
 以上是连续 MessagePack 对象的可读表示，文件本身没有包裹这些对象的外层 Array。
@@ -107,7 +107,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
 
 - **Window Device 上的画布**：在 `devices` 注册 Window，并让 Canvas 引用其 GUID；Canvas 本身不写 x/y/width/height。
 - **嵌套白板**：子 Workspace 使用 `parentWorkspaceGuid`，其空间位置由 Canvas 引用的 Device 决定。
-- **空白页**：只写 Canvas，不跟随 Ink/Media。
+- **空白页**：只写 Canvas，不跟随 Ink/Shape/Media。
 - **PDF 缺失**：保留 Media 的 width/height/transform 以及可选页信息，继续渲染其他内容。
 - **HDR 回退**：Ink 的未知或无效色彩空间使用 Color Map 的 fallback。
 
@@ -119,4 +119,5 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
 - [Device 结构](../blocks/device)
 - [Canvas 块](../blocks/canvas)
 - [Ink 块](../blocks/ink)
+- [Shape 块](../blocks/shape)
 - [Media 块](../blocks/media)

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"VuePress 文档站入口规范与必做检查"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"规范页面与 VuePress 配置的目录和链接约定"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"文档构建、格式和发布前质量要求"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Shape 线格式需要跨多份规范保持字段和内容流一致"}

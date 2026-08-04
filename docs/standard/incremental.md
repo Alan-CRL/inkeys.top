@@ -8,9 +8,9 @@ UInk 允许在不修改此前对象流的前提下，把完整的新块追加到
 
 在 Header Extension 已经注册目标 Workspace 与 Device 的前提下，可以追加：
 
-- 文件末尾最后一个 Canvas 中已经完整结束的 [Ink](blocks/ink)；
+- 文件末尾最后一个 Canvas 中已经完整结束的 [Ink](blocks/ink) 或 [Shape](blocks/shape)；
 - 无需改变历史顺序的新 [Media](blocks/media)；
-- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，随后逐个追加其完整 Ink/Media。
+- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，随后逐个追加其完整 Ink/Shape/Media。
 
 尚未完成的轨迹不得写入；MessagePack Map 不允许只写一部分后等待补齐。只有文件末尾最后一个 Canvas 可以继续追加内容，不能在末尾重复旧 Canvas 来模拟对旧页的补丁。
 
@@ -18,7 +18,7 @@ UInk 允许在不修改此前对象流的前提下，把完整的新块追加到
 
 ## 顺序要求
 
-- 新内容的 `contentId` 承接当前 Canvas 的 Ink/Media 共享序列。
+- 新内容的 `contentId` 承接当前 Canvas 的 Ink/Shape/Media 共享序列。
 - `undoId` 不得小于此前内容的 undoId。
 - 新 Canvas 的 `(workspaceGuid, deviceGuid, pageGuid, layerIndex)` 不得与既有 Canvas 重复。
 - 追加同一逻辑页在另一 Device 上的 Canvas 时复用 `pageGuid/pageIndex`，且不得增加 Header.pageNum。

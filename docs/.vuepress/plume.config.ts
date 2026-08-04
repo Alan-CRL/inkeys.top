@@ -124,7 +124,14 @@ export default defineThemeConfig({
             { text: 'Device 结构', link: '/standard/blocks/device' },
             { text: 'Canvas 块', link: '/standard/blocks/canvas' },
             { text: 'Ink 块', link: '/standard/blocks/ink' },
+            { text: 'Shape 块', link: '/standard/blocks/shape' },
             { text: 'Media 块', link: '/standard/blocks/media' },
+          ],
+        },
+        {
+          text: '公共结构',
+          items: [
+            { text: 'Color Map', link: '/standard/common/color' },
           ],
         },
       ],

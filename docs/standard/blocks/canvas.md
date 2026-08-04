@@ -6,7 +6,7 @@ title: Canvas 块
 - Type: Map
 - Required
 
-Canvas 是扁平内容流中的页面图层记录。它通过 UUID 分别引用 Workspace 与 Device；其后的 Ink/Media 归属该 Canvas，直到下一个 Canvas 或文件末尾。
+Canvas 是扁平内容流中的页面图层记录。它通过 UUID 分别引用 Workspace 与 Device；其后的 Ink/Shape/Media 归属该 Canvas，直到下一个 Canvas 或文件末尾。
 
 ## 字段
 
@@ -37,7 +37,7 @@ Canvas 不保存几何。其局部原点为所引用 Device 的左上角，区�
 
 ## 多显示器白板
 
-同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同 `pageGuid/pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Media、独立 contentId 与 undoId。UInk 不同步不同屏幕上的绘制内容。
+同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同 `pageGuid/pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Shape/Media、独立 contentId 与 undoId。UInk 不同步不同屏幕上的绘制内容。
 
 各屏幕独立翻页时使用多个 Workspace，每个 Workspace 维护自己的页面序列。
 
@@ -64,7 +64,7 @@ Canvas 不保存几何。其局部原点为所引用 Device 的左上角，区�
 }
 ```
 
-该 Canvas 可以不包含任何 Ink/Media，用于保存用户已创建但尚未绘制的空白页或图层。每个显式 Workspace 至少应包含一个 Canvas。
+该 Canvas 可以不包含任何 Ink/Shape/Media，用于保存用户已创建但尚未绘制的空白页或图层。每个显式 Workspace 至少应包含一个 Canvas。
 
 ## 容错
 

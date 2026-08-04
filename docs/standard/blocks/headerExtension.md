@@ -10,7 +10,7 @@ Header Extension 保存文件说明，并注册 Canvas 可以引用的 Device �
 
 ## 位置与字段
 
-Header Extension 最多出现一次；若存在，必须紧跟 Header。其后必须是第一个 Canvas 或文件末尾；Ink/Media 只能出现在某个 Canvas 之后。
+Header Extension 最多出现一次；若存在，必须紧跟 Header。其后必须是第一个 Canvas 或文件末尾；Ink/Shape/Media 只能出现在某个 Canvas 之后。
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |

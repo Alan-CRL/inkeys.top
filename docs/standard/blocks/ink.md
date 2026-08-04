@@ -12,7 +12,7 @@ Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔�
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `type` | uint16 | Required | 固定为 `3` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Media 共享的连续内容编号 |
+| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media 共享的连续内容编号 |
 | `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
 | `inkType` | int32 | Required | 墨迹渲染类型 |
 | `color` | Color Map | Required | 块级颜色与 HDR 回退信息 |
@@ -22,7 +22,7 @@ Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔�
 | `renderOnlyWhenLatest` | bool | Optional | 缺失时为 `false` |
 | `extra` | Map | Optional | 私有扩展 |
 
-`contentId` 与 Media 共用同一编号空间，并严格按照物理块顺序从 0 连续递增。`undoId` 从 0 开始且只允许不递减；相同 `undoId` 的连续内容块构成一次撤回操作。
+`contentId` 与 Shape/Media 共用同一编号空间，并严格按照物理块顺序从 0 连续递增。`undoId` 从 0 开始且只允许不递减；相同 `undoId` 的连续内容块构成一次撤回操作。
 
 ## `inkType`
 
@@ -46,28 +46,7 @@ Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔�
 
 ## Color Map
 
-Color Map 同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。
-
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `fallback` | uint32 | Required | `0xRRGGBB` sRGB 回退色 |
-| `space` | string | Conditional | 与 `components` 成对出现 |
-| `components` | `Array<float32>(3)` | Conditional | 颜色空间中的三个分量 |
-
-注册的 `space`：
-
-- `srgb`：三个分量范围为 `0`–`1`；
-- `scrgb`：三个分量使用线性 float32，可使用大于 `1` 的 HDR 值，只要求为有限数。
-
-读取器不认识 `space`，或扩展分量缺失、长度错误、包含 NaN/Infinity 时，必须使用 `fallback`。写入器应确保 fallback 不超过 `0xFFFFFF`；容错读取时可以只取低 24 位。
-
-```jsonc
-{
-  "fallback": 16763904,
-  "space": "scrgb",
-  "components": [1.8, 0.65, 0.1]
-}
-```
+Ink 的颜色字段使用公共 [Color Map](../common/color)，同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。该结构也供 Shape 的填充和描边使用。
 
 ## `texture`
 
@@ -101,7 +80,7 @@ float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精�
 
 ## 条件渲染与撤回
 
-`renderOnlyWhenLatest = true` 的 Ink 通常不渲染；只有它们构成当前 Canvas 末尾连续的一组 Ink 时才渲染。判断时只考虑后续 Ink，Media 不会使这组墨迹失去“最新”状态。
+`renderOnlyWhenLatest = true` 的 Ink 通常不渲染；只有它们构成当前 Canvas 末尾连续的一组 Ink 时才渲染。判断时只考虑后续 Ink 或 Shape，Media 不会使这组墨迹失去“最新”状态。
 
 该机制适用于形状修正：软件先保存多条原始墨迹并为其设置标记，再保存美化结果。撤回美化结果并完整重写后，原始墨迹成为末尾连续记录，从而重新显示。
 
@@ -208,3 +187,5 @@ float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精�
 - [墨迹主文件与混合顺序](../file/main)
 - [增量写入](../incremental)
 - [Canvas 块](canvas)
+- [Shape 块](shape)
+- [Color Map](../common/color)

@@ -16,7 +16,7 @@ UInk 规范旨在解决本地绘图软件墨迹存储与跨端预览的一致性
 1. 一个文件可以注册多个屏幕批注、白板或 PPT Workspace，并支持父子工作区、多显示器、多页面和多图层。
 2. 支持[增量写入](incremental)，在保持顺序可靠时逐块追加完整内容。
 3. 墨迹主文件使用 MessagePack 对象流，兼具高性能、体积和可扩展性。
-4. Ink 与 Media 按物理顺序混合处理，并共享内容编号和撤回分组。
+4. Ink、Shape 与 Media 按物理顺序混合处理，并共享内容编号和撤回分组。
 5. Device 与 Canvas 解耦：Device 注册表描述空间，Workspace 注册表描述页面与宿主，Canvas 通过 UUID 引用两者。
 6. 擦除、普通笔和两类荧光笔统一使用 [Ink 块](blocks/ink)，未知样式可以安全回退。
 
@@ -45,7 +45,7 @@ UInk 规范旨在解决本地绘图软件墨迹存储与跨端预览的一致性
 
 #### 墨迹文件的定位
 
-- 墨迹主文件应用于快速加载与显示，画布中的图片等多媒体以链接的形式表示在内。
+- 墨迹主文件应用于快速加载与显示，画布中的 Shape 与图片等多媒体以结构或链接的形式表示在内。
 - 墨迹拓展文件按照 Media.path 存储资源，不包含额外索引。资源包缺失时，基础墨迹仍可正常加载。
 
 ### 墨迹拓展文件
@@ -59,4 +59,6 @@ UInk 规范旨在解决本地绘图软件墨迹存储与跨端预览的一致性
 - [Device 结构](blocks/device)
 - [Canvas 块](blocks/canvas)
 - [Ink 块](blocks/ink)
+- [Shape 块](blocks/shape)
 - [Media 块](blocks/media)
+- [Color Map](common/color)

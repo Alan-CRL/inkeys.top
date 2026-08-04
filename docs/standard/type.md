@@ -11,6 +11,7 @@ Type ID 用于识别墨迹主文件中的顶层 MessagePack 对象。
 | `2` | [Canvas 块](blocks/canvas) | Map |
 | `3` | [Ink 块](blocks/ink) | Map |
 | `4` | [Media 块](blocks/media) | Map |
+| `5` | [Shape 块](blocks/shape) | Map |
 
 [Device](blocks/device) 是 Header Extension 注册表中的嵌套 Map，不具有 Type ID，也不出现在顶级对象流中。
 
