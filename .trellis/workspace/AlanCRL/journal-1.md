@@ -25,3 +25,24 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Status
 
 [OK] **Completed**
+
+
+## Session 2: UInk Shape 规范
+
+**Date**: 2026-08-04
+**Task**: UInk Shape 规范
+**Branch**: `main`
+
+### Summary
+
+为 UInk version 10 新增 Shape Type 5 规范，抽取公共 Color Map，并同步内容流、增量写入、兼容规则和 VuePress 导航；文档构建通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `dc5f6e1` | (see git log) |
+
+### Status
+
+[OK] **Completed**
