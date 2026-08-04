@@ -46,3 +46,24 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Status
 
 [OK] **Completed**
+
+
+## Session 3: UInk Canvas 视口规范
+
+**Date**: 2026-08-04
+**Task**: UInk Canvas 视口规范
+**Branch**: `main`
+
+### Summary
+
+为 UInk version 10 的 Canvas 增加 viewport 平移缩放状态，明确 Device/Canvas 坐标边界、多图层共享、完整重写和兼容规则；文档构建通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `4a90ca3` | (see git log) |
+
+### Status
+
+[OK] **Completed**
