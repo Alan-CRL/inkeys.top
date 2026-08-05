@@ -40,7 +40,7 @@ Header = array(7)
 
 ::: field version
 @required
-当前 UInk 1.0 草案使用规范版本号 `10`，参见[规范版本](../version)。
+当前 UInk 1.0 Beta 使用规范版本号 `10`，参见[规范版本](../version)。
 :::
 
 ::: field guid
