@@ -6,7 +6,7 @@ title: Header Extension 块
 - Type: Map
 - Optional
 
-Header Extension 保存文件说明，并注册 Canvas 可以引用的 Device 与 Workspace。Device 负责空间，Workspace 负责逻辑页面与宿主关系，两棵树互不约束。
+Header Extension 保存文件说明，并注册 Canvas 可以引用的 Device 与 Workspace。Device 负责空间，Workspace 负责逻辑页面与宿主关系，两棵树互不约束；缺失的注册表由文件内唯一的隐式单例代替。
 
 ## 位置与字段
 
@@ -32,7 +32,9 @@ Header Extension 整体缺失，或某个注册表缺失、为空时，读取器
 - Canvas 可以省略对应的 `deviceGuid` 或 `workspaceGuid`；
 - Header 中对应的 `deviceNum` 或 `workspaceNum` 必须写为 `1`。
 
-注册表显式包含条目时，Canvas 必须写入对应 GUID，并且引用必须能够解析。显式条目不得与隐式默认项混用。
+隐式默认项是当前文件内部唯一的逻辑单例，不具有可序列化 UUID。Canvas 唯一键、viewport 归属、页面计数和内容作用域在缺失 GUID 时都使用该单例；不同读取器不得为它生成并回写随机 UUID。
+
+某一注册表显式包含条目时，Canvas 必须写入该类条目的对应 GUID，并且引用必须能够解析。同一个 Device 或 Workspace 注册表内不得混用显式条目与隐式默认项；一个注册表显式、另一个注册表缺失并使用隐式单例是合法的。
 
 ## Workspace 注册项
 
@@ -54,9 +56,9 @@ Header Extension 整体缺失，或某个注册表缺失、为空时，读取器
 | `3`–`127` | Reserved | UInk 后续版本保留 |
 | `128` 及以上 | Private | 软件私有类型 |
 
-未知类型按通用白板加载，保留 Canvas 与内容，但不执行无法识别的宿主绑定。`currentPageIndex` 不存在或没有对应页面时回退第 0 页并警告。
+`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。未知类型按通用白板加载，保留 Canvas 与内容，但不执行无法识别的宿主绑定。`currentPageIndex` 不存在或没有对应页面时回退第 0 页并警告。
 
-Workspace 可以多级嵌套。子项跟随父项的可见性和生命周期，并合成在父项之上；同级 Workspace 的合成顺序由软件决定。父子关系不要求使用相同或互为父子的 Device。循环引用应断开产生循环的父引用，并将该项作为本次加载的临时根 Workspace。
+Workspace 可以多级嵌套。子项跟随父项的可见性和生命周期，并合成在父项之上。同级 Workspace 按 `workspaces` 数组从前到后合成，后出现的项位于先出现项之上。父子关系不要求使用相同或互为父子的 Device。循环引用应断开产生循环的父引用，并将该项作为本次加载的临时根 Workspace。
 
 每个显式 Workspace 至少应有一个 Canvas；没有内容的 Canvas 表示已经创建的空白首页。
 
@@ -96,4 +98,4 @@ PPT Workspace 推荐把稳定标识写入 `Presentation.Tags`，并在 `hostId` 
 }
 ```
 
-`extra` 是字符串键到任意 MessagePack 值的 Map。写入器必须把私有文件级字段放入 `extra`；读取器仍应忽略未知顶层键。
+`extra` 是字符串键到任意 MessagePack 值的 Map。写入器必须把私有文件级字段放入 `extra`；读取器仍应忽略未知顶层键。UInk 不为私有键提供全局命名空间，跨软件使用前必须自行约定。

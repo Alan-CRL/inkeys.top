@@ -17,7 +17,11 @@ Color Map 同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。Ink
 - `srgb`：三个分量范围为 `0`–`1`；
 - `scrgb`：三个分量使用线性 float32，可使用大于 `1` 的 HDR 值，只要求为有限数。
 
-读取器不认识 `space`，或扩展分量缺失、长度错误、包含 NaN/Infinity 时，必须使用 `fallback`。写入器应确保 fallback 不超过 `0xFFFFFF`；容错读取时可以只取低 24 位。
+读取器不认识 `space`，扩展分量缺失、长度错误、包含 NaN/Infinity，或 `srgb` 分量超出 `0`–`1` 时，必须使用 `fallback`。`scrgb` 分量只要求为有限数。
+
+写入器必须确保 fallback 不超过 `0xFFFFFF`；容错读取时可以只取低 24 位。fallback 缺失或类型无效时，包含该 Color Map 的必填颜色或样式无效，并按所属 Ink/Shape 的容错规则处理。
+
+`srgb` 使用标准 sRGB 传递函数，`scrgb` 使用线性分量。显示到具体 HDR/SDR 设备时的色域映射和 tone mapping 由软件决定；Color Map 保证颜色数据和 SDR 回退一致，不承诺不同显示设备的像素级结果。
 
 ```jsonc
 {

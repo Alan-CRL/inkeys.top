@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"确认 VuePress 文档站点适用的规范层和开发前检查项"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"约束 docs/ 页面、VuePress 配置和 public 静态资源的目录与发布边界"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"遵循文档站点格式、构建验证和 public 资源发布提醒"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"保证规范正文、导航、fixture 清单与二进制资源的跨文件契约一致"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"修改公共规则前全局搜索旧表述，避免重复定义和遗漏交叉引用"}

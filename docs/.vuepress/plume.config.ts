@@ -109,6 +109,7 @@ export default defineThemeConfig({
         { text: '规范版本', link: '/standard/version', },
         { text: '块类型', link: '/standard/type', },
         { text: '增量写入', link: '/standard/incremental', },
+        { text: '实现一致性与样例', link: '/standard/conformance', },
         {
           text: '文件',
           items: [

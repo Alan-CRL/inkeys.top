@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/index.md","reason":"复核 VuePress 文档站点的质量检查入口"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"检查页面、导航、public 静态资源路径及发布提醒"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"执行并准确报告文档站点的最终构建与差异检查"}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"复核规范、fixture 元数据、下载链接和实际资源的一致性"}

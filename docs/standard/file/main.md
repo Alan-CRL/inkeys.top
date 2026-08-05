@@ -2,7 +2,7 @@
 title: 墨迹主文件
 ---
 
-墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。Header Extension 注册 Device 与 Workspace，后续扁平 Canvas 通过 UUID 引用两者并管理各自的 Ink/Shape/Media。
+墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。可选 Header Extension 注册显式 Device 与 Workspace；注册表缺失时使用文件内隐式单例。后续扁平 Canvas 通过 GUID 或隐式单例关联两者，并管理各自的 Ink/Shape/Media。
 
 ## 文件结构
 
@@ -28,17 +28,19 @@ flowchart TB
 
 ## 两棵注册树与扁平 Canvas
 
-Device 树描述空间：Display 是系统绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树独立，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们。
+Device 树描述空间：Display 是系统绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树独立；使用显式注册表时，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们，缺失的注册表则按隐式单例解释。
 
-一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级合成顺序由软件决定。Canvas 的显示视口始终填满所引用的 Device，但 Canvas 可以通过可选 viewport 保存该 Device 正在查看的世界坐标区域。
+一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级 Workspace 按注册表从前到后合成，后项位于前项之上。Canvas 的显示视口始终填满所引用的 Device，但 Canvas 可以通过可选 viewport 保存该 Device 正在查看的世界坐标区域。
+
+同一页面和 Device 内，`layerIndex` 越大越靠前。Window Device 按 `zIndex` 合成，同值时后注册项位于前注册项之上。以上顺序不依赖 Canvas 的物理排列。
 
 ## Device 与 Canvas viewport
 
 Device 回答“显示视口位于屏幕或父 Device 的哪里”，Canvas.viewport 回答“该视口正在查看 Canvas 世界坐标的哪里”。两者的 `x/y` 属于不同坐标空间，不得混用。
 
-Canvas.viewport 使用左上角 Canvas 世界坐标 `x/y` 和统一 `scale`。内容坐标不随 viewport 改变；平移和缩放只影响 Ink、Shape、Media 到 Device 局部坐标的显示映射。viewport 缺失时按 `{ x: 0, y: 0, scale: 1 }` 加载。
+Device 局部坐标和 Canvas 世界坐标都使用平台无关的逻辑像素。Canvas.viewport 使用左上角 Canvas 世界坐标 `x/y` 和统一 `scale`；`scale = 1` 时一 Canvas 单位对应一 Device 逻辑像素。内容坐标不随 viewport 改变。
 
-viewport 归属于 `(workspaceGuid, deviceGuid, pageGuid)`。同页同 Device 的所有图层必须共享该值，不同 Device 可以分别保存自己的最终视口。
+viewport 归属于 `(workspace, device, pageGuid)`，缺失 GUID 时按隐式单例解释。同页同 Device 仅 `layerIndex = 0` 保存 viewport，其他图层继承该值；不同 Device 可以分别保存自己的最终视口。第 0 层缺失或无效时按 `{ x: 0, y: 0, scale: 1 }` 加载。
 
 ## 页面与多显示器
 
@@ -48,7 +50,7 @@ viewport 归属于 `(workspaceGuid, deviceGuid, pageGuid)`。同页同 Device �
 - 独立白板：不同 Device 使用不同 Workspace，各自维护页面序列。
 - PPT：Workspace 保存宿主 `hostId`，Canvas 保存 `slideId`；跨设备的同一幻灯片共享 pageGuid 和 slideId。
 
-Header.pageNum 是各 Workspace 不重复 pageGuid 的总数。空白页计数，同页多设备或多图层不重复计数。
+Header.pageNum 是最近一次完整保存时各 Workspace 不重复 pageGuid 的总数。空白页计数，同页多设备或多图层不重复计数；增量追加后读取器以实际 Canvas 重算当前页数。
 
 ## 内容与撤回顺序
 
@@ -56,21 +58,27 @@ Header.pageNum 是各 Workspace 不重复 pageGuid 的总数。空白页计数�
 
 `undoId` 在同一 Canvas 的 Ink/Shape/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。撤回或重做必须完整重写，重写后的文件只保存当前有效内容。
 
+Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器忽略 Media，从 Canvas 尾部识别连续的标记 Ink/Shape；只有末尾标记组显示，其他标记内容隐藏。该显示规则不合并 undoId，被结果隐藏但未撤回的原稿仍属于完整保存内容。
+
 ## `.uink.extra`
 
-Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；资源顺序、几何、播放、PDF 页状态和撤回信息均由 Media 块决定。
+Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；资源顺序、几何、播放、PDF 页状态和撤回信息均由 Media 块决定。完整保存先提交资源包，再原子替换 `.uink` 主文件；新资源包必须暂时保留旧、新主文件引用资源的并集，主文件提交后才可以清理多余条目。主文件是当前有效内容的权威来源。
 
 资源包缺失时基础墨迹必须正常加载。视觉媒体保留布局占位；PDF 还可以使用可选 pageCount/pageIndex 显示页数占位信息。
 
 ## 容错
 
-- 未知 Type ID：跳过当前 MessagePack 对象并继续。
+- EOF 内的不完整尾块：丢弃尾块并保留此前完整对象。
+- 中间字节无法解码：保留此前对象并停止读取余下字节，不尝试重同步。
+- 未知 Type ID：跳过当前完整 MessagePack 对象并继续。
 - 未知 workspaceType：按通用白板加载，不执行未知宿主逻辑。
 - 未知 deviceType：按临时根显示面加载。
 - Device/Workspace 循环：断开问题父引用，作为临时根项加载。
 - Canvas 引用缺失：构造临时 Workspace 或根 Device 并警告。
 - 无效 Ink/Shape/Media：跳过单块、报告警告并继续。
 - 所有临时容错结果都不得回写源文件。
+
+外部导入或包含未知对象的文件默认应另存为。用户明确确认可能丢失未知内容后，软件可以按当前能够理解的有效内容覆盖原文件。
 
 ## 多显示器 PPT 可读示例
 
@@ -125,6 +133,7 @@ Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引�
 
 - [块类型](../type)
 - [增量写入](../incremental)
+- [实现一致性与样例](../conformance)
 - [Header Extension](../blocks/headerExtension)
 - [Device 结构](../blocks/device)
 - [Canvas 块](../blocks/canvas)

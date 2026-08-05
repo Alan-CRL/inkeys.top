@@ -18,6 +18,7 @@ Shape 表示一条可编辑的参数化图形。它与 Ink、Media 并列存在�
 | `geometry` | Map | Required | 由 `shapeType` 决定的几何数据 |
 | `stroke` | Map | Conditional | 描边样式；Line/Polyline 必填 |
 | `fill` | Map | Conditional | 闭合 Shape 的填充样式 |
+| `renderOnlyWhenLatest` | bool | Optional | 与 Ink 共用的尾部显示标记，缺失时为 `false` |
 | `extra` | Map | Optional | 软件私有扩展 |
 
 Shape 至少必须有 `stroke` 或 `fill` 之一。Line/Polyline 必须有 `stroke`，不得有 `fill`。
@@ -36,7 +37,7 @@ Shape 至少必须有 `stroke` 或 `fill` 之一。Line/Polyline 必须有 `stro
 | `7`–`127` | Reserved | UInk 后续版本保留 |
 | `128` 及以上 | Private | 软件私有图形类型 |
 
-读取器遇到未知 `shapeType` 时，应跳过该完整 Shape，报告警告并继续读取后续内容。不能把未知几何安全地回退为其他几何时，不得伪造一个不同的 Shape。
+`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。读取器遇到未知 `shapeType` 时，应跳过该完整 Shape，报告警告并继续读取后续内容。不能把未知几何安全地回退为其他几何时，不得伪造一个不同的 Shape。
 
 `shapeType` 只描述底层几何，不描述线条是否连续。Line/Polyline 的实线、虚线、点线等外观由同一个 Stroke Map 的 `dashArray` 控制，始终作为一个 Shape、一个 `contentId` 和一个可整体编辑的对象保存，不得把可见短线拆成多个 Shape。
 
@@ -131,6 +132,8 @@ Stroke 在同一个 Shape 内使用一种颜色、透明度和固定宽度，不
 
 Marker 只保存类型编号，不保存 Path、尺寸或固定比例。端头的具体外形由软件自行决定。未知 Marker 必须按 None 回退，不得丢弃主体 Line/Polyline。
 
+`startMarker` 和 `endMarker` 只允许用于 Line/Polyline。闭合 Shape 中出现 Marker 时读取器忽略这些字段并警告。
+
 软件内部可以用主线加两条端头线绘制箭头；写入 UInk 时应归一化为一个 Line/Polyline 及其 Marker。Marker 不产生额外的 Shape、`contentId` 或 `undoId`。
 
 ## Fill Map
@@ -149,11 +152,15 @@ Fill 首版只支持单色填充，渐变、纹理和图片填充留待后续版
 
 Shape 与 Ink、Media 按物理块顺序混合处理。三者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，相同 `undoId` 的连续内容块构成一次撤回操作。
 
+`contentId` 只标识当前文件版本中当前 Canvas 的物理顺序，完整重写后不得作为稳定外部引用。
+
 完整 Shape 可以追加到文件末尾最后一个 Canvas。修改、移动、缩放或删除既有 Shape 必须完整重写，不得通过追加重复旧 Shape。完整重写后重新整理各 Canvas 的 `contentId` 和 `undoId`。
 
-Erase Ink 按物理顺序作用于其下方的 Shape；具体裁剪算法、透明效果和背景效果由软件决定。读取器不得因为块类型不同而重新排序。
+Erase Ink 按物理顺序作用于同一 Canvas 中此前的 Shape 与 Ink，不作用于 Media；具体裁剪、透明和背景效果由软件决定。读取器不得因为块类型不同而重新排序。
 
-`renderOnlyWhenLatest = true` 的原始 Ink 在后续连续内容中遇到 Ink 或 Shape 结果时按现有条件渲染规则隐藏；Media 不会使该组失去“最新”状态。
+Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器忽略 Media，从 Canvas 尾部反向收集连续且标记为 `true` 的 Ink/Shape；只有末尾标记组显示，其他标记内容隐藏。分组不改变 undoId。
+
+形状修正结果存在时，标记原稿隐藏。撤回结果后原稿成为末尾标记组并重新显示，随后仍按各自 undoId 逐步撤回。隐藏但未撤回的原稿必须在完整保存时保留。
 
 ## 容错与兼容
 
@@ -163,7 +170,7 @@ Erase Ink 按物理顺序作用于其下方的 Shape；具体裁剪算法、透�
 - Stroke 的未知 Marker：按 None 回退并保留主体几何。
 - Fill 的未知 `fillType`：使用 Color Map 和 opacity 按 Solid 回退。
 - 旧读取器遇到未知 Type ID `5` 时，可以跳过当前完整 MessagePack 对象并继续读取后续块。
-- 不能原样保留未知块的读取器不得无警告覆盖源文件，以免旧软件保存时静默删除 Shape。
+- 外部导入或包含未知块的文件默认另存为；用户明确确认可能丢失未知内容后才允许覆盖源文件。
 
 ## 示例
 
