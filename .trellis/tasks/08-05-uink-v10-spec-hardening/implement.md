@@ -9,6 +9,7 @@
 - [x] 搜索并消除 Header 原地更新、多层 viewport、PPT pageIndex 回退、Ink-only latest 和未知块无损保存等旧表述。
 - [x] 使用独立 MessagePack 工具解码样例并验证截断尾块行为。
 - [x] 运行 `pnpm docs:build` 和 `git diff --check`，复核 UTF-8、CRLF、链接和最终差异。
+- [x] 审校全部规范页面的指代、术语和执行步骤，消除影响人和 AI 实现的歧义，但不改变既有线格式与行为。
 
 ## 风险与回滚点
 

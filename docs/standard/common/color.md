@@ -17,11 +17,16 @@ Color Map 同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。Ink
 - `srgb`：三个分量范围为 `0`–`1`；
 - `scrgb`：三个分量使用线性 float32，可使用大于 `1` 的 HDR 值，只要求为有限数。
 
-读取器不认识 `space`，扩展分量缺失、长度错误、包含 NaN/Infinity，或 `srgb` 分量超出 `0`–`1` 时，必须使用 `fallback`。`scrgb` 分量只要求为有限数。
+读取器按以下顺序选择颜色：
 
-写入器必须确保 fallback 不超过 `0xFFFFFF`；容错读取时可以只取低 24 位。fallback 缺失或类型无效时，包含该 Color Map 的必填颜色或样式无效，并按所属 Ink/Shape 的容错规则处理。
+1. `space` 和 `components` 都缺失时，使用 `fallback`。
+2. 两个扩展字段只出现一个时，扩展颜色无效，使用 `fallback`。
+3. `space` 未知、`components` 长度不是 3、任一分量包含 NaN/Infinity，或者 `srgb` 分量超出 `0`–`1` 时，使用 `fallback`。
+4. `space` 和 `components` 均有效时，使用扩展颜色；`scrgb` 分量允许大于 `1`，但必须是有限数。
 
-`srgb` 使用标准 sRGB 传递函数，`scrgb` 使用线性分量。显示到具体 HDR/SDR 设备时的色域映射和 tone mapping 由软件决定；Color Map 保证颜色数据和 SDR 回退一致，不承诺不同显示设备的像素级结果。
+写入器必须确保 `fallback` 不超过 `0xFFFFFF`，并让它表达扩展颜色在 SDR 中的预期回退外观。容错读取到更大的 uint32 时，可以只取低 24 位。`fallback` 缺失或类型无效时，包含该 Color Map 的必填颜色或样式无效；读取器按所属 Ink/Shape 的容错规则处理。
+
+`srgb` 使用标准 sRGB 传递函数，`scrgb` 使用线性分量。显示到具体 HDR/SDR 设备时的色域映射和 tone mapping 由软件决定。Color Map 同时携带扩展颜色和 SDR 回退意图，但不承诺不同显示设备获得像素级一致的结果。
 
 ```jsonc
 {

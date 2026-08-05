@@ -5,7 +5,7 @@ title: Shape 块
 - Type ID: 5
 - Type: Map
 
-Shape 表示一条可编辑的参数化图形。它与 Ink、Media 并列存在于 Canvas 内容流中，保存几何、单色填充和单色描边。Shape 不是 Ink 的 `inkType`，也不复用 Ink 的轨迹点。
+Shape 表示一个可编辑的参数化图形。它与 Ink、Media 并列存在于 Canvas 内容流中，保存几何、单色填充和单色描边。Shape 不是 Ink 的 `inkType`，也不复用 Ink 的轨迹点。
 
 ## 字段
 
@@ -150,26 +150,26 @@ Fill 首版只支持单色填充，渐变、纹理和图片填充留待后续版
 
 ## 内容流、撤回与增量写入
 
-Shape 与 Ink、Media 按物理块顺序混合处理。三者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，相同 `undoId` 的连续内容块构成一次撤回操作。
+Shape 与 Ink、Media 按顶层对象流中的先后顺序混合处理。三者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。
 
-`contentId` 只标识当前文件版本中当前 Canvas 的物理顺序，完整重写后不得作为稳定外部引用。
+`contentId` 只标识当前文件版本中当前 Canvas 的对象流顺序，完整保存后不得作为稳定外部引用。
 
-完整 Shape 可以追加到文件末尾最后一个 Canvas。修改、移动、缩放或删除既有 Shape 必须完整重写，不得通过追加重复旧 Shape。完整重写后重新整理各 Canvas 的 `contentId` 和 `undoId`。
+完整 Shape 可以追加到文件末尾最后一个 Canvas。修改、移动、缩放或删除既有 Shape 时必须执行完整保存，不得通过追加重复既有 Shape。完整保存后，写入器重新整理各 Canvas 的 `contentId` 和 `undoId`。
 
-Erase Ink 按物理顺序作用于同一 Canvas 中此前的 Shape 与 Ink，不作用于 Media；具体裁剪、透明和背景效果由软件决定。读取器不得因为块类型不同而重新排序。
+Erase Ink 按对象流顺序作用于同一 Canvas 中位于它之前的 Shape 与 Ink，不作用于 Media；具体裁剪、透明和背景效果由软件决定。读取器不得因为块类型不同而重新排序。
 
-Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器忽略 Media，从 Canvas 尾部反向收集连续且标记为 `true` 的 Ink/Shape；只有末尾标记组显示，其他标记内容隐藏。分组不改变 undoId。
+Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器从 Canvas 尾部反向扫描，越过所有 Media，收集连续且标记为 `true` 的 Ink/Shape，直到遇到第一个未标记的 Ink/Shape。只有收集到的末尾最新组显示，其他标记内容隐藏；未标记内容正常显示。该分组不改变 `undoId`。完整算法参见 [Ink 条件渲染与撤回](ink#条件渲染与撤回)。
 
-形状修正结果存在时，标记原稿隐藏。撤回结果后原稿成为末尾标记组并重新显示，随后仍按各自 undoId 逐步撤回。隐藏但未撤回的原稿必须在完整保存时保留。
+未标记的形状修正结果存在时，标记原稿隐藏。撤回结果后，原稿成为末尾最新组并重新显示，随后仍按各自 `undoId` 逐步撤回。隐藏但未撤回的原稿必须在完整保存时保留。
 
 ## 容错与兼容
 
 - 缺少 `type`、`contentId`、`undoId`、`shapeType`、`geometry` 或必要样式时跳过该 Shape，报告警告并继续读取。
-- 坐标、尺寸、rotation、宽度、dash 或 opacity 含 NaN/Infinity 时，按字段回退；无法构造有效几何时跳过整块。
+- 坐标、尺寸、`rotation`、描边 `width`、`dashArray`、`dashOffset` 或 `opacity` 无效时，先使用本页为对应字段明确规定的回退。没有已定义回退时，包含无效字段的几何或样式无效；如果最终无法得到有效几何，或者 Line/Polyline 没有有效 Stroke，或者闭合 Shape 的 Stroke 与 Fill 都无效，则跳过整个 Shape。
 - Shape 的未知 `shapeType`：跳过整块。
 - Stroke 的未知 Marker：按 None 回退并保留主体几何。
 - Fill 的未知 `fillType`：使用 Color Map 和 opacity 按 Solid 回退。
-- 旧读取器遇到未知 Type ID `5` 时，可以跳过当前完整 MessagePack 对象并继续读取后续块。
+- 不支持 Shape 的读取器遇到未知 Type ID `5` 时，可以跳过当前完整 MessagePack 对象并继续读取后续块。
 - 外部导入或包含未知块的文件默认另存为；用户明确确认可能丢失未知内容后才允许覆盖源文件。
 
 ## 示例

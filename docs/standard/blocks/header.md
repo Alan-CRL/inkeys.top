@@ -24,7 +24,9 @@ Header = array(7)
 | 6 | `time` | uint64 | uint64 | 8 bytes |
 
 ::: warning 固定布局
-写入器必须严格保持数组长度、字段顺序、数值宽度和 `guid` 的 str8 编码，不得使用 MessagePack 的最小整数自动编码替代上表指定的固定宽度类型。读取器仍必须要求 `array(7)`、固定字段顺序和 36 字符 UUID string，但数值字段可以接受范围内可无损转换的其他 MessagePack 数值编码。
+写入器必须严格保持 `array(7)`、字段顺序、表中声明的数值宽度以及 `guid` 的 str8 编码，不得使用 MessagePack 的最小整数自动编码替代固定宽度类型。
+
+读取器必须验证数组长度、字段顺序和 36 字符 UUID 字符串。数值字段可以按[公共数值容错规则](../type#messagepack-编码)接受可无损转换的其他 MessagePack 编码。
 :::
 
 ## 字段说明
@@ -45,7 +47,7 @@ Header = array(7)
 @required
 UInk 文件首次创建时生成的 36 字符 UUID，格式为 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`。
 
-该值标识同一个逻辑 UInk 文件。增量写入、完整重写、移动或重命名文件时均不得改变；“另存为”新的逻辑文件时必须生成新的 UUID。
+`guid` 标识同一个逻辑 UInk 文件。增量写入、完整保存、移动或重命名文件时均不得改变它；“另存为”新的逻辑文件时必须生成新的 UUID。
 :::
 
 ::: field deviceNum
@@ -86,6 +88,6 @@ UInk 文件首次创建时生成的 36 字符 UUID，格式为 `xxxxxxxx-xxxx-xx
 
 ## 快照与实际对象流
 
-增量追加期间不得原地修改 Header。追加新页面后，`pageNum` 和 `time` 可以暂时落后于实际对象流；读取器必须从完整有效的 Header Extension、Canvas 和内容块重算当前状态，不得因快照不一致拒绝文件或按 Header 计数进行不受限预分配。
+增量追加期间不得原地修改 Header。追加新页面后，`pageNum` 和 `time` 可以暂时落后于实际对象流。读取器必须从完整有效的 Header Extension、Canvas 和内容块重算当前状态，并将 Header 统计仅作为快照使用；不得因快照不一致拒绝文件，也不得按 Header 计数进行不受限预分配。
 
-完整重写时写入器重新计算所有快照字段，并把完整 Header 与其余对象写入临时主文件后整体替换。Header.guid 和 Header.version 不得在同一逻辑文件的完整重写中改变。
+完整保存时，写入器必须重新计算所有快照字段，把 Header 与其余对象写入临时主文件，再用临时主文件整体替换目标文件。同一逻辑文件的完整保存不得改变 `Header.guid` 或 `Header.version`。

@@ -5,9 +5,9 @@ title: Device 结构
 - Type: Map
 - Registry Entry
 
-Device 是 [Header Extension](headerExtension) 的 `devices` 数组中的显示面注册项，不是顶级块，也不形成文件流作用域。Canvas 通过 `deviceGuid` 引用一个 Device，其显示视口始终填满该显示面。Device 与 Canvas 坐标统一使用平台无关的逻辑像素。
+Device 是 [Header Extension](headerExtension) 的 `devices` 数组中的显示面注册项，不是顶级块，也不形成文件流作用域。使用显式 Device 注册表时，Canvas 通过 `deviceGuid` 引用一个 Device；注册表缺失时，省略 `deviceGuid` 的 Canvas 使用文件内隐式 Device 单例。Canvas 的显示视口始终填满对应显示面。Device 与 Canvas 坐标统一使用平台无关的逻辑像素。
 
-Device 只描述显示面在系统或父 Device 中的位置与大小，不保存页面正在查看的 Canvas 世界坐标。Canvas 的平移和缩放状态由 [Canvas.viewport](canvas#viewport-map) 保存；Device 的 `x/y` 不得作为 viewport 的默认值或替代值。
+Device 只描述显示面在系统或父 Device 中的位置与大小，不保存页面正在查看的 Canvas 世界坐标。Canvas 的平移和缩放状态由 [Canvas.viewport](canvas#viewport-map) 保存；Device 的 `x/y` 不得作为 `viewport` 的默认值或替代值。
 
 ## 公共字段
 
@@ -21,12 +21,12 @@ Device 只描述显示面在系统或父 Device 中的位置与大小，不保�
 
 | 值 | 名称 | 说明 |
 | --- | --- | --- |
-| `0` | Display | 系统虚拟桌面中的物理显示区域 |
+| `0` | Display | 物理显示器在系统虚拟桌面中提供的逻辑显示区域 |
 | `1` | Window | 相对父 Device 的窗口或板中板区域 |
 | `2`–`127` | Reserved | UInk 后续版本保留 |
 | `128` 及以上 | Private | 软件私有显示面 |
 
-`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。未知 `deviceType` 按仅用于本次加载的根显示面处理并警告，不得把容错结果回写文件。
+`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。读取器遇到未知 `deviceType` 时，应将对应 Device 作为仅供本次加载使用的根显示面，并报告警告；不得把该容错结果自动写回文件。
 
 ## Display Device
 
@@ -69,7 +69,7 @@ Window 增加以下必填字段：
 
 Window 可以嵌套 Window。`zIndex` 越大越靠前；出现相同 `zIndex` 时按 `devices` 数组从前到后合成，后项位于前项之上。Window 可以部分越出父区域，宿主负责裁剪不可见部分。
 
-Device 树禁止循环。父项缺失或产生循环时，读取器应断开问题父引用，把该 Window 作为临时根显示面加载并警告。
+Device 树禁止循环。`parentDeviceGuid` 无法解析或父引用形成循环时，读取器应断开该父引用，把对应 Window 作为仅供本次加载使用的临时根显示面，并报告警告。
 
 ## 示例
 

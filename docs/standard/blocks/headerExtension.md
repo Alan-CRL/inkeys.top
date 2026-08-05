@@ -6,11 +6,11 @@ title: Header Extension 块
 - Type: Map
 - Optional
 
-Header Extension 保存文件说明，并注册 Canvas 可以引用的 Device 与 Workspace。Device 负责空间，Workspace 负责逻辑页面与宿主关系，两棵树互不约束；缺失的注册表由文件内唯一的隐式单例代替。
+Header Extension 保存文件说明，并注册 Canvas 可以引用的 Device 与 Workspace。Device 树描述显示空间，Workspace 树描述逻辑页面与宿主关系，两棵树彼此独立。任一注册表缺失时，由文件内唯一的对应隐式单例代替。
 
 ## 位置与字段
 
-Header Extension 最多出现一次；若存在，必须紧跟 Header。其后必须是第一个 Canvas 或文件末尾；Ink/Shape/Media 只能出现在某个 Canvas 之后。
+Header Extension 最多出现一次；若存在，必须紧跟 Header。Header Extension 之后只能是第一个 Canvas 或文件末尾。Ink、Shape 和 Media 必须出现在某个 Canvas 之后。
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
@@ -21,11 +21,11 @@ Header Extension 最多出现一次；若存在，必须紧跟 Header。其后�
 | `workspaces` | `Array<Map>` | Optional | Workspace 注册表 |
 | `extra` | Map | Optional | 文件级私有扩展 |
 
-`devices` 和 `workspaces` 中的 `guid` 在各自注册表内不得重复。注册表出现循环、重复 UUID 或损坏条目时，读取器应警告并仅为本次加载建立临时修复结果，不得回写源文件。
+`devices` 和 `workspaces` 中的 `guid` 在各自注册表内不得重复。注册表出现循环、重复 UUID 或损坏条目时，读取器应报告警告，并只在内存中建立供本次加载使用的修复结果。读取器不得把容错结果自动写回源文件。
 
 ## 隐式默认项
 
-Header Extension 整体缺失，或某个注册表缺失、为空时，读取器为缺失部分建立一个隐式默认项：
+Header Extension 整体缺失，或者 `devices` / `workspaces` 注册表缺失或为空时，读取器必须为缺失的注册表建立一个隐式默认项：
 
 - Device 使用当前渲染目标的根显示区域；
 - Workspace 使用 `workspaceType = 0` 的通用屏幕批注工作区；
@@ -34,7 +34,7 @@ Header Extension 整体缺失，或某个注册表缺失、为空时，读取器
 
 隐式默认项是当前文件内部唯一的逻辑单例，不具有可序列化 UUID。Canvas 唯一键、viewport 归属、页面计数和内容作用域在缺失 GUID 时都使用该单例；不同读取器不得为它生成并回写随机 UUID。
 
-某一注册表显式包含条目时，Canvas 必须写入该类条目的对应 GUID，并且引用必须能够解析。同一个 Device 或 Workspace 注册表内不得混用显式条目与隐式默认项；一个注册表显式、另一个注册表缺失并使用隐式单例是合法的。
+某一注册表包含显式条目时，Canvas 必须写入该类条目的 GUID，且该 GUID 必须能解析到注册项。同一个 Device 或 Workspace 注册表内不得混用显式条目与隐式默认项。一个注册表使用显式条目、另一个注册表使用隐式单例是合法的。
 
 ## Workspace 注册项
 
@@ -56,9 +56,14 @@ Header Extension 整体缺失，或某个注册表缺失、为空时，读取器
 | `3`–`127` | Reserved | UInk 后续版本保留 |
 | `128` 及以上 | Private | 软件私有类型 |
 
-`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。未知类型按通用白板加载，保留 Canvas 与内容，但不执行无法识别的宿主绑定。`currentPageIndex` 不存在或没有对应页面时回退第 0 页并警告。
+`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。读取器遇到未知 `workspaceType` 时，必须按通用白板加载并保留 Canvas 与内容，但不得执行无法识别的宿主绑定。`currentPageIndex` 缺失或没有对应页面时，读取器回退到第 0 页并报告警告。
 
-Workspace 可以多级嵌套。子项跟随父项的可见性和生命周期，并合成在父项之上。同级 Workspace 按 `workspaces` 数组从前到后合成，后出现的项位于先出现项之上。父子关系不要求使用相同或互为父子的 Device。循环引用应断开产生循环的父引用，并将该项作为本次加载的临时根 Workspace。
+Workspace 可以多级嵌套。合成与容错规则如下：
+
+1. 子 Workspace 跟随父 Workspace 的可见性和生命周期，并合成在父 Workspace 之上。
+2. 同级 Workspace 按 `workspaces` 数组顺序从前到后合成；数组中的后项位于前项之上。
+3. 父子 Workspace 不要求引用相同的 Device，也不要求所引用的 Device 具有父子关系。
+4. 父引用形成循环时，读取器应断开产生该循环的父引用，将对应 Workspace 作为仅供本次加载使用的临时根项，并报告警告。
 
 每个显式 Workspace 至少应有一个 Canvas；没有内容的 Canvas 表示已经创建的空白首页。
 

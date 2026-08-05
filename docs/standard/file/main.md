@@ -2,7 +2,7 @@
 title: 墨迹主文件
 ---
 
-墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。可选 Header Extension 注册显式 Device 与 Workspace；注册表缺失时使用文件内隐式单例。后续扁平 Canvas 通过 GUID 或隐式单例关联两者，并管理各自的 Ink/Shape/Media。
+墨迹主文件（`filename.uink`）是连续的 MessagePack 对象流。可选 Header Extension 注册显式 Device 与 Workspace；任一注册表缺失时，使用文件内唯一的对应隐式单例。后续 Canvas 通过 GUID 或隐式单例关联两者。每个 Canvas 以及紧随其后的 Ink、Shape 和 Media 构成一个内容作用域。
 
 ## 文件结构
 
@@ -22,13 +22,13 @@ flowchart TB
 1. Header 必须位于文件开头。
 2. Header Extension 可选且最多一个；存在时必须紧跟 Header。
 3. Device 只存在于 Header Extension 的 `devices` 注册表，不是顶级块。
-4. Canvas 管理其后的 Ink/Shape/Media，直到下一个 Canvas 或文件末尾。
+4. Ink/Shape/Media 归属于前一个 Canvas；Canvas 作用域在下一个 Canvas 或文件末尾结束。
 5. 第一个 Canvas 前不得出现 Ink/Shape/Media。
 6. Canvas 可以为空，用于保存空白页或空白图层。
 
 ## 两棵注册树与扁平 Canvas
 
-Device 树描述空间：Display 是系统绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树独立；使用显式注册表时，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们，缺失的注册表则按隐式单例解释。
+Device 树描述显示空间：Display 是系统虚拟桌面中的绝对显示区域，Window 是相对父 Device 的窗口或板中板区域。Workspace 树描述场景、宿主、页面序列和父子生命周期。两棵树彼此独立。使用显式注册表时，Canvas 分别用 `deviceGuid` 与 `workspaceGuid` 连接它们；任一注册表缺失时，省略对应 GUID 的 Canvas 连接到文件内隐式单例。
 
 一个文件可以同时包含多个白板、屏幕批注或 PPT Workspace。子 Workspace 合成在父项之上；同级 Workspace 按注册表从前到后合成，后项位于前项之上。Canvas 的显示视口始终填满所引用的 Device，但 Canvas 可以通过可选 viewport 保存该 Device 正在查看的世界坐标区域。
 
@@ -36,11 +36,11 @@ Device 树描述空间：Display 是系统绝对显示区域，Window 是相对�
 
 ## Device 与 Canvas viewport
 
-Device 回答“显示视口位于屏幕或父 Device 的哪里”，Canvas.viewport 回答“该视口正在查看 Canvas 世界坐标的哪里”。两者的 `x/y` 属于不同坐标空间，不得混用。
+Device 回答“显示视口位于屏幕或父 Device 的哪里”，`Canvas.viewport` 回答“该视口正在查看 Canvas 世界坐标的哪里”。两者的 `x/y` 属于不同坐标空间，不得混用。
 
-Device 局部坐标和 Canvas 世界坐标都使用平台无关的逻辑像素。Canvas.viewport 使用左上角 Canvas 世界坐标 `x/y` 和统一 `scale`；`scale = 1` 时一 Canvas 单位对应一 Device 逻辑像素。内容坐标不随 viewport 改变。
+Device 局部坐标和 Canvas 世界坐标都使用平台无关的逻辑像素。`Canvas.viewport` 使用左上角 Canvas 世界坐标 `x/y` 和统一 `scale`；`scale = 1` 时一 Canvas 单位对应一 Device 逻辑像素。内容坐标不随 viewport 改变。
 
-viewport 归属于 `(workspace, device, pageGuid)`，缺失 GUID 时按隐式单例解释。同页同 Device 仅 `layerIndex = 0` 保存 viewport，其他图层继承该值；不同 Device 可以分别保存自己的最终视口。第 0 层缺失或无效时按 `{ x: 0, y: 0, scale: 1 }` 加载。
+`viewport` 归属于 `(workspaceKey, deviceKey, pageGuid)`；两个 Key 分别表示显式 GUID 或文件内对应的隐式单例。同页同 Device 仅 `layerIndex = 0` 保存 `viewport`，其他图层继承第 0 层的值。不同 Device 可以分别保存自己的最终视口；第 0 层缺失或无效时，所有图层按 `{ x: 0, y: 0, scale: 1 }` 加载。
 
 ## 页面与多显示器
 
@@ -48,35 +48,41 @@ viewport 归属于 `(workspace, device, pageGuid)`，缺失 GUID 时按隐式单
 
 - 同步白板：多个 Device 引用同一 Workspace 和同一页面身份，只同步页序与翻页；各 Canvas 的绘制内容独立。
 - 独立白板：不同 Device 使用不同 Workspace，各自维护页面序列。
-- PPT：Workspace 保存宿主 `hostId`，Canvas 保存 `slideId`；跨设备的同一幻灯片共享 pageGuid 和 slideId。
+- PPT：Workspace 保存宿主 `hostId`，Canvas 保存 `slideId`；跨设备的同一幻灯片共享 `pageGuid` 和 `slideId`。
 
-Header.pageNum 是最近一次完整保存时各 Workspace 不重复 pageGuid 的总数。空白页计数，同页多设备或多图层不重复计数；增量追加后读取器以实际 Canvas 重算当前页数。
+`Header.pageNum` 是最近一次完整保存时各 Workspace 不重复 `pageGuid` 的总数。空白页计数，同页多设备或多图层不重复计数；增量追加后，读取器以实际 Canvas 重算当前页数。
 
 ## 内容与撤回顺序
 
-同一 Canvas 中 Ink、Shape 与 Media 按物理块顺序混合处理，`contentId` 按此顺序从 0 连续递增。擦除 Ink 按顺序作用于其下方内容；读取器不得按块类型重新排序。
+同一 Canvas 中，Ink、Shape 与 Media 按顶层对象流中的先后顺序混合处理，`contentId` 按该顺序从 0 连续递增。擦除 Ink 只作用于同一 Canvas 中位于它之前的 Ink 与 Shape；读取器不得按块类型重新排序。
 
-`undoId` 在同一 Canvas 的 Ink/Shape/Media 间共享，从 0 开始且只允许不递减。相同 undoId 的连续块构成一次撤回操作。撤回或重做必须完整重写，重写后的文件只保存当前有效内容。
+`undoId` 在同一 Canvas 的 Ink/Shape/Media 间共享，从 0 开始且只允许不递减。对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。撤回或重做后必须执行完整保存；保存后的文件只包含当前有效内容和末尾最新组规则要求保留的隐藏原稿。
 
-Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器忽略 Media，从 Canvas 尾部识别连续的标记 Ink/Shape；只有末尾标记组显示，其他标记内容隐藏。该显示规则不合并 undoId，被结果隐藏但未撤回的原稿仍属于完整保存内容。
+Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器判断末尾标记组时跳过所有 Media，Media 既不加入该组，也不终止扫描。只有位于 Canvas 尾部、连续标记为 `true` 的 Ink/Shape 显示；其他标记内容隐藏。未标记的 Ink/Shape 终止反向扫描，但仍按普通内容显示。该规则不合并 `undoId`；被结果隐藏但未撤回的原稿仍是完整保存必须保留的有效内容。
 
 ## `.uink.extra`
 
-Media.path 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；资源顺序、几何、播放、PDF 页状态和撤回信息均由 Media 块决定。完整保存先提交资源包，再原子替换 `.uink` 主文件；新资源包必须暂时保留旧、新主文件引用资源的并集，主文件提交后才可以清理多余条目。主文件是当前有效内容的权威来源。
+`Media.path` 引用对应 `.uink.extra` ZIP 内的资源。ZIP 没有额外索引；资源顺序、几何、播放、PDF 页状态和撤回信息均由 Media 块决定。完整保存时，先提交暂时包含旧、新主文件所引用资源并集的资源包，最后原子替换 `.uink` 主文件。只有主文件提交成功后，才可以清理多余 ZIP 条目。主文件始终是当前有效内容的权威来源。
 
-资源包缺失时基础墨迹必须正常加载。视觉媒体保留布局占位；PDF 还可以使用可选 pageCount/pageIndex 显示页数占位信息。
+资源包缺失时基础墨迹必须正常加载。视觉媒体保留布局占位；PDF 还可以使用可选的 `pageCount` 和 `pageIndex` 显示页数占位信息。
 
 ## 容错
 
-- EOF 内的不完整尾块：丢弃尾块并保留此前完整对象。
-- 中间字节无法解码：保留此前对象并停止读取余下字节，不尝试重同步。
-- 未知 Type ID：跳过当前完整 MessagePack 对象并继续。
-- 未知 workspaceType：按通用白板加载，不执行未知宿主逻辑。
-- 未知 deviceType：按临时根显示面加载。
-- Device/Workspace 循环：断开问题父引用，作为临时根项加载。
-- Canvas 引用缺失：构造临时 Workspace 或根 Device 并警告。
-- 无效 Ink/Shape/Media：跳过单块、报告警告并继续。
-- 所有临时容错结果都不得回写源文件。
+读取器先按以下对象流规则确定可读取范围：
+
+1. EOF 位于最后一个对象内部时，丢弃该不完整尾块，保留此前所有完整对象。
+2. 解析某个非末尾顶层对象时出现无法解码的字节，或者任意对象之间存在无法解码的字节时，保留该失败对象或字节段开始之前已经完成的对象，并停止读取余下字节；不得按字节搜索新的对象边界。
+3. 遇到未知 Type ID 时，跳过当前完整 MessagePack 对象并继续读取。
+4. 遇到能完整解码但字段无效的已知块时，按对应块页面的规则跳过或回退，并继续读取。
+
+建立逻辑模型时再应用以下容错：
+
+- 未知 `workspaceType`：按通用白板加载，不执行未知宿主逻辑。
+- 未知 `deviceType`：按仅供本次加载使用的临时根显示面加载。
+- Device/Workspace 循环：断开产生循环的父引用，把对应项作为临时根项加载。
+- Canvas 引用缺失：构造临时 Workspace 或根 Device，并报告警告。
+
+所有临时容错结果都不得自动写回源文件。
 
 外部导入或包含未知对象的文件默认应另存为。用户明确确认可能丢失未知内容后，软件可以按当前能够理解的有效内容覆盖原文件。
 

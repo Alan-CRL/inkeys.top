@@ -6,7 +6,7 @@ title: Canvas 块
 - Type: Map
 - Required
 
-Canvas 是扁平内容流中的页面图层记录。它通过 UUID 分别引用 Workspace 与 Device；其后的 Ink/Shape/Media 归属该 Canvas，直到下一个 Canvas 或文件末尾。
+Canvas 是扁平内容流中的页面图层记录。使用显式注册表时，它通过 GUID 分别引用 Workspace 与 Device；使用隐式单例时，它省略对应 GUID。Canvas 后面的 Ink、Shape 和 Media 归属该 Canvas，作用域在下一个 Canvas 或文件末尾结束。
 
 ## 字段
 
@@ -24,7 +24,7 @@ Canvas 是扁平内容流中的页面图层记录。它通过 UUID 分别引用 
 | `viewport` | Map | Conditional | 仅 `layerIndex = 0` 可以保存；Device 可见区域对应的 Canvas 世界坐标与统一缩放 |
 | `extra` | Map | Optional | 私有扩展 |
 
-Canvas 不保存自身边界几何，其显示视口始终填满所引用的 Device。Ink、Shape 与 Media 使用平台无关的 Canvas 逻辑像素；`viewport` 只决定这些世界坐标如何映射到 Device 局部逻辑像素，不修改内容本身的坐标。
+Canvas 不保存自身边界几何，其显示视口始终填满对应的显式或隐式 Device。Ink、Shape 与 Media 使用平台无关的 Canvas 逻辑像素；`viewport` 只决定这些世界坐标如何映射到 Device 局部逻辑像素，不修改内容本身的坐标。
 
 ## Viewport Map
 
@@ -52,31 +52,31 @@ canvasY = deviceY / viewport.scale + viewport.y
 
 `scale = 1` 表示一 Canvas 逻辑像素对应一 Device 逻辑像素，`2` 表示放大两倍，`0.5` 表示缩小到一半。Device 当前可见的 Canvas 世界宽高分别为 `Device.width / scale` 与 `Device.height / scale`。物理像素和 DPI 不参与该公式。Device 或窗口尺寸改变时保持 viewport 左上角不变，并向右下改变可见范围。
 
-viewport 缺失时默认 `{ x: 0, y: 0, scale: 1 }`。UInk 1.0 不注册视口旋转、错切或 X/Y 非等比缩放。
+`viewport` 缺失时默认 `{ x: 0, y: 0, scale: 1 }`。UInk 1.0 不注册视口旋转、错切或 X/Y 非等比缩放。
 
 ### 页面归属与权威层
 
-viewport 归属于 `(workspace, device, pageGuid)`；缺失 GUID 时按 Header Extension 定义的隐式单例解释。同一页面在不同 Device 上可以使用不同 viewport。
+为避免显式 GUID 与隐式单例产生歧义，本文使用以下逻辑键：`workspaceKey` 是显式 `workspaceGuid` 或文件内隐式 Workspace 单例，`deviceKey` 是显式 `deviceGuid` 或文件内隐式 Device 单例。`viewport` 归属于 `(workspaceKey, deviceKey, pageGuid)`。同一页面在不同 Device 上可以使用不同 `viewport`。
 
-只有同页同 Device 的 `layerIndex = 0` Canvas 可以保存 viewport，其他图层必须省略并继承第 0 层。第 0 层缺失 viewport 或 viewport 无效时，所有图层统一使用默认值。读取器遇到非第 0 层的 viewport 时忽略该字段并警告，不得用它覆盖第 0 层状态。
+只有同页同 Device 的 `layerIndex = 0` Canvas 可以保存 `viewport`，其他图层必须省略并继承第 0 层。第 0 层缺失 `viewport` 或 `viewport` 无效时，所有图层统一使用默认值。读取器遇到非第 0 层的 `viewport` 时忽略该字段并警告，不得用它覆盖第 0 层状态。
 
-viewport 适用于所有 Workspace 类型。软件可以禁止用户在屏幕批注、白板或 PPT 中平移缩放，但合法的非默认 viewport 必须按照相同公式解释。
+`viewport` 适用于所有 Workspace 类型。软件可以禁止用户在屏幕批注、白板或 PPT 中平移缩放，但合法的非默认 `viewport` 必须按照相同公式解释。
 
 ## 页面身份、排序与唯一性
 
-- `pageGuid` 在整个 UInk 文件中永久唯一，在完整重写或页面重排时保持不变；复制为新页面时必须生成新 UUID。
-- 复制页面时，新页面继承源页面的 viewport；软件可以在复制后调整并保存新的最终值。
+- `pageGuid` 在整个 UInk 文件中永久唯一，在完整保存或页面重排时保持不变；复制为新页面时必须生成新 UUID。
+- 复制页面时，新页面继承源页面的 `viewport`；软件可以在复制后调整并保存新的最终值。
 - 同一逻辑页跨设备、跨图层共享 `pageGuid`。
 - 同一 Workspace 内，`pageGuid` 与 `pageIndex` 严格一一对应，`pageIndex` 从 0 开始且无空洞。
-- 每个 `(workspace, device, pageGuid)` 下的 `layerIndex` 从 0 开始且无空洞；缺失 GUID 时使用对应隐式单例，不同设备允许具有不同图层数量。
-- `(workspace, device, pageGuid, layerIndex)` 不得重复；这里的 workspace/device 表示显式 GUID 或文件内隐式单例。
+- 每个 `(workspaceKey, deviceKey, pageGuid)` 下的 `layerIndex` 从 0 开始且无空洞；不同 Device 允许具有不同图层数量。
+- `(workspaceKey, deviceKey, pageGuid, layerIndex)` 是 Canvas 唯一键，在同一文件内不得重复。
 - 同页同 Device 中 `layerIndex` 越大越靠前；该合成顺序不依赖 Canvas 的物理排列。
 - `pageNumber` 与 `layerNumber` 仅供显示，允许跳号或重复。
-- 物理顺序不作强制要求，但写入器应按 Workspace 注册顺序、`pageIndex`、Device 注册顺序、`layerIndex` 写入。
+- Canvas 块在对象流中的排列不决定合成顺序。为便于流式读取和人工检查，写入器应依次按 Workspace 注册顺序、`pageIndex`、Device 注册顺序和 `layerIndex` 排列 Canvas；隐式单例只有一个注册顺位。
 
 ## 多显示器白板
 
-同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同 `pageGuid/pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Shape/Media、独立 contentId 与 undoId。UInk 不同步不同屏幕上的绘制内容。
+同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同 `pageGuid` 和 `pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Shape/Media、独立 `contentId` 与 `undoId`。UInk 不同步不同屏幕上的绘制内容。
 
 同一逻辑页在不同 Device 上可以保存不同 viewport；每个 Device 内由第 0 层保存唯一 viewport。
 
@@ -84,7 +84,7 @@ viewport 适用于所有 Workspace 类型。软件可以禁止用户在屏幕批
 
 ## PPT 锚定
 
-`workspaceType = 2` 时 Canvas 必须保存 `slideId`。读取器使用 `Slides.FindBySlideID` 定位幻灯片；失败时保留未绑定 Canvas 并提示宿主绑定失效，不得按 `pageIndex` 或任意当前页自动重新附着。用户或宿主可以通过显式重新绑定流程选择新幻灯片，之后完整重写文件。
+`workspaceType = 2` 时，Canvas 必须保存 `slideId`。读取器使用 `Slides.FindBySlideID` 定位幻灯片。定位失败时，读取器必须保留该 Canvas，将其标记为未绑定并提示宿主绑定失效；不得按 `pageIndex`、当前页或其他幻灯片自动重新附着。用户或宿主可以通过显式重新绑定流程选择新幻灯片，随后执行完整保存。
 
 同一 PPT 页面跨设备显示时共享 `pageGuid` 和 `slideId`，但仍使用独立 Canvas 内容。
 
@@ -114,6 +114,6 @@ viewport 适用于所有 Workspace 类型。软件可以禁止用户在屏幕批
 
 ## 容错
 
-显式注册表下的 `workspaceGuid` 或 `deviceGuid` 缺失、无效时，读取器可以构造仅用于本次加载的临时 Workspace 或根 Device 并警告。缺少页面或图层编号时，可以按物理顺序生成临时独立页面。
+使用显式注册表时，如果 `workspaceGuid` 或 `deviceGuid` 缺失或无法解析，读取器可以构造仅供本次加载使用的临时 Workspace 或根 Device，并报告警告。页面身份或 `pageIndex` 缺失或无效时，读取器可以按 Canvas 在对象流中的先后顺序生成临时独立页面；`layerIndex` 缺失或无效时，应在对应临时页面下按对象流顺序生成临时图层。上述临时身份只用于本次加载。
 
-第 0 层 viewport Map 缺少任一必填字段、`x/y` 包含 NaN/Infinity，或 `scale` 非正、包含 NaN/Infinity 时，整个 viewport 无效并回退默认值。非第 0 层 viewport 一律忽略。所有默认值、继承和容错结果均不得自动回写源文件。
+第 0 层 `viewport` Map 缺少任一必填字段、`x/y` 包含 NaN/Infinity，或 `scale` 非正、包含 NaN/Infinity 时，整个 `viewport` 无效并回退默认值。非第 0 层 `viewport` 一律忽略。所有默认值、继承和容错结果均不得自动回写源文件。
