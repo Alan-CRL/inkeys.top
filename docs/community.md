@@ -39,7 +39,7 @@ title: 社区名片
 还有他们：  
 [ALTaleX](https://github.com/ALTaleX531) 🤔 💻 💡  
 [Leafuke](https://github.com/Leafuke) 🤔  
-[Darion](https://github.com/Darion) 🤔  
+[Darion](https://github.com/DarionDong) 🤔  
 [Supra4E8C](https://github.com/LTbinglingfeng) 🤔  
 [2,2,3-三甲基戊烷](https://github.com/2-2-3-trimethylpentane) 🤔 📝 📖 🌍  
 [Jursin](https://github.com/Jursin) 🤔 🎨  
