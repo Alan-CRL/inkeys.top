@@ -29,7 +29,7 @@ Shape 至少必须有 `stroke` 或 `fill` 之一。Line/Polyline 必须有 `stro
 | --- | --- | --- |
 | `0` | Line | 由两个端点定义的单个线条对象 |
 | `1` | Polyline | 由至少两个点定义的单个折线对象 |
-| `2` | Rectangle | 可非等比缩放的矩形 |
+| `2` | Rectangle | 可非等比缩放的矩形或圆角矩形 |
 | `3` | Square | 保持等比语义的正方形 |
 | `4` | Ellipse | 可非等比缩放的椭圆 |
 | `5` | Circle | 保持等比语义的圆 |
@@ -75,8 +75,12 @@ Rectangle 和 Ellipse 的 `geometry` 字段为：
 | `width` | float32 | Required | 最终宽度，必须大于 0 |
 | `height` | float32 | Required | 最终高度，必须大于 0 |
 | `rotation` | float32 | Optional | 弧度，Canvas 坐标系正值顺时针，缺失为 `0` |
+| `cornerRadiusX` | float32 | Optional | 仅用于 Rectangle；圆角横向半径，缺失为 `0` |
+| `cornerRadiusY` | float32 | Optional | 仅用于 Rectangle；圆角纵向半径，缺失为 `0` |
 
 Rectangle 和 Ellipse 允许 `width` 与 `height` 不相等。旋转后仍以这组最终 Canvas 几何显示，不使用通用仿射矩阵。
+
+Rectangle 使用 `cornerRadiusX` 与 `cornerRadiusY` 表达圆角。普通矩形的两个值均为 `0`；写入器可以同时省略它们，也可以显式写入两个 `0`。圆角矩形的两个值必须同时大于 `0`，并分别满足 `cornerRadiusX <= width / 2` 与 `cornerRadiusY <= height / 2`。写入器保存任一圆角字段时必须同时保存另一个字段；读取器将两者均缺失视为两个 `0`。当只有一个字段存在，或者两者没有同时为 `0` 或同时为有效正数时，读取器将两者都按 `0` 回退并报告警告。Ellipse 中出现这两个字段时，读取器忽略它们并报告警告。
 
 ### Square
 
@@ -226,6 +230,36 @@ Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器从 Canvas 尾部反向�
       "components": [1.8, 0.65, 0.1]
     },
     "opacity": 0.5
+  }
+}
+```
+
+### 圆角矩形
+
+```jsonc
+{
+  "type": 5,
+  "contentId": 4,
+  "undoId": 3,
+  "shapeType": 2,
+  "geometry": {
+    "centerX": 360.0,
+    "centerY": 240.0,
+    "width": 240.0,
+    "height": 120.0,
+    "rotation": 0.0,
+    "cornerRadiusX": 24.0,
+    "cornerRadiusY": 16.0
+  },
+  "stroke": {
+    "color": { "fallback": 255 },
+    "opacity": 1.0,
+    "width": 4.0
+  },
+  "fill": {
+    "fillType": 0,
+    "color": { "fallback": 16777215 },
+    "opacity": 1.0
   }
 }
 ```
