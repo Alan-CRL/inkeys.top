@@ -1,0 +1,5 @@
+{"file":".trellis/spec/frontend/index.md","reason":"确认 VuePress 站点前端规范层与开发前检查项"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"新组件目录、public 资源与生成物边界"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"组件风格、全局注册规则、Plume 变量与无障碍约定"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"格式约定、SSR 安全、监听清理与构建验证"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/inkeys3-ui3-draw3.md","reason":"UI3 主栏尺寸配色动效与 Draw3 功能事实"}

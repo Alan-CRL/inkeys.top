@@ -5,6 +5,7 @@ import GitHubCard from './theme/components/GitHubCard.vue'
 import SiteVisitCounter from './theme/components/SiteVisitCounter.vue'
 import SwiperSelf from './theme/components/Swiper.vue'
 import VideoPlayerAmbilight from './theme/components/VideoPlayerAmbilight.vue' 
+import NewHome from './theme/components/NewHome/NewHome.vue'
 import './theme/styles/custom.css'
 
 export default defineClientConfig({
@@ -14,6 +15,7 @@ export default defineClientConfig({
     app.component('SiteVisitCounter', SiteVisitCounter)
     app.component('SwiperSelf', SwiperSelf) 
     app.component('VideoPlayerAmbilight', VideoPlayerAmbilight) 
+    app.component('NewHome', NewHome)
   },
   layouts: {
     Layout,

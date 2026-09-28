@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"检查 SSR 安全、observer/listener 清理、构建结果与格式"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"检查注册范围、样式约定与无障碍属性"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查是否重复实现已有组件或样式"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/inkeys3-ui3-draw3.md","reason":"核对复刻尺寸、配色与 Draw3 文案事实"}
