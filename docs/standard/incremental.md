@@ -10,8 +10,8 @@ UInk 的增量写入是可选的当前画布崩溃保护。它只向既有对象
 
 目标 Workspace 与 Device 已由 Header Extension 显式注册，或者文件按 Header Extension 规则使用隐式单例时，可以追加：
 
-- 文件末尾最后一个 Canvas 中已经完整结束的 [Ink](blocks/ink)、[Shape](blocks/shape) 或 [Media](blocks/media)；
-- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，随后逐个追加完整 Ink/Shape/Media；新 Canvas 为 `layerIndex = 0` 时可以保存最终 viewport，其他图层必须省略 viewport。
+- 文件末尾最后一个 Canvas 中已经完整结束的 [Ink](blocks/ink)、[Shape](blocks/shape)、[Media](blocks/media) 或 [Clear](blocks/clear)；
+- 引用既有 Workspace 与 Device 的新 [Canvas](blocks/canvas)，随后逐个追加完整 Ink/Shape/Media/Clear；新 Canvas 为 `layerIndex = 0` 时可以保存最终 viewport，其他图层必须省略 viewport。
 
 尚未完成的轨迹不得写入；写入器不得只写入 MessagePack Map 的一部分后等待补齐。只有文件末尾最后一个 Canvas 可以继续追加内容。写入器不得在文件末尾重复既有 Canvas，以模拟对旧页、旧图层或既有 viewport 的补丁。
 
@@ -23,8 +23,8 @@ UInk 的增量写入是可选的当前画布崩溃保护。它只向既有对象
 
 ## 顺序要求
 
-- 新内容的 `contentId` 承接当前 Canvas 的 Ink/Shape/Media 共享序列。
-- `undoId` 不得小于此前内容的 `undoId`。
+- 新内容的 `contentId` 承接当前 Canvas 的 Ink/Shape/Media/Clear 共享序列。
+- `undoId` 不得小于此前内容的 `undoId`；追加 Clear 时必须使用新的、更大的 `undoId`，使它独占一个撤回组。
 - 新 Canvas 的 `(workspaceKey, deviceKey, pageGuid, layerIndex)` 不得与既有 Canvas 重复；两个 Key 分别表示显式 GUID 或文件内对应的隐式单例。
 - 追加同一逻辑页在另一 Device 上的 Canvas 时复用 `pageGuid` 和 `pageIndex`；逻辑页数不变，Header 快照也不更新。
 - 如果目标不是文件末尾最后一个 Canvas，则必须执行完整保存。
@@ -52,7 +52,7 @@ UInk 的增量写入是可选的当前画布崩溃保护。它只向既有对象
 - 撤回或重做；
 - 返回旧页、旧图层或更早 Canvas 修改；
 - 普通板擦切断已经保存的旧 Ink/Shape；
-- 修改、移动或删除既有 Ink、Shape、Media；
+- 修改、移动或删除既有 Ink、Shape、Media 或 Clear；
 - 切换既有 PDF 的 `pageIndex`；
 - 修改既有页面的 Canvas `viewport`；
 - 改变页面、图层、`pageIndex` 或 `pageGuid` 结构；
@@ -60,9 +60,9 @@ UInk 的增量写入是可选的当前画布崩溃保护。它只向既有对象
 
 新增 Workspace 时，必须在同一次完整保存中注册 Workspace，并写入该 Workspace 的至少一个 Canvas。
 
-完整保存只移除真正已经撤回的块。带 `renderOnlyWhenLatest = true`、当前被修正结果隐藏但尚未撤回的 Ink/Shape 仍是有效内容，必须保留。写入器必须重新整理各 Canvas 的 `contentId` 与 `undoId`，并重新计算 Header 快照。完整保存不得改变文件永久 `Header.guid`、既有 Workspace/Device GUID 或既有页面 `pageGuid`。
+完整保存只移除真正已经撤回的块。带 `renderOnlyWhenLatest = true`、当前被修正结果隐藏但尚未撤回的 Ink/Shape，以及被后续 Clear 隐藏但仍可通过 Undo 恢复的旧区间，都是有效内容，必须保留。写入器必须重新整理各 Canvas 的 `contentId` 与 `undoId`，并重新计算 Header 快照。完整保存不得改变文件永久 `Header.guid`、既有 Workspace/Device GUID 或既有页面 `pageGuid`。
 
-完整保存只在同页同 Device 的 `layerIndex = 0` Canvas 保存最终 viewport。viewport 不产生 `contentId` 或 `undoId`，也不属于 Ink/Shape/Media 的撤回历史。软件在撤回内容时是否调整 viewport 由软件决定。复制页面时，新页面继承源页面 viewport。
+完整保存只在同页同 Device 的 `layerIndex = 0` Canvas 保存最终 viewport。viewport 不产生 `contentId` 或 `undoId`，也不属于 Ink/Shape/Media/Clear 的撤回历史。软件在撤回内容或 Clear 时是否调整 viewport 由软件决定。复制页面时，新页面继承源页面 viewport。
 
 ## 完整保存提交顺序
 

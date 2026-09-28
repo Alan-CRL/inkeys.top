@@ -12,6 +12,7 @@ Type ID 用于识别墨迹主文件中的顶层 MessagePack 对象。本文将�
 | `3` | [Ink 块](blocks/ink) | Map |
 | `4` | [Media 块](blocks/media) | Map |
 | `5` | [Shape 块](blocks/shape) | Map |
+| `6` | [Clear 块](blocks/clear) | Map |
 
 [Device](blocks/device) 是 Header Extension 注册表中的嵌套 Map，不具有 Type ID，也不出现在顶级对象流中。
 
@@ -36,6 +37,8 @@ Ink 顶层 `type` 固定为 `3`；块内 `inkType` 才表示擦除、普通笔�
 :::
 
 各字段声明的 `128+` 私有编号没有全局厂商命名空间，也不配套 `vendorId`；只有预先约定相同编号语义的实现之间能够互操作。
+
+Clear 是 version `10` 当前基线中的标准内容块。只会跳过未知 Type ID、但不理解 Clear 呈现语义的早期 version `10` reader 不属于当前兼容实现，因为忽略 Clear 会错误叠加已经清空的旧内容。
 
 ## 未知对象与保存
 

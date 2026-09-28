@@ -12,7 +12,7 @@ Shape 表示一个可编辑的参数化图形。它与 Ink、Media 并列存在�
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `type` | uint16 | Required | 固定为 `5` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media 共享的连续内容编号 |
+| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media/Clear 共享的连续内容编号 |
 | `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
 | `shapeType` | int32 | Required | 几何类型 |
 | `geometry` | Map | Required | 由 `shapeType` 决定的几何数据 |
@@ -154,7 +154,7 @@ Fill 首版只支持单色填充，渐变、纹理和图片填充留待后续版
 
 ## 内容流、撤回与增量写入
 
-Shape 与 Ink、Media 按顶层对象流中的先后顺序混合处理。三者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。
+Shape 与 Ink、Media、Clear 按顶层对象流中的先后顺序混合处理。四者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。Clear 必须独占自己的撤回组。
 
 `contentId` 只标识当前文件版本中当前 Canvas 的对象流顺序，完整保存后不得作为稳定外部引用。
 
@@ -271,4 +271,5 @@ Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器从 Canvas 尾部反向�
 - [墨迹主文件](../file/main)
 - [Canvas 块](canvas)
 - [Ink 块](ink)
+- [Clear 块](clear)
 - [增量写入](../incremental)

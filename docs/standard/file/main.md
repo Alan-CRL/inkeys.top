@@ -11,9 +11,9 @@ flowchart TB
   H["Header · Type 0"] --> HE["Header Extension · Type 1<br/>可选且最多一个"]
   H -. "无扩展" .-> C1
   HE --> C1["Canvas · Type 2"]
-  C1 --> B1["Ink / Shape / Media · Type 3 / 4 / 5"]
+  C1 --> B1["Ink / Shape / Media / Clear · Type 3 / 4 / 5 / 6"]
   B1 --> C2["Canvas · Type 2"]
-  C2 --> B2["Ink / Shape / Media · Type 3 / 4 / 5"]
+  C2 --> B2["Ink / Shape / Media / Clear · Type 3 / 4 / 5 / 6"]
   B2 --> EOF["File EOF"]
 ```
 
@@ -22,8 +22,8 @@ flowchart TB
 1. Header 必须位于文件开头。
 2. Header Extension 可选且最多一个；存在时必须紧跟 Header。
 3. Device 只存在于 Header Extension 的 `devices` 注册表，不是顶级块。
-4. Ink/Shape/Media 归属于前一个 Canvas；Canvas 作用域在下一个 Canvas 或文件末尾结束。
-5. 第一个 Canvas 前不得出现 Ink/Shape/Media。
+4. Ink/Shape/Media/Clear 归属于前一个 Canvas；Canvas 作用域在下一个 Canvas 或文件末尾结束。
+5. 第一个 Canvas 前不得出现 Ink/Shape/Media/Clear。
 6. Canvas 可以为空，用于保存空白页或空白图层。
 
 ## 两棵注册树与扁平 Canvas
@@ -54,9 +54,9 @@ Device 局部坐标和 Canvas 世界坐标都使用平台无关的逻辑像素�
 
 ## 内容与撤回顺序
 
-同一 Canvas 中，Ink、Shape 与 Media 按顶层对象流中的先后顺序混合处理，`contentId` 按该顺序从 0 连续递增。擦除 Ink 只作用于同一 Canvas 中位于它之前的 Ink 与 Shape；读取器不得按块类型重新排序。
+同一 Canvas 中，Ink、Shape、Media 与 Clear 按顶层对象流中的先后顺序混合处理，`contentId` 按该顺序从 0 连续递增。擦除 Ink 只作用于同一 Canvas 中位于它之前的 Ink 与 Shape；Clear 把此前全部可见合成结果重置为透明，后续内容从透明 Canvas 继续合成。读取器不得按块类型重新排序。
 
-`undoId` 在同一 Canvas 的 Ink/Shape/Media 间共享，从 0 开始且只允许不递减。对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。撤回或重做后必须执行完整保存；保存后的文件只包含当前有效内容和末尾最新组规则要求保留的隐藏原稿。
+`undoId` 在同一 Canvas 的 Ink/Shape/Media/Clear 间共享，从 0 开始且只允许不递减。对象流中 `undoId` 相同且连续的内容块构成一次撤回操作；Clear 必须独占自己的撤回组。撤回或重做后必须执行完整保存。仍有效但被后续 Clear 隐藏的旧区间必须保留，真正已撤回的内容和 Clear 可以移除并重新整理编号；UInk 不承诺跨关闭保留 Redo。
 
 Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器判断末尾标记组时跳过所有 Media，Media 既不加入该组，也不终止扫描。只有位于 Canvas 尾部、连续标记为 `true` 的 Ink/Shape 显示；其他标记内容隐藏。未标记的 Ink/Shape 终止反向扫描，但仍按普通内容显示。该规则不合并 `undoId`；被结果隐藏但未撤回的原稿仍是完整保存必须保留的有效内容。
 
@@ -72,7 +72,7 @@ Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器判断末尾标记�
 
 1. EOF 位于最后一个对象内部时，丢弃该不完整尾块，保留此前所有完整对象。
 2. 解析某个非末尾顶层对象时出现无法解码的字节，或者任意对象之间存在无法解码的字节时，保留该失败对象或字节段开始之前已经完成的对象，并停止读取余下字节；不得按字节搜索新的对象边界。
-3. 遇到未知 Type ID 时，跳过当前完整 MessagePack 对象并继续读取。
+3. 遇到未知 Type ID 时，跳过当前完整 MessagePack 对象并继续读取；但忽略当前基线已注册的 Clear 会改变画面，不属于 version `10` 当前兼容实现。
 4. 遇到能完整解码但字段无效的已知块时，按对应块页面的规则跳过或回退，并继续读取。
 
 建立逻辑模型时再应用以下容错：
@@ -131,7 +131,7 @@ Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器判断末尾标记�
 
 - **Window Device 上的画布**：在 `devices` 注册 Window，并让 Canvas 引用其 GUID；Canvas 不重复保存 Device 的 x/y/width/height，只用 viewport 保存窗口左上角对应的 Canvas 世界坐标与统一缩放。
 - **嵌套白板**：子 Workspace 使用 `parentWorkspaceGuid`，其空间位置由 Canvas 引用的 Device 决定。
-- **空白页**：只写 Canvas，不跟随 Ink/Shape/Media。
+- **空白页**：只写 Canvas，不跟随 Ink/Shape/Media/Clear。
 - **PDF 缺失**：保留 Media 的 width/height/transform 以及可选页信息，继续渲染其他内容。
 - **HDR 回退**：Ink 的未知或无效色彩空间使用 Color Map 的 fallback。
 
@@ -146,3 +146,4 @@ Ink 和 Shape 可以使用 `renderOnlyWhenLatest`。读取器判断末尾标记�
 - [Ink 块](../blocks/ink)
 - [Shape 块](../blocks/shape)
 - [Media 块](../blocks/media)
+- [Clear 块](../blocks/clear)

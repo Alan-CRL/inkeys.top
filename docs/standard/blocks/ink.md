@@ -12,7 +12,7 @@ Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔�
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `type` | uint16 | Required | 固定为 `3` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media 共享的连续内容编号 |
+| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media/Clear 共享的连续内容编号 |
 | `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
 | `inkType` | int32 | Required | 墨迹渲染类型 |
 | `color` | Color Map | Required | 块级颜色与 HDR 回退信息 |
@@ -88,9 +88,10 @@ Ink 和 Shape 共享 `renderOnlyWhenLatest` 规则。读取器必须对当前 Ca
 
 1. 从最后一个内容块开始反向扫描。
 2. 遇到 Media 时直接越过；Media 不加入末尾最新组，也不终止扫描。
-3. 遇到 `renderOnlyWhenLatest = true` 的 Ink/Shape 时，将其加入末尾最新组并继续反向扫描。
-4. 遇到第一个未标记或标记为 `false` 的 Ink/Shape 时停止扫描。文件中更早的标记 Ink/Shape 不属于末尾最新组。
-5. 正常显示末尾最新组和所有未标记的 Ink/Shape，隐藏不属于末尾最新组的标记 Ink/Shape。末尾最新组可以为空。
+3. 遇到 Clear 时停止扫描；Clear 之前的内容不属于 Clear 之后区间的末尾最新组。
+4. 遇到 `renderOnlyWhenLatest = true` 的 Ink/Shape 时，将其加入末尾最新组并继续反向扫描。
+5. 遇到第一个未标记或标记为 `false` 的 Ink/Shape 时停止扫描。文件中更早的标记 Ink/Shape 不属于末尾最新组。
+6. 正常显示当前 Clear 区间的末尾最新组和所有未标记 Ink/Shape；更早区间由 Clear 隐藏，不参与当前显示。末尾最新组可以为空。
 
 该机制适用于形状修正：软件先保存多条原始 Ink/Shape，并将它们的 `renderOnlyWhenLatest` 设为 `true`，再保存未标记的结果 Shape。结果 Shape 存在时，反向扫描会在该未标记 Shape 处停止，因此标记原稿隐藏。撤回结果并执行完整保存后，原稿成为末尾最新组并重新显示。
 
@@ -198,4 +199,5 @@ Ink 和 Shape 共享 `renderOnlyWhenLatest` 规则。读取器必须对当前 Ca
 - [增量写入](../incremental)
 - [Canvas 块](canvas)
 - [Shape 块](shape)
+- [Clear 块](clear)
 - [Color Map](../common/color)

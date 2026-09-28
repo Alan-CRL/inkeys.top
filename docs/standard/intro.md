@@ -6,7 +6,7 @@ createTime: 2026/02/15 10:26:08
 UInk 规范用于解决本地绘图软件的墨迹存储与跨端预览问题。规范优先保证数据语义、内容布局和基础呈现一致；自由墨迹曲线、Marker 外形、抗锯齿以及复杂擦除效果可以因软件实现而不同。
 
 ::: tip UInk 1.0 Beta
-当前规范版本号为 `10`，发布状态为 UInk 1.0 Beta，线格式已经冻结。本文档是 version `10` 的首个 Beta 兼容基线，并取代此前所有同版本预 Beta 草案；旧草案文件不属于兼容范围，读取器无须支持。
+当前规范版本号为 `10`，发布状态为 UInk 1.0 Beta，规范仍在完善。本文档定义最新的 version `10` 兼容基线并取代此前所有同版本草案；旧草案文件不属于兼容范围，读取器无须支持。
 :::
 
 [规范版本号](version)
@@ -16,7 +16,7 @@ UInk 规范用于解决本地绘图软件的墨迹存储与跨端预览问题。
 1. 一个文件可以注册多个屏幕批注、白板或 PPT Workspace，并支持父子工作区、多显示器、多页面和多图层。
 2. 支持可选的[增量写入](incremental)，在当前文件末尾 Canvas 中追加完整内容，用于降低运行中崩溃造成的数据丢失。
 3. 墨迹主文件使用连续 MessagePack 对象流，兼顾读写性能、体积和扩展性。
-4. Ink、Shape 与 Media 按它们在顶层对象流中的先后顺序混合处理，并共享内容编号和撤回分组。
+4. Ink、Shape、Media 与 Clear 按它们在顶层对象流中的先后顺序混合处理，并共享内容编号和撤回分组；Clear 可以保留此前内容供逐级撤回，同时把当前 Canvas 恢复为透明状态。
 5. Device 与 Canvas 解耦：Device 描述显示区域，Canvas 使用逻辑像素保存内容，并可通过 `viewport` 保存平移与缩放状态。
 6. 擦除、普通笔和两类荧光笔统一使用 [Ink 块](blocks/ink)，未知样式可以安全回退。
 
@@ -38,7 +38,7 @@ UInk 格式由必需的墨迹主文件和可选的墨迹扩展文件组成。
 
 :::
 
-- 墨迹主文件（`filename.uink`）使用 [MessagePack](https://msgpack.org/) 对象流，保存 Ink、Shape、Media、Canvas 和元数据。
+- 墨迹主文件（`filename.uink`）使用 [MessagePack](https://msgpack.org/) 对象流，保存 Ink、Shape、Media、Clear、Canvas 和元数据。
 - 墨迹扩展文件（`filename.uink.extra`）使用 ZIP 格式打包，保存由 [Media 块](blocks/media) 引用的图片、SVG、音视频和 PDF 等资源。
 
 两个文件使用相同的基础文件名，其中墨迹扩展文件是可选的。`.uink` 主文件始终是当前有效内容的权威来源；资源包缺失或资源不可用时，基础 Ink/Shape 仍必须正常加载。
@@ -47,7 +47,7 @@ UInk 格式由必需的墨迹主文件和可选的墨迹扩展文件组成。
 
 - 墨迹主文件用于快速加载、基础预览和内容交换。
 - 墨迹扩展文件只是资源容器，不保存内容顺序、几何或撤回信息。
-- UInk 可以保存编辑与撤回所需的当前有效内容，但不承诺在关闭后保留 Redo 历史。
+- UInk 可以保存编辑与撤回所需的当前有效内容，包括被后续 Clear 隐藏但仍可撤回的旧区间；不承诺在关闭后保留 Redo 历史。
 
 ### 墨迹扩展文件
 
@@ -68,4 +68,5 @@ UInk 格式由必需的墨迹主文件和可选的墨迹扩展文件组成。
 - [Ink 块](blocks/ink)
 - [Shape 块](blocks/shape)
 - [Media 块](blocks/media)
+- [Clear 块](blocks/clear)
 - [Color Map](common/color)

@@ -6,7 +6,7 @@ title: Canvas 块
 - Type: Map
 - Required
 
-Canvas 是扁平内容流中的页面图层记录。使用显式注册表时，它通过 GUID 分别引用 Workspace 与 Device；使用隐式单例时，它省略对应 GUID。Canvas 后面的 Ink、Shape 和 Media 归属该 Canvas，作用域在下一个 Canvas 或文件末尾结束。
+Canvas 是扁平内容流中的页面图层记录。使用显式注册表时，它通过 GUID 分别引用 Workspace 与 Device；使用隐式单例时，它省略对应 GUID。Canvas 后面的 Ink、Shape、Media 和 Clear 归属该 Canvas，作用域在下一个 Canvas 或文件末尾结束。
 
 ## 字段
 
@@ -24,7 +24,7 @@ Canvas 是扁平内容流中的页面图层记录。使用显式注册表时，�
 | `viewport` | Map | Conditional | 仅 `layerIndex = 0` 可以保存；Device 可见区域对应的 Canvas 世界坐标与统一缩放 |
 | `extra` | Map | Optional | 私有扩展 |
 
-Canvas 不保存自身边界几何，其显示视口始终填满对应的显式或隐式 Device。Ink、Shape 与 Media 使用平台无关的 Canvas 逻辑像素；`viewport` 只决定这些世界坐标如何映射到 Device 局部逻辑像素，不修改内容本身的坐标。
+Canvas 不保存自身边界几何，其显示视口始终填满对应的显式或隐式 Device。Ink、Shape 与 Media 使用平台无关的 Canvas 逻辑像素；Clear 没有几何，只重置同一 Canvas 的可见合成结果。`viewport` 只决定世界坐标如何映射到 Device 局部逻辑像素，不修改内容本身的坐标。
 
 ## Viewport Map
 
@@ -76,7 +76,7 @@ canvasY = deviceY / viewport.scale + viewport.y
 
 ## 多显示器白板
 
-同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同 `pageGuid` 和 `pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Shape/Media、独立 `contentId` 与 `undoId`。UInk 不同步不同屏幕上的绘制内容。
+同步翻页使用同一个 Workspace：同一页在多个 Device 上具有相同的 `pageGuid` 和 `pageIndex`，但每个 Device 使用独立 Canvas、独立 Ink/Shape/Media/Clear、独立 `contentId` 与 `undoId`。UInk 不同步不同屏幕上的绘制内容或 Clear 历史。
 
 同一逻辑页在不同 Device 上可以保存不同 viewport；每个 Device 内由第 0 层保存唯一 viewport。
 
@@ -110,7 +110,9 @@ canvasY = deviceY / viewport.scale + viewport.y
 }
 ```
 
-该 Canvas 可以不包含任何 Ink/Shape/Media，用于保存用户已创建但尚未绘制的空白页或图层。每个显式 Workspace 至少应包含一个 Canvas。
+该 Canvas 可以不包含任何 Ink/Shape/Media/Clear，用于保存用户已创建但尚未绘制的空白页或图层。每个显式 Workspace 至少应包含一个 Canvas。
+
+Clear 只作用于它所属的单个 Canvas，不影响同页其他 Device、其他 `layerIndex`、其他页面或其他 Workspace。多图层仍按 `layerIndex` 合成，不能用新图层代替 Clear 历史。
 
 ## 容错
 

@@ -124,6 +124,7 @@ export default defineThemeConfig({
             { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
             { text: 'Device 结构', link: '/standard/blocks/device' },
             { text: 'Canvas 块', link: '/standard/blocks/canvas' },
+            { text: 'Clear 块', link: '/standard/blocks/clear' },
             { text: 'Ink 块', link: '/standard/blocks/ink' },
             { text: 'Shape 块', link: '/standard/blocks/shape' },
             { text: 'Media 块', link: '/standard/blocks/media' },

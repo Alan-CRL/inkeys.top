@@ -12,13 +12,13 @@ Media 在墨迹主文件中保存资源引用、顺序、撤回分组和呈现�
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `type` | uint16 | Required | 固定为 `4` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media 共享的连续内容编号 |
-| `undoId` | uint32 | Required | 与 Ink/Shape 共享的撤回操作分组 |
+| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media/Clear 共享的连续内容编号 |
+| `undoId` | uint32 | Required | 与 Ink/Shape/Clear 共享的撤回操作分组 |
 | `path` | string | Required | `.uink.extra` 内的安全相对路径 |
 | `mimeType` | string | Required | 资源声明的 MIME 媒体类型 |
 | `extra` | Map | Optional | 私有扩展 |
 
-`contentId` 按 Ink、Shape 与 Media 在顶层对象流中的先后顺序从 0 连续递增。对象流中 `undoId` 相同且连续的 Ink/Shape/Media 构成同一步撤回。
+`contentId` 按 Ink、Shape、Media 与 Clear 在顶层对象流中的先后顺序从 0 连续递增。对象流中 `undoId` 相同且连续的 Ink/Shape/Media 构成同一步撤回；Clear 必须使用独立的撤回组，并清除包括 Media 在内的此前可见合成结果。
 
 `contentId` 只标识当前文件版本中当前 Canvas 的对象流顺序，完整保存后不得作为稳定外部引用。
 
