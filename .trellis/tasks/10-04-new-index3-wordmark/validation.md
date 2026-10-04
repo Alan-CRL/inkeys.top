@@ -67,3 +67,9 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - 移除起笔收尖，起笔与主体保持硬笔的圆头及压感宽度；末端改为更长的22%/55弧长范围与五次平滑包络，起止导数归零，不再使用硬阈值截断。
 - 实际Canvas直线测试通过：起笔和主体与hard逐像素一致、尾部单调收细、逐列宽度变化无突跳且渐变跨度足够。30组材料回归、TypeScript与diff检查通过；离屏成品已检查。
 - 独立review无问题。pnpm docs:build成功退出0，52页，21.24s，仅插件耗时提示。未进行GUI验收。用户授权提交此修订及待提交多笔型功能，不推送。
+
+## 旧预览入口停用与发布验证
+- config.ts保留VuePress默认pagePatterns并排除两个旧根页面；client.ts移除NewHome/NewHome2导入和注册。旧源码与本地草稿原地保留，NewHome3可独立从已跟踪文件构建。
+- 实际扫描50→48个Markdown，准确只排除new-index/new-index2。生产构建成功退出0，生成50页，15.45s，仅插件耗时提示。
+- 构建产物验证通过：new-index.html/new-index2.html不存在，运行时routes.js及sitemap/llms索引无旧链接，new-index3.html存在且路由保留。独立review无问题，diff检查通过。未使用GUI。
+- 用户已明确授权本轮commit及正常push；读取远端首次遇到网络连接重置，不修改认证或网络配置，继续验证和提交后检查推送结果。

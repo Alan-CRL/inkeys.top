@@ -41,6 +41,8 @@ const imageFallbackScript = `
 `.trim()
 
 export default defineUserConfig({
+  // 保留旧版首页草稿，但不生成可直接访问的页面；第三版继续参与构建。
+  pagePatterns: ['**/*.md', '!.vuepress', '!new-index.md', '!new-index2.md'],
   base: "/",
   lang: "zh-CN",
   title: "智绘教Inkeys",

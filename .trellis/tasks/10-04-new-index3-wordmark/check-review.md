@@ -57,3 +57,6 @@ Final scheduler, lifecycle, material, strictTS and diff checks PASS. Main finalp
 
 ## Soft tail-only refinement review
 No findings or reviewer edits. Start/body factor remains1; only finalmin(length*.22,55) uses .12+.88 quintic envelope with zero endpoint first/second derivatives. Other pens, centerlines and pressure/timing unchanged. Focused nativeCanvas start/body identity and gradualtail tests, strictTS and diffcheck PASS. Main material regression and productionbuild PASS52pages/21.24s. NoGUI.
+
+## Legacy preview entry review
+No findings/edits. Confirmed installedVuePress defaults preserved and exacttwo page exclusions via realtinyglobby setcomparison; oldcomponents have no activepage consumers, allsourcespreserved. Mainproductionbuild PASS50pages/15.45s; oldHTML/runtime routes/sitemap/llms references absent, new-index3 retained. NoGUI.

@@ -57,3 +57,7 @@ Reducedmotion noanimation/loop/shimmer/transitions: displayappropriatefullstatic
 
 ## 软笔末端收锋修订（当前要求优先）
 起笔不再收尖，保持与硬笔相同的完整圆头。仅末端渐细，扩大平滑收锋区，消除突然变细的视觉拐点。保留现有中心线、压感与书写速度，其他笔型不改。用户明确要求完成后commit；包含本轮修正及上轮尚未提交的多笔型功能，不包含NewHome2、client.ts的既有草稿或生成预览文件，不push。
+
+## 发布前隐藏旧预览入口
+用户要求只保留new-index3网页入口，停用new-index/new-index2，并commit后push。多笔型与软笔已提交e8e9f89，无需重复提交；NewHome2本地草稿不单独发布。
+实现边界：VuePress pagePatterns保留默认Markdown扫描与.vuepress排除，额外排除两个旧根页面；client.ts移除旧预览组件导入/注册，保留NewHome3。旧源码及未跟踪草稿不删除、不打包进本次提交。验证构建中仅new-index3被生成，旧路径不出现在路由/站点地图/LLM索引中。正常签名commit及非force push；若认证/签名失败停止并报告。
