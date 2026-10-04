@@ -47,3 +47,6 @@ Independent trellis-check review: no actionable findings or source edits. Strict
 
 ## Theme/background/navbar extension review
 No actionable findings or reviewer edits. Native Plume source and SSR output confirm pageClass scope on shared layout ancestor, transparent navbar/contentbody and no opaque VPContent plate. Divider override applies only on NewHome3; mobile screen and dropdown surfaces remain intact. Search selectors match installed plugin markup. Theme watcher is setup-scoped and guarded for SSR; repaint respects paused/reduced state and does not reset activeclock; render cache contains theme. StrictTS, renderer, lifecycle and diffcheck PASS. Main productionbuild PASS52pages. No GUI/commit/push.
+
+## Icon control and graceful pause review
+No actionable findings or reviewer edits. Actual compiledVue lifecycle and additional dev?t=13, offscreen/resize duringfade, reducedmotion cancellation in bothdesiredstates pass. Iconpaths finite through slight springovershoot[-.04,1.04], same2M/8Qcommands. Native48px iconbutton/no title/dynamicaria, unclippedfocus, fine-pointer hover, press and reducedmotion CSS verified. Transitionclock stops whilehidden/unmounted; mainclock frozen throughbothlegs, rapidtoggle continuous. Main buildPASS52pages; productdiffonlyNewHome3.vue. NoGUI.

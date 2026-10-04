@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useDarkMode } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene, timelineAt } from './softPen'
-import type { Painter } from './softPen'
+import type { AnimationState, Painter } from './softPen'
 
 const scene = createScene()
 const root = ref<HTMLDivElement>()
@@ -10,9 +10,11 @@ const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
 const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspect) })
 const clock = createActiveClock()
+const transitionClock = createActiveClock()
 const paused = ref(false)
 const reduced = ref(false)
 const isDark = useDarkMode()
+const iconPath = ref(iconPaths(0))
 
 let painter: Painter | undefined
 let frame = 0
@@ -30,6 +32,58 @@ let targetX = 0
 let targetY = 0
 let tiltX = 0
 let tiltY = 0
+let pauseTransition: { from: AnimationState } | undefined
+let iconProgress = 0
+let iconVelocity = 0
+
+function iconPaths(progress: number) {
+  const pause = [
+    [[7, 5], [10, 5], [10, 19], [7, 19]],
+    [[14, 5], [17, 5], [17, 19], [14, 19]],
+  ]
+  const play = [
+    [[8, 5], [12.3, 7.6], [12.3, 16.4], [8, 19]],
+    [[11.7, 7.2], [19, 11.7], [19, 12.3], [11.7, 16.8]],
+  ]
+  // 两个子轮廓使用同一组命令连续变形，播放态在中间相接，不切换或叠放两套图标。
+  return pause.map((vertices, part) => {
+    const points = vertices.map((point, i) => point.map((value, axis) =>
+      value + (play[part][i][axis] - value) * progress))
+    const corners = points.map((point, i) => {
+      const previous = points[(i + 3) % 4]
+      const next = points[(i + 1) % 4]
+      const incoming = Math.hypot(previous[0] - point[0], previous[1] - point[1])
+      const outgoing = Math.hypot(next[0] - point[0], next[1] - point[1])
+      const radius = Math.min(0.8, incoming / 2, outgoing / 2)
+      const toward = (to: number[], length: number) => point.map((value, axis) =>
+        value + (to[axis] - value) * radius / Math.max(length, 0.001))
+      return { point, enter: toward(previous, incoming), leave: toward(next, outgoing) }
+    })
+    return `M${corners[0].enter.join(',')}` + corners.map((corner, i) =>
+      `Q${corner.point.join(',')} ${corner.leave.join(',')}L${corners[(i + 1) % 4].enter.join(',')}`).join('') + 'Z'
+  }).join(' ')
+}
+
+function getPaintState(now: number): AnimationState {
+  if (reduced.value) return timelineAt(0, true)
+  if (pauseTransition) {
+    const time = transitionClock.read(now)
+    const ease = (value: number) => value * value * (3 - 2 * value)
+    if (time < 0.22) {
+      return { ...pauseTransition.from, opacity: pauseTransition.from.opacity * (1 - ease(time / 0.22)) }
+    }
+    if (time < 0.52) return { ...timelineAt(0, true), opacity: ease((time - 0.22) / 0.3) }
+    pauseTransition = undefined
+    transitionClock.setRunning(false, now)
+    // 快速再次点击只改变目标状态；先完成当前淡入，再无缝转入正常渐隐。
+    if (!paused.value) {
+      frozen = undefined
+      clock.seek(7.2, now)
+      clock.setRunning(canAnimate(), now)
+    }
+  }
+  return timelineAt(frozen ?? clock.read(now), paused.value)
+}
 
 function canAnimate() {
   return mounted && !document.hidden && inViewport
@@ -38,7 +92,7 @@ function canAnimate() {
 function paint(now: number) {
   const node = canvas.value
   if (!node || !painter) return
-  const state = timelineAt(frozen ?? clock.read(now), reduced.value || paused.value)
+  const state = getPaintState(now)
   painter.render(state, width, height, window.devicePixelRatio, isDark.value ? 'dark' : 'light')
 }
 
@@ -70,14 +124,29 @@ function tick(now: number) {
     tiltX = targetX
     tiltY = targetY
   }
+  const iconTarget = paused.value ? 1 : 0
+  const steps = Math.ceil(dt / 0.008)
+  for (let i = 0; i < steps; i++) {
+    const step = dt / steps
+    iconVelocity += ((iconTarget - iconProgress) * 360 - iconVelocity * 28) * step
+    iconProgress += iconVelocity * step
+  }
+  const iconMoving = Math.abs(iconTarget - iconProgress) + Math.abs(iconVelocity) > 0.001
+  if (!iconMoving || reduced.value) {
+    iconProgress = iconTarget
+    iconVelocity = 0
+  }
+  iconPath.value = iconPaths(iconProgress)
   applyTilt()
   paint(now)
-  if ((!reduced.value && !paused.value && frozen === undefined) || moving) requestFrame()
+  if ((!reduced.value && (pauseTransition || (!paused.value && frozen === undefined)))
+    || moving || (!reduced.value && iconMoving)) requestFrame()
 }
 
 function syncPlayback() {
   const now = performance.now()
-  clock.setRunning(canAnimate() && !reduced.value && !paused.value && frozen === undefined, now)
+  clock.setRunning(canAnimate() && !reduced.value && !paused.value && !pauseTransition && frozen === undefined, now)
+  transitionClock.setRunning(canAnimate() && !reduced.value && !!pauseTransition, now)
   if (!canAnimate()) {
     if (frame) cancelAnimationFrame(frame)
     frame = 0
@@ -90,10 +159,17 @@ function syncPlayback() {
 
 function togglePlayback() {
   if (reduced.value) return
-  if (paused.value) {
-    // 继续时直接从完整彩虹的渐隐起点播放，不接续半截笔画或重复等待。
+  const now = performance.now()
+  previousFrame = now
+  const from = getPaintState(now)
+  if (!paused.value && !pauseTransition) {
+    // 冻结当前几何后先淡出，再淡入完整彩虹；灰点只保留在淡出的旧画面里。
+    pauseTransition = { from }
+    transitionClock.seek(0, now)
+  }
+  else if (paused.value && !pauseTransition) {
     frozen = undefined
-    clock.seek(7.2, performance.now())
+    clock.seek(7.2, now)
   }
   paused.value = !paused.value
   syncPlayback()
@@ -124,6 +200,17 @@ function onPointerMove(event: PointerEvent) {
 
 function onPreferencesChange() {
   reduced.value = motionPreference?.matches ?? false
+  if (reduced.value) {
+    if (pauseTransition) {
+      pauseTransition = undefined
+      frozen = undefined
+      transitionClock.setRunning(false, performance.now())
+      clock.seek(7.2, performance.now())
+    }
+    iconProgress = paused.value ? 1 : 0
+    iconVelocity = 0
+    iconPath.value = iconPaths(iconProgress)
+  }
   if (reduced.value || !pointerPreference?.matches) {
     targetX = targetY = tiltX = tiltY = 0
     applyTilt()
@@ -191,6 +278,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   mounted = false
   clock.setRunning(false, performance.now())
+  transitionClock.setRunning(false, performance.now())
   if (frame) cancelAnimationFrame(frame)
   resizeObserver?.disconnect()
   visibleObserver?.disconnect()
@@ -214,9 +302,15 @@ onBeforeUnmount(() => {
       type="button"
       :disabled="reduced"
       :aria-pressed="paused"
+      :aria-label="paused ? '继续动画' : '暂停动画'"
       @click="togglePlayback"
     >
-      {{ paused ? '继续动画' : '暂停动画' }}
+      <svg class="nh3-playback-surface" viewBox="0 0 48 48" aria-hidden="true">
+        <path d="M24 1C44 1 47 4 47 24C47 44 44 47 24 47C4 47 1 44 1 24C1 4 4 1 24 1Z" />
+      </svg>
+      <svg class="nh3-playback-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path :d="iconPath" />
+      </svg>
     </button>
   </div>
 </template>
@@ -231,6 +325,7 @@ onBeforeUnmount(() => {
   --nh3-control-bg: rgba(255, 255, 255, 0.48);
   --nh3-control-hover: rgba(255, 255, 255, 0.76);
   --nh3-control-border: rgba(73, 99, 120, 0.14);
+  --nh3-playback-hover: rgba(110, 139, 161, 0.17);
   --vp-c-text-1: #283e4c;
   --vp-c-text-2: #506473;
   --vp-c-text-3: #6b7c8a;
@@ -254,6 +349,7 @@ onBeforeUnmount(() => {
   --nh3-control-bg: rgba(178, 204, 231, 0.07);
   --nh3-control-hover: rgba(178, 204, 231, 0.12);
   --nh3-control-border: rgba(186, 207, 230, 0.16);
+  --nh3-playback-hover: rgba(2, 8, 16, 0.4);
   --vp-c-text-1: #e6edf5;
   --vp-c-text-2: #b3c1d1;
   --vp-c-text-3: #8b9db0;
@@ -316,19 +412,55 @@ onBeforeUnmount(() => {
   position: absolute;
   right: var(--nh3-control-gap);
   bottom: var(--nh3-control-gap);
-  padding: 10px 16px;
-  border: 1px solid var(--nh3-control-border);
-  border-radius: 12px;
-  background: var(--nh3-control-bg);
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
   color: var(--vp-c-text-2);
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
   cursor: pointer;
+  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35);
 }
 
-.nh3-playback:hover:not(:disabled) {
-  background: var(--nh3-control-hover);
+.nh3-playback-surface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: var(--nh3-control-bg);
+  stroke: var(--nh3-control-border);
+  stroke-width: 1px;
+  transition: fill 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: none;
+}
+
+.nh3-playback-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nh3-playback:hover:not(:disabled) {
+    transform: scale(1.07);
+  }
+
+  .nh3-playback:hover:not(:disabled) .nh3-playback-surface {
+    fill: var(--nh3-playback-hover);
+  }
+}
+
+.nh3-playback:active:not(:disabled) {
+  transform: scale(0.94);
+  transition-duration: 120ms;
 }
 
 .nh3-playback:focus-visible {
@@ -348,6 +480,11 @@ onBeforeUnmount(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .nh3-playback,
+  .nh3-playback-surface {
+    transition: none;
+  }
+
   .nh3-mark {
     will-change: auto;
   }

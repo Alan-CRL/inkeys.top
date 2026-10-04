@@ -45,3 +45,9 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - SSR HTML confirmed new-home3-page and theme-plume on shared ancestor of navbar/root, originalnavbar/searchmarkup retained; index.html lacks thatpageclass. Reviewer also checked new-index2 exclusion.
 - Independent reviewer verified installed Plume CSS: VPContent/customlayout have no background; navbar/contentbody consume transparent navvar; dividerhidden; actual mini-search-button selector matches; mobile VPNavScreen keeps opaque themevar. No actionable findings. gitdiffcheck PASS; sourceUTF8LF.
 - No GUI/browser acceptance run under repository instructions. No commit/push authorized this round; kept changes reviewable for user.
+
+## Icon control / pause transition validation
+- Previous theme checkpoint committed92a733f after user-authorized retry resolved1Password signing failure; no signing workaround.
+- Updated compiledVue lifecycle PASS: outgoing geometry frozen,220msout/300msin, originalopacity retained at click, all5stage pause/resume, rapidtoggles continuous, theme/visibility duringfade, reducedmotion, resize and teardown.120frame icon settling verifies both endpoints and noRAF after pausedsettle.
+- Existing nativeCanvas renderer regression PASS. SSR builtbutton verified icon-only/no title/has accessible pause label; SVG surface does not clip keyboardfocus.
+- Existing pnpm docs:build PASS exit0,52pages,21.92s; only plugin timing notices, no dependency/config change. gitdiffcheck PASS, UTF8LF preserved. No GUI/browser animation acceptance run.

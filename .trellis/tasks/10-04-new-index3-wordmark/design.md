@@ -34,3 +34,10 @@
 ## Theme extension boundary (supersedes previous light-only/background preservation scope)
 颜色实际位于softPen绘制层，背景和按钮位于NewHome3.vue，顶栏属于Plume外层布局。优先复用Plume主题状态和安装版本的导航DOM；按页面SSR class限定样式，在该布局共同祖先绘制连续渐变，避免挂载后添加全局body类造成首帧闪烁/路由污染。必要时只增加new-index3.md的页面class。字形数据、动画时间轴、公共主题和其它页面不改。
 视觉方向：浅色珍珠白为底，边缘低饱和薄荷/淡紫柔光，文字后方保留平静区域；深色墨蓝炭底配克制青绿/靛紫柔光，彩虹提高亮度而不加整笔发光。去掉网格。原生导航功能不重写，搜索和按钮用轻半透明表面与清晰焦点态。
+
+## Playback-control transition boundary
+产品改动局限NewHome3.vue，只有确有必要才扩展softPen。字形、配色、背景和顶栏不改。按钮保持原右/下等距及首屏absolute定位，图标视觉约20px、点击区域至少44px。焦点轮廓置于不被超椭圆裁切的原生按钮外层。暂停过渡使用活跃时间驱动冻结快照的淡出，再切换为完整静态淡入；不可使用不受visibility控制的裸setTimeout。图标和表面动画尊重reduced-motion。
+
+## Icon-only control and graceful pause implementation
+仅NewHome3.vue改动：48px原生button以SVG超椭圆作为背景，焦点轮廓在外层；两子路径同命令圆角轮廓通过既有RAF弹簧插值合并为播放图标。悬停1.07、按压0.94，fill与transform非线性过渡；无title或可见文字，动态aria-label保留。
+getPaintState(now)集中解析画面：独立transitionClock累计可见活跃时间，冻结from帧220ms渐隐，再完整无灰彩虹300ms渐显。过渡中再点击仅改目标paused，不重置当前包络；最终目标为继续时从原有7.2秒淡出接回循环。主题/resize重绘不推进时钟；reduced取消过渡静态显示，卸载停止两时钟和RAF。背景配色、字形与原播放时间轴不变。

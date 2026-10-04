@@ -127,14 +127,28 @@ pointer.emit('change')
 assert.equal(state.tiltX, 0)
 assert.equal(state.tiltY, 0)
 
-// 任意阶段暂停都呈现成品；继续直接渐隐，并正常进入下一轮原始折线。
+// 暂停先淡出冻结帧，再淡入成品；继续渐隐后进入下一轮。
 for (const offset of [0.5, 8.5, 13, 17, 20]) {
   state.clock.seek(offset, now)
   state.syncPlayback()
+  const outgoing = { ...lastPaint }
   state.togglePlayback()
   assert.equal(state.paused.value, true)
+  close(lastPaint.inkTime, outgoing.inkTime)
+  close(lastPaint.rawTime, outgoing.rawTime)
+  close(lastPaint.opacity, outgoing.opacity)
+  const pauseAt = now
+  advance(pauseAt + 110)
+  assert.ok(lastPaint.opacity < outgoing.opacity && lastPaint.opacity > 0)
+  close(lastPaint.inkTime, outgoing.inkTime)
+  close(lastPaint.rawTime, outgoing.rawTime)
+  advance(pauseAt + 220)
+  close(lastPaint.opacity, 0)
+  advance(pauseAt + 370)
+  assert.ok(lastPaint.opacity > 0 && lastPaint.opacity < 1)
   assert.equal(lastPaint.inkTime, 4.2)
   assert.equal(lastPaint.rawTime, -1)
+  advance(pauseAt + 520)
   assert.equal(lastPaint.opacity, 1)
   advance(now + 5000)
   assert.equal(scheduled.size, 0)
@@ -174,6 +188,45 @@ for (const offset of [0.5, 8.5, 13, 17, 20]) {
   assert.equal(lastPaint.phase, 'raw')
   close(lastPaint.rawTime, 0)
 }
+// 在暂停过渡中切换主题/隐藏标签页，不消费隐藏时间或突变为完整字。
+state.clock.seek(1, now)
+state.syncPlayback()
+state.togglePlayback()
+advance(now + 100)
+const fading = { ...lastPaint }
+darkMode.value = true
+themeChanged()
+close(lastPaint.opacity, fading.opacity)
+close(lastPaint.inkTime, fading.inkTime)
+document.hidden = true
+document.emit('visibilitychange')
+now += 10000
+document.hidden = false
+document.emit('visibilitychange')
+close(lastPaint.opacity, fading.opacity)
+state.togglePlayback()
+assert.equal(state.paused.value, false)
+close(lastPaint.opacity, fading.opacity)
+advance(now + 1000)
+assert.equal(state.paused.value, false)
+assert.equal(lastPaint.rawTime, -1)
+// 中途反复切换只改变目标状态，当前画面保持连续。
+state.togglePlayback()
+advance(now + 50)
+const rapidOpacity = lastPaint.opacity
+state.togglePlayback()
+close(lastPaint.opacity, rapidOpacity)
+state.togglePlayback()
+close(lastPaint.opacity, rapidOpacity)
+advance(now + 1000)
+close(lastPaint.opacity, 1)
+assert.equal(lastPaint.inkTime, 4.2)
+for (let i = 0; i < 120; i++) advance(now + 1000 / 60)
+assert.equal(state.iconPath.value, state.iconPaths(1), 'play icon did not settle')
+assert.equal(scheduled.size, 0, 'settled paused control keeps requesting frames')
+state.togglePlayback()
+for (let i = 0; i < 120; i++) advance(now + 1000 / 60)
+assert.equal(state.iconPath.value, state.iconPaths(0), 'pause icon did not settle')
 motion.matches = true
 motion.emit('change')
 state.togglePlayback()
