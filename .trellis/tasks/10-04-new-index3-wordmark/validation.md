@@ -35,3 +35,13 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - Logic, native Canvas pixel and compiled Vue lifecycle tests PASS:100cycles/20layouts, no pixels during pen travel, no gray during completed/fading rainbow, all-phase manual pause/resume, resize/visibility/preference changes while paused, teardown. Raw-spacing regression now includes adaptive curve samples instead of filtering them out by elapsed sample interval.
 - Targeted strict TypeScript PASS. Existing pinned pnpm docs:build PASS(exit0),52pages,10.94s; only plugin timing notices. Build ran outside sandbox due known esbuild subprocess restriction; no dependency/config changes.
 - Independent Trellis review found no actionable issue. No GUI/browser test performed per user instructions; native Canvas and mocked lifecycle checks do not replace browser visual acceptance.
+
+## Theme/background/navbar extension
+- Added separate muted-luminous dark rainbow, gray input and local crossing shade. Light ink unchanged. Theme is included in painter cache and native Plume useDarkMode watch repaints current frame without advancing/resetting its timeline.
+- Removed grid. Shared SSR new-home3-page layout background uses low-opacity mint/lavender/pearl radial gradients in light mode and teal/indigo charcoal gradients in dark mode. Navbar and content are transparent; native search and pause button share subtle themed surfaces. Mobile menu remains opaque/readable.
+- Product scope3files: NewHome3.vue,softPen.ts,new-index3.md(pageClass). glyphs, timing, global layout and client registration unchanged.
+- PASS existing logic100cycles/20layouts, nativeCanvas regressions plus5theme roundtrip/cache states, compiledVue paused theme repaint preserving clock, strictTS. Actual dark palette PNG inspected on flat theme base; this is not a whole-page screenshot.
+- Existing pnpm docs:build PASS(exit0),52pages,20.47s; plugin timing notices only. Used approved outside-sandbox build for known esbuild subprocess restriction, no toolchain/config changes.
+- SSR HTML confirmed new-home3-page and theme-plume on shared ancestor of navbar/root, originalnavbar/searchmarkup retained; index.html lacks thatpageclass. Reviewer also checked new-index2 exclusion.
+- Independent reviewer verified installed Plume CSS: VPContent/customlayout have no background; navbar/contentbody consume transparent navvar; dividerhidden; actual mini-search-button selector matches; mobile VPNavScreen keeps opaque themevar. No actionable findings. gitdiffcheck PASS; sourceUTF8LF.
+- No GUI/browser acceptance run under repository instructions. No commit/push authorized this round; kept changes reviewable for user.

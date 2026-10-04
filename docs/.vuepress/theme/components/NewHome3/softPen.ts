@@ -223,12 +223,22 @@ const colors = [
   [0.76, 182, 113, 189], [0.88, 102, 91, 191], [1, 32, 165, 216],
 ]
 
-function colorAt(fraction: number) {
+// 深色背景下提高明度并收敛饱和度，保留彩虹层次而不依赖外发光。
+const darkColors = [
+  [0, 76, 198, 195], [0.17, 132, 214, 176], [0.29, 206, 215, 114],
+  [0.40, 242, 198, 98], [0.53, 243, 163, 104], [0.64, 239, 133, 157],
+  [0.76, 192, 149, 216], [0.88, 154, 153, 227], [1, 111, 182, 226],
+]
+
+export type PainterTheme = 'light' | 'dark'
+
+function colorAt(fraction: number, theme: PainterTheme) {
+  const palette = theme === 'dark' ? darkColors : colors
   const u = clamp(fraction)
   let i = 1
-  while (i < colors.length - 1 && colors[i][0] < u) i++
-  const a = colors[i - 1]
-  const b = colors[i]
+  while (i < palette.length - 1 && palette[i][0] < u) i++
+  const a = palette[i - 1]
+  const b = palette[i]
   const f = (u - a[0]) / (b[0] - a[0])
   return `rgb(${Math.round(mix(a[1], b[1], f))}, ${Math.round(mix(a[2], b[2], f))}, ${Math.round(mix(a[3], b[3], f))})`
 }
@@ -283,7 +293,7 @@ function ribbon(points: RimPoint[], start: number, end: number, roundStart: bool
 }
 
 export interface Painter {
-  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number) => void
+  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme) => void
 }
 
 export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter {
@@ -292,12 +302,12 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
   const inkCtx = inkCanvas.getContext('2d')!
   let lastKey = ''
   return {
-    render(state, cssWidth, cssHeight, pixelRatio = 1) {
+    render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light') {
       if (cssWidth < 1 || cssHeight < 1) return
       const dpr = clamp(pixelRatio, 1, 2)
       const pixelWidth = Math.round(cssWidth * dpr)
       const pixelHeight = Math.round(cssHeight * dpr)
-      const key = [pixelWidth, pixelHeight, state.rawTime, state.inkTime, state.opacity].join(':')
+      const key = [pixelWidth, pixelHeight, state.rawTime, state.inkTime, state.opacity, theme].join(':')
       if (key === lastKey) return
       lastKey = key
       if (canvas.width !== pixelWidth || canvas.height !== pixelHeight
@@ -319,8 +329,8 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       ctx.lineWidth = 1.15 / scale
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
-      ctx.strokeStyle = 'rgba(93, 103, 115, 0.38)'
-      ctx.fillStyle = 'rgba(93, 103, 115, 0.48)'
+      ctx.strokeStyle = theme === 'dark' ? 'rgba(176, 191, 211, 0.38)' : 'rgba(93, 103, 115, 0.38)'
+      ctx.fillStyle = theme === 'dark' ? 'rgba(176, 191, 211, 0.52)' : 'rgba(93, 103, 115, 0.48)'
       for (const stroke of scene.strokes) {
         const count = visibleCount(stroke.raw, state.rawTime)
         if (!count) continue
@@ -376,16 +386,16 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
               // source-atop 将交叉阴影限制在已有墨迹上；不会在背景留下整条投影。
               inkCtx.save()
               inkCtx.globalCompositeOperation = 'source-atop'
-              inkCtx.shadowColor = 'rgba(35, 30, 70, 0.24)'
+              inkCtx.shadowColor = theme === 'dark' ? 'rgba(7, 10, 22, 0.34)' : 'rgba(35, 30, 70, 0.24)'
               inkCtx.shadowBlur = 3 * k
               inkCtx.shadowOffsetY = 1.4 * k
-              inkCtx.fillStyle = 'rgba(35, 30, 70, 0.13)'
+              inkCtx.fillStyle = theme === 'dark' ? 'rgba(9, 12, 24, 0.18)' : 'rgba(35, 30, 70, 0.13)'
               inkCtx.fill(shape)
               inkCtx.restore()
             }
             const gradient = inkCtx.createLinearGradient(a.x, a.y, b.x + 0.0001, b.y)
-            gradient.addColorStop(0, colorAt(a.s / scene.length))
-            gradient.addColorStop(1, colorAt(b.s / scene.length))
+            gradient.addColorStop(0, colorAt(a.s / scene.length, theme))
+            gradient.addColorStop(1, colorAt(b.s / scene.length, theme))
             // 连续圆接头作为实心内核：原生 stroke 对整段中心线做圆角并集，覆盖轮廓自交的小孔。
             // 内核取本段最小宽度，外缘仍由变宽轮廓决定；不是沿采样点逐个盖圆章。
             const first = Math.max(0, from - 1)

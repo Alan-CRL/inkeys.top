@@ -22,6 +22,8 @@ let nextFrame = 1
 let mountedHook
 let unmountedHook
 let lastPaint
+let themeChanged
+const darkMode = { value: false }
 const scheduled = new Map()
 const observers = []
 class Observer {
@@ -57,8 +59,10 @@ componentModule.require = name => {
     ref: value => ({ value }),
     onMounted: callback => { mountedHook = callback },
     onBeforeUnmount: callback => { unmountedHook = callback },
+    watch: (source, callback) => { assert.equal(source, darkMode); themeChanged = callback },
   }
-  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height) => { lastPaint = { ...state, width, height } } }) }
+  if (name === 'vuepress-theme-plume/client') return { useDarkMode: () => darkMode }
+  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme) => { lastPaint = { ...state, width, height, theme } } }) }
   return require(name)
 }
 componentModule._compile(compiled, filename)
@@ -136,6 +140,15 @@ for (const offset of [0.5, 8.5, 13, 17, 20]) {
   assert.equal(scheduled.size, 0)
   state.resizeObserver.callback()
   assert.equal(lastPaint.opacity, 1)
+  const pausedTime = state.clock.read(now)
+  darkMode.value = true
+  themeChanged()
+  assert.equal(lastPaint.theme, 'dark')
+  assert.equal(lastPaint.phase, 'static')
+  close(state.clock.read(now), pausedTime)
+  darkMode.value = false
+  themeChanged()
+  assert.equal(lastPaint.theme, 'light')
   motion.matches = true
   motion.emit('change')
   state.togglePlayback()

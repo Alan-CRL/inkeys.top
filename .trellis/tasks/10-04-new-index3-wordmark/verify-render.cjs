@@ -32,6 +32,20 @@ for (const time of [4.2, 7.55, 7.9, 8.2, 10, 12.1, 12.45, 14, 16.65, 20, 20.35, 
   frames++
 }
 const raw = scene.strokes[0].raw
+// 暂停/定格画面换肤也必须刷新；往返切换不可留下上一主题的缓存。
+for (const time of [2, 9.9, 14, 16.65, 20]) {
+  const state = timelineAt(time)
+  painter.render(state, width, height, 1, 'light')
+  const light = hash(shared)
+  painter.render(state, width, height, 1, 'dark')
+  const dark = hash(shared)
+  assert.notEqual(dark, light, `theme change ignored at ${time}`)
+  const fresh = createCanvas(width, height)
+  createPainter(scene, fresh).render(state, width, height, 1, 'dark')
+  assert.equal(hash(fresh), dark, `stale theme cache at ${time}`)
+  painter.render(state, width, height, 1, 'light')
+  assert.equal(hash(shared), light, `theme roundtrip changed pixels at ${time}`)
+}
 // 抬笔移动期间两层均保持原样，不能画出空中连接轨迹。
 for (let index = 0; index < scene.strokes.length - 1; index++) {
   const end = scene.strokes[index].end

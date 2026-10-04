@@ -44,3 +44,6 @@ Task PRD/design already include the latest typography and round-join requirement
 
 ## Playback controls and pen-travel review
 Independent trellis-check review: no actionable findings or source edits. Strict TypeScript, logic and Canvas regressions pass. Additional compiled Vue checks cover7pause phases, resize and motion-preference changes while paused, then immediate fade and raw-loop restart. Main lifecycle suite also covers these state transitions. Production build passed with52pages; see validation.md. Button remains native, focus-visible and absolute with matching responsive insets. No GUI test or push.
+
+## Theme/background/navbar extension review
+No actionable findings or reviewer edits. Native Plume source and SSR output confirm pageClass scope on shared layout ancestor, transparent navbar/contentbody and no opaque VPContent plate. Divider override applies only on NewHome3; mobile screen and dropdown surfaces remain intact. Search selectors match installed plugin markup. Theme watcher is setup-scoped and guarded for SSR; repaint respects paused/reduced state and does not reset activeclock; render cache contains theme. StrictTS, renderer, lifecycle and diffcheck PASS. Main productionbuild PASS52pages. No GUI/commit/push.

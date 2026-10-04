@@ -53,3 +53,7 @@ Reuse Plume variables such as `--vp-c-brand`, `--vp-c-text-1`, `--vp-c-divider`,
 Preserve the accessibility patterns already present: meaningful image `alt` text, `aria-label` and `aria-expanded` for custom controls, `aria-hidden` for non-visual analytics markup, and `rel="noopener noreferrer"` for new-tab links. Browser-only setup belongs in mounted hooks, event handlers, or an explicit SSR guard.
 
 There is no automated accessibility standard at present. Review changed interactive markup manually and do not claim an automated check was run.
+
+## Page-specific Plume appearance
+
+`docs/new-index3.md` uses frontmatter `pageClass: new-home3-page`; Plume applies this class to its layout wrapper during SSR. Scope custom navbar/background CSS under that class, including nested divider/search selectors, so route navigation restores other pages automatically. Use `useDarkMode()` from `vuepress-theme-plume/client` for Canvas theme changes; repaint the current frame and include the theme in any render cache key. A paused or reduced-motion frame must update without restarting its animation clock. Preserve native mobile-menu and dropdown surfaces when making the navbar transparent.

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useDarkMode } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene, timelineAt } from './softPen'
 import type { Painter } from './softPen'
 
@@ -11,6 +12,7 @@ const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspec
 const clock = createActiveClock()
 const paused = ref(false)
 const reduced = ref(false)
+const isDark = useDarkMode()
 
 let painter: Painter | undefined
 let frame = 0
@@ -37,8 +39,13 @@ function paint(now: number) {
   const node = canvas.value
   if (!node || !painter) return
   const state = timelineAt(frozen ?? clock.read(now), reduced.value || paused.value)
-  painter.render(state, width, height, window.devicePixelRatio)
+  painter.render(state, width, height, window.devicePixelRatio, isDark.value ? 'dark' : 'light')
 }
+
+// 主题切换只重绘当前帧；手动暂停、减少动态效果和离屏状态都不重置时间轴。
+watch(isDark, () => {
+  if (mounted) paint(performance.now())
+}, { flush: 'post' })
 
 function applyTilt() {
   const node = canvas.value
@@ -215,23 +222,76 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
+/* pageClass 由 Plume 在 SSR 中输出，导航与首屏共享底色，离开此页即不再匹配。 */
+.new-home3-page {
+  --nh3-bg: #f6f9fb;
+  --nh3-mint: rgba(136, 218, 195, 0.24);
+  --nh3-lavender: rgba(173, 163, 232, 0.23);
+  --nh3-pearl: rgba(255, 236, 214, 0.18);
+  --nh3-control-bg: rgba(255, 255, 255, 0.48);
+  --nh3-control-hover: rgba(255, 255, 255, 0.76);
+  --nh3-control-border: rgba(73, 99, 120, 0.14);
+  --vp-c-text-1: #283e4c;
+  --vp-c-text-2: #506473;
+  --vp-c-text-3: #6b7c8a;
+  --vp-c-brand-1: #087f91;
+  --vp-nav-bg-color: transparent;
+  --vp-nav-screen-bg-color: #f4f8fa;
+  background-color: var(--nh3-bg);
+  background-image:
+    radial-gradient(ellipse at 12% 15%, var(--nh3-mint), transparent 60%),
+    radial-gradient(ellipse at 88% 45%, var(--nh3-lavender), transparent 65%),
+    radial-gradient(ellipse at 45% 95%, var(--nh3-pearl), transparent 60%);
+  background-size: 100% 100svh;
+  background-repeat: no-repeat;
+}
+
+[data-theme='dark'] .new-home3-page {
+  --nh3-bg: #111820;
+  --nh3-mint: rgba(36, 102, 100, 0.23);
+  --nh3-lavender: rgba(80, 65, 137, 0.22);
+  --nh3-pearl: rgba(91, 76, 111, 0.09);
+  --nh3-control-bg: rgba(178, 204, 231, 0.07);
+  --nh3-control-hover: rgba(178, 204, 231, 0.12);
+  --nh3-control-border: rgba(186, 207, 230, 0.16);
+  --vp-c-text-1: #e6edf5;
+  --vp-c-text-2: #b3c1d1;
+  --vp-c-text-3: #8b9db0;
+  --vp-c-brand-1: #7bc9cc;
+  --vp-nav-screen-bg-color: #151e29;
+}
+
+/* 保留原生导航和移动菜单，仅清除导航横条的填充与分隔线。 */
+.new-home3-page .vp-navbar .divider {
+  display: none;
+}
+
+.theme-plume.new-home3-page .vp-nav .vp-navbar {
+  background: transparent;
+  border-bottom: 0;
+}
+
+.new-home3-page .vp-navbar-search .mini-search-button {
+  background: var(--nh3-control-bg);
+  border-color: var(--nh3-control-border);
+}
+
+.new-home3-page .vp-navbar-search .mini-search-button:hover {
+  background: var(--nh3-control-hover);
+  border-color: var(--vp-c-brand-1);
+}
+
+.new-home3-page .vp-navbar-search .mini-search-button:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 3px;
+}
+
 .nh3-root {
   --nh3-control-gap: clamp(16px, 2vw, 24px);
   min-height: calc(100svh - var(--vp-nav-height, 64px));
   box-sizing: border-box;
   position: relative;
-  background-color: #fff;
-  background-image:
-    linear-gradient(to right, rgba(15, 17, 21, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 17, 21, 0.04) 1px, transparent 1px);
-  background-size: 16px 16px;
-}
-
-[data-theme='dark'] .nh3-root {
-  background-color: #121417;
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background: transparent;
 }
 
 .nh3-plane {
@@ -257,10 +317,10 @@ onBeforeUnmount(() => {
   right: var(--nh3-control-gap);
   bottom: var(--nh3-control-gap);
   padding: 10px 16px;
-  border: 1px solid #dfe3e8;
+  border: 1px solid var(--nh3-control-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #475569;
+  background: var(--nh3-control-bg);
+  color: var(--vp-c-text-2);
   font: inherit;
   font-size: 14px;
   line-height: 1.5;
@@ -268,11 +328,11 @@ onBeforeUnmount(() => {
 }
 
 .nh3-playback:hover:not(:disabled) {
-  background: #f1f5f9;
+  background: var(--nh3-control-hover);
 }
 
 .nh3-playback:focus-visible {
-  outline: 2px solid #008697;
+  outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 3px;
 }
 

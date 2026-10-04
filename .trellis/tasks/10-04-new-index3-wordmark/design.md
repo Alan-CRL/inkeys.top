@@ -30,3 +30,7 @@
 循环ink完成后timelineAt的rawTime立即变为-1，hold/fade均维持隐藏。手动paused是组件局部响应式状态，paint直接选择完整静态彩虹；恢复时跳转既有渐隐起点（推荐首次fade时间7.2s，经0.7s进入循环），clock支持最小seek操作或等效offset，避免多套循环状态。手动暂停不冻结鼠标视差；系统reduced-motion仍优先显示静态，按钮可禁用防止承诺无法播放。新按钮放nh3-root内，绝对定位right/bottom同一clamp留白变量，圆角与focus-visible样式；随容器滚动、无viewport fixed定位。
 
 抬笔移动间隔由前笔末点至后笔起点的距离计算，加短起落缓冲并设置上下界（约100–240ms），灰点和彩虹共用笔画时序，空中阶段无连线。总书写时长4.2s包含移动间隔，剩余时长仍按曲率速度权重分配。不引入墨迹物理模型。
+
+## Theme extension boundary (supersedes previous light-only/background preservation scope)
+颜色实际位于softPen绘制层，背景和按钮位于NewHome3.vue，顶栏属于Plume外层布局。优先复用Plume主题状态和安装版本的导航DOM；按页面SSR class限定样式，在该布局共同祖先绘制连续渐变，避免挂载后添加全局body类造成首帧闪烁/路由污染。必要时只增加new-index3.md的页面class。字形数据、动画时间轴、公共主题和其它页面不改。
+视觉方向：浅色珍珠白为底，边缘低饱和薄荷/淡紫柔光，文字后方保留平静区域；深色墨蓝炭底配克制青绿/靛紫柔光，彩虹提高亮度而不加整笔发光。去掉网格。原生导航功能不重写，搜索和按钮用轻半透明表面与清晰焦点态。
