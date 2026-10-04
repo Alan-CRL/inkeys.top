@@ -8,6 +8,9 @@ assert.deepEqual(scene.strokes.map(stroke => stroke.name), ['I', 'n', 'k-stem', 
 assert.ok(scene.strokes.some(stroke => stroke.name === 'y'))
 assert.ok(scene.strokes.some(stroke => stroke.name === 's'))
 close(scene.duration, 4.2)
+const lifts = scene.strokes.slice(1).map((stroke, index) => stroke.start - scene.strokes[index].end)
+assert.ok(lifts.every(gap => gap >= 0.1 - 1e-7 && gap <= 0.24 + 1e-7))
+assert.ok(Math.max(...lifts) - Math.min(...lifts) > 0.05, 'pen travel should vary with distance')
 assert.ok(scene.aspect > 1 && scene.aspect < 6)
 assert.ok(scene.length > 0)
 const count = scene.strokes.reduce((sum, stroke) => sum + stroke.raw.length, 0)
@@ -42,7 +45,8 @@ for (const stroke of scene.strokes) {
   for (let i = 1; i < stroke.raw.length; i++) {
     const a = stroke.raw[i - 1]
     const b = stroke.raw[i]
-    if (b.t - a.t > 0.05) gaps.push(Math.hypot(b.x - a.x, b.y - a.y))
+    // 弯处会提前补点；包含这些真实输入间距，不能只筛出接近固定采样周期的直段。
+    gaps.push(Math.hypot(b.x - a.x, b.y - a.y))
   }
 }
 const widths = scene.strokes.flatMap(stroke => stroke.ink.map(point => point.width))
@@ -58,7 +62,7 @@ for (const [time, rawTime, inkTime, opacity] of [
   [7.2, -1, 4.2, 1], [7.9, 0, -1, 1],
   [9.9, 2, -1, 1], [12.1, 4.2, -1, 1],
   [12.45, 4.2, 0, 1], [14.45, 4.2, 2, 1],
-  [16.65, 4.2, 4.2, 1], [19.65, 4.2, 4.2, 1],
+  [16.65, -1, 4.2, 1], [19.65, -1, 4.2, 1],
   [20.35, 0, -1, 1],
 ]) {
   const state = timelineAt(time)
@@ -70,6 +74,9 @@ for (const time of [7.55, 20]) {
   const state = timelineAt(time)
   assert.ok(state.opacity > 0 && state.opacity < 1)
 }
+close(timelineAt(16.65 - 1e-5).rawTime, 4.2)
+close(timelineAt(16.65).rawTime, -1)
+close(timelineAt(20).rawTime, -1)
 for (let cycle = 0; cycle < 100; cycle++) {
   for (const offset of [0.01, 2, 4.3, 4.8, 9, 12]) {
     const a = timelineAt(7.9 + offset)
@@ -97,6 +104,14 @@ clock.setRunning(true, 101100)
 close(clock.read(101600), 1.5)
 clock.setRunning(true, 101600)
 close(clock.read(102100), 2)
+clock.seek(7.2, 102100)
+close(clock.read(102100), 7.2)
+close(clock.read(102450), 7.55)
+clock.setRunning(false, 102450)
+clock.seek(7.2, 103000)
+close(clock.read(110000), 7.2)
+clock.setRunning(true, 110000)
+close(clock.read(110700), 7.9)
 for (const fps of [30, 60, 120]) {
   const timed = createActiveClock()
   timed.setRunning(true, 0)

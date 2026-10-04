@@ -41,3 +41,6 @@ None. Review used the latest user requirements: direct rainbow curves independen
 ## Spec sync recommendation
 
 Task PRD/design already include the latest typography and round-join requirements. Preserve the narrow rendering lesson in frontend guidance: filled offset ribbons do not acquire round joins from the canvas `lineJoin` setting alone, and turn/reversal alpha tests should accompany changes to their geometry. Main session owns any shared-spec update.
+
+## Playback controls and pen-travel review
+Independent trellis-check review: no actionable findings or source edits. Strict TypeScript, logic and Canvas regressions pass. Additional compiled Vue checks cover7pause phases, resize and motion-preference changes while paused, then immediate fade and raw-loop restart. Main lifecycle suite also covers these state transitions. Production build passed with52pages; see validation.md. Button remains native, focus-visible and absolute with matching responsive insets. No GUI test or push.

@@ -123,6 +123,50 @@ pointer.emit('change')
 assert.equal(state.tiltX, 0)
 assert.equal(state.tiltY, 0)
 
+// 任意阶段暂停都呈现成品；继续直接渐隐，并正常进入下一轮原始折线。
+for (const offset of [0.5, 8.5, 13, 17, 20]) {
+  state.clock.seek(offset, now)
+  state.syncPlayback()
+  state.togglePlayback()
+  assert.equal(state.paused.value, true)
+  assert.equal(lastPaint.inkTime, 4.2)
+  assert.equal(lastPaint.rawTime, -1)
+  assert.equal(lastPaint.opacity, 1)
+  advance(now + 5000)
+  assert.equal(scheduled.size, 0)
+  state.resizeObserver.callback()
+  assert.equal(lastPaint.opacity, 1)
+  motion.matches = true
+  motion.emit('change')
+  state.togglePlayback()
+  assert.equal(state.paused.value, true)
+  motion.matches = false
+  motion.emit('change')
+  assert.equal(lastPaint.phase, 'static')
+  document.hidden = true
+  document.emit('visibilitychange')
+  now += 5000
+  document.hidden = false
+  document.emit('visibilitychange')
+  assert.equal(lastPaint.rawTime, -1)
+  state.togglePlayback()
+  assert.equal(state.paused.value, false)
+  assert.equal(lastPaint.phase, 'fade')
+  close(lastPaint.opacity, 1)
+  const resumedAt = now
+  advance(resumedAt + 350)
+  close(lastPaint.opacity, 0.5)
+  assert.equal(lastPaint.rawTime, -1)
+  advance(resumedAt + 700)
+  assert.equal(lastPaint.phase, 'raw')
+  close(lastPaint.rawTime, 0)
+}
+motion.matches = true
+motion.emit('change')
+state.togglePlayback()
+assert.equal(state.paused.value, false)
+assert.equal(lastPaint.phase, 'static')
+
 unmountedHook()
 assert.equal(scheduled.size, 0)
 assert.ok(observers.every(observer => observer.disconnected))

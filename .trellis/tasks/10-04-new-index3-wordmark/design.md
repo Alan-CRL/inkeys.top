@@ -25,3 +25,8 @@
 
 ## k/e refinement after10a4dfd
 以结构减重为主，优先只改glyphs.ts的k/e中心线。必要时将k上伸主干与右侧臂分笔，以消除多次腰部穿越；右臂可自然衔接e。时序按既有多笔调度继续顺序书写，总长保持4.2s。对比单色和彩虹离屏帧并复用round-join/透明孔洞回归。
+
+## Pause control and gray-layer retirement
+循环ink完成后timelineAt的rawTime立即变为-1，hold/fade均维持隐藏。手动paused是组件局部响应式状态，paint直接选择完整静态彩虹；恢复时跳转既有渐隐起点（推荐首次fade时间7.2s，经0.7s进入循环），clock支持最小seek操作或等效offset，避免多套循环状态。手动暂停不冻结鼠标视差；系统reduced-motion仍优先显示静态，按钮可禁用防止承诺无法播放。新按钮放nh3-root内，绝对定位right/bottom同一clamp留白变量，圆角与focus-visible样式；随容器滚动、无viewport fixed定位。
+
+抬笔移动间隔由前笔末点至后笔起点的距离计算，加短起落缓冲并设置上下界（约100–240ms），灰点和彩虹共用笔画时序，空中阶段无连线。总书写时长4.2s包含移动间隔，剩余时长仍按曲率速度权重分配。不引入墨迹物理模型。

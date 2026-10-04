@@ -9,12 +9,13 @@ const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
 const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspect) })
 const clock = createActiveClock()
+const paused = ref(false)
+const reduced = ref(false)
 
 let painter: Painter | undefined
 let frame = 0
 let previousFrame = 0
 let frozen: number | undefined
-let reduced = false
 let inViewport = true
 let mounted = false
 let width = 0
@@ -35,7 +36,7 @@ function canAnimate() {
 function paint(now: number) {
   const node = canvas.value
   if (!node || !painter) return
-  const state = timelineAt(frozen ?? clock.read(now), reduced)
+  const state = timelineAt(frozen ?? clock.read(now), reduced.value || paused.value)
   painter.render(state, width, height, window.devicePixelRatio)
 }
 
@@ -64,12 +65,12 @@ function tick(now: number) {
   }
   applyTilt()
   paint(now)
-  if ((!reduced && frozen === undefined) || moving) requestFrame()
+  if ((!reduced.value && !paused.value && frozen === undefined) || moving) requestFrame()
 }
 
 function syncPlayback() {
   const now = performance.now()
-  clock.setRunning(canAnimate() && !reduced && frozen === undefined, now)
+  clock.setRunning(canAnimate() && !reduced.value && !paused.value && frozen === undefined, now)
   if (!canAnimate()) {
     if (frame) cancelAnimationFrame(frame)
     frame = 0
@@ -80,6 +81,17 @@ function syncPlayback() {
   requestFrame()
 }
 
+function togglePlayback() {
+  if (reduced.value) return
+  if (paused.value) {
+    // 继续时直接从完整彩虹的渐隐起点播放，不接续半截笔画或重复等待。
+    frozen = undefined
+    clock.seek(7.2, performance.now())
+  }
+  paused.value = !paused.value
+  syncPlayback()
+}
+
 function resetPointer() {
   targetX = 0
   targetY = 0
@@ -87,7 +99,7 @@ function resetPointer() {
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (reduced || !pointerPreference?.matches || event.pointerType === 'touch' || !canAnimate()) return
+  if (reduced.value || !pointerPreference?.matches || event.pointerType === 'touch' || !canAnimate()) return
   const box = plane.value?.getBoundingClientRect()
   if (!box || !box.width || !box.height) return
   // 从未变换的外层测量，避免旋转后的边界反过来改变指针目标而抖动。
@@ -104,8 +116,8 @@ function onPointerMove(event: PointerEvent) {
 }
 
 function onPreferencesChange() {
-  reduced = motionPreference?.matches ?? false
-  if (reduced || !pointerPreference?.matches) {
+  reduced.value = motionPreference?.matches ?? false
+  if (reduced.value || !pointerPreference?.matches) {
     targetX = targetY = tiltX = tiltY = 0
     applyTilt()
   }
@@ -139,7 +151,7 @@ onMounted(() => {
   painter = createPainter(scene, node)
   motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
   pointerPreference = window.matchMedia('(hover: hover) and (pointer: fine)')
-  reduced = motionPreference.matches
+  reduced.value = motionPreference.matches
 
   // 仅开发环境冻结完整时间轴，例如 ?t=13 可检查循环中的第二次彩虹书写。
   if (import.meta.env.DEV) {
@@ -190,11 +202,21 @@ onBeforeUnmount(() => {
     <div ref="plane" class="nh3-plane" :style="planeStyle">
       <canvas ref="canvas" class="nh3-mark" role="img" aria-label="Inkeys" />
     </div>
+    <button
+      class="nh3-playback"
+      type="button"
+      :disabled="reduced"
+      :aria-pressed="paused"
+      @click="togglePlayback"
+    >
+      {{ paused ? '继续动画' : '暂停动画' }}
+    </button>
   </div>
 </template>
 
 <style>
 .nh3-root {
+  --nh3-control-gap: clamp(16px, 2vw, 24px);
   min-height: calc(100svh - var(--vp-nav-height, 64px));
   box-sizing: border-box;
   position: relative;
@@ -228,6 +250,35 @@ onBeforeUnmount(() => {
   background: transparent;
   transform-origin: center;
   will-change: transform;
+}
+
+.nh3-playback {
+  position: absolute;
+  right: var(--nh3-control-gap);
+  bottom: var(--nh3-control-gap);
+  padding: 10px 16px;
+  border: 1px solid #dfe3e8;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #475569;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.nh3-playback:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.nh3-playback:focus-visible {
+  outline: 2px solid #008697;
+  outline-offset: 3px;
+}
+
+.nh3-playback:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 @media (max-width: 640px) {

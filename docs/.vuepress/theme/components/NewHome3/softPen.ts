@@ -4,7 +4,6 @@ import type { Point } from './glyphs'
 export const WRITE_SECONDS = 4.2
 export const BASE_WIDTH = 15.5
 const SAMPLE_SECONDS = 0.065
-const LIFT_SECONDS = 0.03
 
 export interface TimedPoint extends Point {
   t: number
@@ -60,8 +59,8 @@ export function timelineAt(elapsed: number, reduced = false): AnimationState {
   if (loop < 4.2) return { phase: 'raw', rawTime: loop, inkTime: -1, opacity: 1 }
   if (loop < 4.55) return { phase: 'raw-hold', rawTime: 4.2, inkTime: -1, opacity: 1 }
   if (loop < 8.75) return { phase: 'ink', rawTime: 4.2, inkTime: loop - 4.55, opacity: 1 }
-  if (loop < 11.75) return { phase: 'hold', rawTime: 4.2, inkTime: 4.2, opacity: 1 }
-  return { phase: 'fade', rawTime: 4.2, inkTime: 4.2, opacity: 1 - smooth((loop - 11.75) / 0.7) }
+  if (loop < 11.75) return { phase: 'hold', rawTime: -1, inkTime: 4.2, opacity: 1 }
+  return { phase: 'fade', rawTime: -1, inkTime: 4.2, opacity: 1 - smooth((loop - 11.75) / 0.7) }
 }
 
 /** 只累计活跃时间；切换标签、滚出首屏及系统偏好变化都不消耗动画时间。 */
@@ -70,6 +69,10 @@ export function createActiveClock() {
   let resumed: number | undefined
   return {
     read(now: number) { return elapsed + (resumed === undefined ? 0 : Math.max(0, now - resumed) / 1000) },
+    seek(seconds: number, now: number) {
+      elapsed = Math.max(0, seconds)
+      if (resumed !== undefined) resumed = now
+    },
     setRunning(running: boolean, now: number) {
       if (running && resumed === undefined) resumed = now
       if (!running && resumed !== undefined) {
@@ -134,10 +137,18 @@ function createInk(points: Point[], times: number[], start: number, duration: nu
 export function createScene(): Scene {
   const guides = buildCenterlines().map(line => ({ ...line, times: timedGuide(line.points) }))
   const totalWeight = guides.reduce((sum, guide) => sum + guide.times[guide.times.length - 1], 0)
-  const inputDuration = WRITE_SECONDS - (guides.length - 1) * LIFT_SECONDS
+  const lifts = guides.map((guide, index) => {
+    const next = guides[index + 1]
+    if (!next) return 0
+    const from = guide.points[guide.points.length - 1]
+    const to = next.points[0]
+    // 抬笔后留出落稳和移笔时间，距离越远停顿越长；空中移动不绘制任何连接线。
+    return clamp(0.09 + Math.hypot(to.x - from.x, to.y - from.y) / 1000, 0.1, 0.24)
+  })
+  const inputDuration = WRITE_SECONDS - lifts.reduce((sum, lift) => sum + lift, 0)
   let start = 0
   let distance = 0
-  const strokes = guides.map(guide => {
+  const strokes = guides.map((guide, index) => {
     const weight = guide.times[guide.times.length - 1]
     const duration = inputDuration * weight / totalWeight
     const raw: TimedPoint[] = []
@@ -165,7 +176,7 @@ export function createScene(): Scene {
     const ink = createInk(guide.points, guide.times, start, duration, distance)
     distance = ink[ink.length - 1].s
     const stroke = { name: guide.name, raw, ink, start, end }
-    start = end + LIFT_SECONDS
+    start = end + lifts[index]
     return stroke
   })
   const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }

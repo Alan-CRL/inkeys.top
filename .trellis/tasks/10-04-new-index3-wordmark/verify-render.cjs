@@ -32,6 +32,24 @@ for (const time of [4.2, 7.55, 7.9, 8.2, 10, 12.1, 12.45, 14, 16.65, 20, 20.35, 
   frames++
 }
 const raw = scene.strokes[0].raw
+// 抬笔移动期间两层均保持原样，不能画出空中连接轨迹。
+for (let index = 0; index < scene.strokes.length - 1; index++) {
+  const end = scene.strokes[index].end
+  const middle = (end + scene.strokes[index + 1].start) / 2
+  for (const layer of ['ink', 'raw']) {
+    const stateAt = time => ({ phase: layer, rawTime: layer === 'raw' ? time : -1, inkTime: layer === 'ink' ? time : -1, opacity: 1 })
+    painter.render(stateAt(end + 1e-7), width, height, 1)
+    const settled = hash(shared)
+    painter.render(stateAt(middle), width, height, 1)
+    assert.equal(hash(shared), settled, `visible pen travel at ${index}, ${layer}`)
+  }
+}
+for (const [intro, loop] of [[4.2, 16.65], [7.55, 20]]) {
+  painter.render(timelineAt(intro), width, height, 1)
+  const inkOnly = hash(shared)
+  painter.render(timelineAt(loop), width, height, 1)
+  assert.equal(hash(shared), inkOnly, 'raw illustration remains after completed rainbow')
+}
 const midpoint = (raw[2].t + raw[3].t) / 2
 painter.render({ phase: 'raw', rawTime: raw[2].t + 1e-6, inkTime: -1, opacity: 1 }, width, height, 1)
 const before = hash(shared)
