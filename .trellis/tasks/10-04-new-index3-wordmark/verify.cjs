@@ -4,7 +4,7 @@ const { createScene, timelineAt, createActiveClock, computeLayout, BASE_WIDTH } 
 const scene = createScene()
 const close = (actual, expected, epsilon = 1e-7) => assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} != ${expected}`)
 
-assert.equal(scene.strokes.map(stroke => stroke.name).join(''), 'Inkeys')
+assert.deepEqual(scene.strokes.map(stroke => stroke.name), ['I', 'n', 'k-stem', 'ke', 'y', 's'])
 assert.ok(scene.strokes.some(stroke => stroke.name === 'y'))
 assert.ok(scene.strokes.some(stroke => stroke.name === 's'))
 close(scene.duration, 4.2)

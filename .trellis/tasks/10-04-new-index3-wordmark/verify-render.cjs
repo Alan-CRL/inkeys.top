@@ -82,18 +82,14 @@ for (const coordinates of [
   assert.ok(rgba[(68 * 100 + 68) * 4 + 3] < 20, 'corner extends beyond circular radius')
 }
 
-// I、n、s 没有封闭字腔：圆接头内部不应留下透明小洞。
-for (const name of ['I', 'n', 's']) {
-  const isolated = { ...scene, strokes: scene.strokes.filter(stroke => stroke.name === name) }
-  const canvas = createCanvas(1, 1)
-  createPainter(isolated, canvas).render(timelineAt(4.2), width, height, 1)
-  const rgba = pixels(canvas)
+function enclosedTransparentPixels(rgba, width, height) {
   const visited = new Uint8Array(width * height)
   const queue = new Int32Array(width * height)
   let head = 0
   let tail = 0
   const push = index => {
-    if (!visited[index] && rgba[index * 4 + 3] < 128) { visited[index] = 1; queue[tail++] = index }
+    // 半透明抗锯齿边缘仍属于外部边界；不能用同一个50%阈值把细斜缝截断成假孔洞。
+    if (!visited[index] && rgba[index * 4 + 3] < 255) { visited[index] = 1; queue[tail++] = index }
   }
   for (let x = 0; x < width; x++) { push(x); push((height - 1) * width + x) }
   for (let y = 0; y < height; y++) { push(y * width); push(y * width + width - 1) }
@@ -103,9 +99,35 @@ for (const name of ['I', 'n', 's']) {
     if (i % width < width - 1) push(i + 1)
     if (i >= width) push(i - width)
     if (i < width * (height - 1)) push(i + width)
+    // 斜向接触同样连接外部，避免像素网格方向影响拓扑判断。
+    if (i % width && i >= width) push(i - width - 1)
+    if (i % width < width - 1 && i >= width) push(i - width + 1)
+    if (i % width && i < width * (height - 1)) push(i + width - 1)
+    if (i % width < width - 1 && i < width * (height - 1)) push(i + width + 1)
   }
   let holes = 0
   for (let i = 0; i < visited.length; i++) if (!visited[i] && rgba[i * 4 + 3] < 128) holes++
-  assert.equal(holes, 0, `${name} contains ${holes} enclosed transparent seam pixels`)
+  return holes
+}
+
+// 零容忍真实孔洞：即使只有一个半透明像素，被实心笔画包围也必须检出。
+for (const alpha of [0, 51, 127]) {
+  const fixture = new Uint8ClampedArray(7 * 7 * 4)
+  for (let y = 1; y < 6; y++) for (let x = 1; x < 6; x++) fixture[(y * 7 + x) * 4 + 3] = 255
+  fixture[(3 * 7 + 3) * 4 + 3] = alpha
+  assert.equal(enclosedTransparentPixels(fixture, 7, 7), 1, `missed enclosed alpha-${alpha} pixel`)
+  // 通过半透明对角边缘连接背景后，它是开放边缘，不应再计为封闭孔洞。
+  fixture[(2 * 7 + 2) * 4 + 3] = 180
+  fixture[(1 * 7 + 1) * 4 + 3] = 230
+  assert.equal(enclosedTransparentPixels(fixture, 7, 7), 0, 'misclassified diagonal antialias boundary')
+}
+
+// I、n、s 没有封闭字腔。900/901px覆盖已定位的斜向及阈值抗锯齿边缘误报。
+for (const w of [900, 901]) for (const name of ['I', 'n', 's']) {
+  const isolated = { ...scene, strokes: scene.strokes.filter(stroke => stroke.name === name) }
+  const canvas = createCanvas(1, 1)
+  createPainter(isolated, canvas).render(timelineAt(4.2), w, Math.ceil(w / scene.aspect), 1)
+  const holes = enclosedTransparentPixels(pixels(canvas), canvas.width, canvas.height)
+  assert.equal(holes, 0, `${name} at ${w}px contains ${holes} enclosed transparent seam pixels`)
 }
 console.log(JSON.stringify({ result: 'PASS', deterministicFrames: frames, rawEventsDiscrete: true, resizeCases: 4 }, null, 2))

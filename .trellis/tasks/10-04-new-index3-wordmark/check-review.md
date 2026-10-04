@@ -1,5 +1,15 @@
 # Check review — 2026-10-04
 
+## Follow-up: k/e refinement after 10a4dfd
+
+- Product diff is confined to the k/e gesture data in `glyphs.ts`: the existing k stem becomes its own stroke, the closed upper-right arm becomes open, and the arm-to-e transition and e bowl are revised. I/n/y/s control points, common sampling, slant and nominal width are unchanged. Splitting a stroke naturally reallocates per-stroke timing within the existing 4.2s total.
+- Diagnosed the renderer-test failure as an antialias boundary classification issue, not a new enclosed hole. At 900px, n pixel `(191, 150)` has alpha 51 and connects diagonally to exterior pixel `(192, 149)` with alpha 95, then alpha 0. Four-connected flood fill incorrectly excludes it. At 901px, the corresponding alpha-104 pixel connects through alpha-136 antialias coverage; using alpha 128 as both the flood boundary and hole threshold incorrectly closes that boundary too.
+- With main-agent agreement, updated only `verify-render.cjs`: exterior traversal is eight-connected through nonopaque pixels; a low-alpha pixel below 128 is reported only when enclosed by opaque ink. The asserted hole count remains exactly zero. Added 900/901px I/n/s coverage, synthetic fully enclosed alpha 0/51/127 holes which must each be detected, and diagonal semitransparent boundary fixtures which must remain exterior.
+- Negative-control diagnostic removed the round inner stroke in memory only. The corrected detector still found **35 genuine enclosed I pixels**, demonstrating that this change does not excuse the original rendering defect. No source/test tolerance was added and no production renderer change was needed.
+- Follow-up verification: `verify-render.cjs`, `verify.cjs`, `verify-lifecycle.cjs` and `git diff --check` all PASS. Main agent independently reports targeted TypeScript PASS and production build PASS (52 pages, exit 0). Reviewer made no product source changes, opened no GUI, and created no commit.
+
+The remaining sections record the earlier full review before this glyph-only follow-up.
+
 ## Findings (fixed)
 
 No additional mechanical issues found; this reviewer made no source changes. The implementation agent's round-join repair was already present when final review began.
