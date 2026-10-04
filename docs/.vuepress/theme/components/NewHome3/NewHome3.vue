@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useDarkMode } from 'vuepress-theme-plume/client'
-import { computeLayout, createActiveClock, createPainter, createScene, timelineAt } from './softPen'
-import type { AnimationState, Painter } from './softPen'
+import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
+import type { Painter } from './softPen'
+import { createPlayback } from './playback'
+import { PEN_ORDER, resolveSolidColor } from './styles'
+import type { ColorChoice, PenKind, StrokeSize } from './styles'
 
 const scene = createScene()
 const root = ref<HTMLDivElement>()
@@ -10,11 +13,25 @@ const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
 const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspect) })
 const clock = createActiveClock()
-const transitionClock = createActiveClock()
+const playback = createPlayback()
 const paused = ref(false)
 const reduced = ref(false)
 const isDark = useDarkMode()
 const iconPath = ref(iconPaths(0))
+const controls = ref<HTMLDivElement>()
+const paletteButton = ref<HTMLButtonElement>()
+const panel = ref<HTMLDivElement>()
+const panelOpen = ref(false)
+const selectedPens = ref<PenKind[]>(['hard'])
+const selectedColor = ref<ColorChoice>('rainbow')
+const selectedSize = ref<StrokeSize>('medium')
+const artFrame = ref(playback.read(0))
+const tiltStyle = ref<Record<string, string>>({})
+const penLabels: Record<PenKind, string> = { hard: '硬笔', soft: '软笔', highlighter: '荧光笔', laser: '激光笔', brush: '刷子' }
+const colorChoices: ColorChoice[] = ['rainbow', 'neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
+const colorLabels = { rainbow: '彩虹色', neutral: '中性色', red: '红色', amber: '琥珀色', green: '绿色', cyan: '青色', blue: '蓝色', purple: '紫色' }
+const sizeChoices: StrokeSize[] = ['thin', 'medium', 'thick']
+const sizeLabels = { thin: '细', medium: '中', thick: '粗' }
 
 let painter: Painter | undefined
 let frame = 0
@@ -32,7 +49,6 @@ let targetX = 0
 let targetY = 0
 let tiltX = 0
 let tiltY = 0
-let pauseTransition: { from: AnimationState } | undefined
 let iconProgress = 0
 let iconVelocity = 0
 
@@ -64,27 +80,6 @@ function iconPaths(progress: number) {
   }).join(' ')
 }
 
-function getPaintState(now: number): AnimationState {
-  if (reduced.value) return timelineAt(0, true)
-  if (pauseTransition) {
-    const time = transitionClock.read(now)
-    const ease = (value: number) => value * value * (3 - 2 * value)
-    if (time < 0.22) {
-      return { ...pauseTransition.from, opacity: pauseTransition.from.opacity * (1 - ease(time / 0.22)) }
-    }
-    if (time < 0.52) return { ...timelineAt(0, true), opacity: ease((time - 0.22) / 0.3) }
-    pauseTransition = undefined
-    transitionClock.setRunning(false, now)
-    // 快速再次点击只改变目标状态；先完成当前淡入，再无缝转入正常渐隐。
-    if (!paused.value) {
-      frozen = undefined
-      clock.seek(7.2, now)
-      clock.setRunning(canAnimate(), now)
-    }
-  }
-  return timelineAt(frozen ?? clock.read(now), paused.value)
-}
-
 function canAnimate() {
   return mounted && !document.hidden && inViewport
 }
@@ -92,8 +87,10 @@ function canAnimate() {
 function paint(now: number) {
   const node = canvas.value
   if (!node || !painter) return
-  const state = getPaintState(now)
-  painter.render(state, width, height, window.devicePixelRatio, isDark.value ? 'dark' : 'light')
+  const current = playback.read(frozen ?? clock.read(now), reduced.value)
+  artFrame.value = current
+  painter.render(current.view === 'ink' ? current.state : { ...current.state, opacity: 0 }, width, height,
+    window.devicePixelRatio, isDark.value ? 'dark' : 'light', current.style)
 }
 
 // 主题切换只重绘当前帧；手动暂停、减少动态效果和离屏状态都不重置时间轴。
@@ -105,6 +102,7 @@ function applyTilt() {
   const node = canvas.value
   if (!node) return
   node.style.transform = `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)`
+  tiltStyle.value = { transform: node.style.transform }
 }
 
 function requestFrame() {
@@ -139,14 +137,13 @@ function tick(now: number) {
   iconPath.value = iconPaths(iconProgress)
   applyTilt()
   paint(now)
-  if ((!reduced.value && (pauseTransition || (!paused.value && frozen === undefined)))
+  if ((!reduced.value && playback.animating && frozen === undefined)
     || moving || (!reduced.value && iconMoving)) requestFrame()
 }
 
 function syncPlayback() {
   const now = performance.now()
-  clock.setRunning(canAnimate() && !reduced.value && !paused.value && !pauseTransition && frozen === undefined, now)
-  transitionClock.setRunning(canAnimate() && !reduced.value && !!pauseTransition, now)
+  clock.setRunning(canAnimate() && !reduced.value && frozen === undefined, now)
   if (!canAnimate()) {
     if (frame) cancelAnimationFrame(frame)
     frame = 0
@@ -161,18 +158,50 @@ function togglePlayback() {
   if (reduced.value) return
   const now = performance.now()
   previousFrame = now
-  const from = getPaintState(now)
-  if (!paused.value && !pauseTransition) {
-    // 冻结当前几何后先淡出，再淡入完整彩虹；灰点只保留在淡出的旧画面里。
-    pauseTransition = { from }
-    transitionClock.seek(0, now)
-  }
-  else if (paused.value && !pauseTransition) {
+  if (frozen !== undefined) {
+    clock.seek(frozen, now)
     frozen = undefined
-    clock.seek(7.2, now)
   }
-  paused.value = !paused.value
+  playback.toggle(clock.read(now))
+  paused.value = playback.paused
   syncPlayback()
+}
+
+function updateSettings() {
+  playback.configure({ pens: selectedPens.value, color: selectedColor.value, size: selectedSize.value },
+    frozen ?? clock.read(performance.now()), reduced.value)
+  syncPlayback()
+}
+
+function closePanel(returnFocus = false) {
+  panelOpen.value = false
+  if (returnFocus) paletteButton.value?.focus()
+}
+
+function togglePanel(event: MouseEvent) {
+  panelOpen.value = !panelOpen.value
+  if (panelOpen.value && event.detail === 0) {
+    void nextTick(() => panel.value?.querySelector<HTMLInputElement>('input')?.focus())
+  }
+}
+
+function onPanelKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && panelOpen.value) {
+    event.preventDefault()
+    closePanel(true)
+  }
+}
+
+function onOutsidePointer(event: PointerEvent) {
+  if (panelOpen.value && !controls.value?.contains(event.target as Node)) closePanel()
+}
+
+function colorBackground(color: ColorChoice) {
+  if (color === 'rainbow') return isDark.value
+    ? 'linear-gradient(105deg, #55ccbc, #dedb68 27%, #ff9569 45%, #fa83af 65%, #a194f4 80%, #62bcf4)'
+    : 'linear-gradient(105deg, #078b99, #b3cd33 27%, #ffb500 40%, #ff7157 55%, #ce5897 72%, #289fca)'
+  const solid = resolveSolidColor(color, isDark.value ? 'dark' : 'light')
+  return `linear-gradient(${solid}, ${solid})`
 }
 
 function resetPointer() {
@@ -201,12 +230,7 @@ function onPointerMove(event: PointerEvent) {
 function onPreferencesChange() {
   reduced.value = motionPreference?.matches ?? false
   if (reduced.value) {
-    if (pauseTransition) {
-      pauseTransition = undefined
-      frozen = undefined
-      transitionClock.setRunning(false, performance.now())
-      clock.seek(7.2, performance.now())
-    }
+    playback.settleReduced(frozen ?? clock.read(performance.now()))
     iconProgress = paused.value ? 1 : 0
     iconVelocity = 0
     iconPath.value = iconPaths(iconProgress)
@@ -247,11 +271,12 @@ onMounted(() => {
   pointerPreference = window.matchMedia('(hover: hover) and (pointer: fine)')
   reduced.value = motionPreference.matches
 
-  // 仅开发环境冻结完整时间轴，例如 ?t=13 可检查循环中的第二次彩虹书写。
+  // 仅开发环境冻结完整时间轴，例如 ?t=10 可检查默认循环的硬笔书写。
   if (import.meta.env.DEV) {
     const query = new URLSearchParams(window.location.search).get('t')
     if (query !== null && query.trim() && Number.isFinite(Number(query))) frozen = Math.max(0, Number(query))
   }
+  if (reduced.value) playback.settleReduced(frozen ?? clock.read(performance.now()))
 
   motionPreference.addEventListener('change', onPreferencesChange)
   pointerPreference.addEventListener('change', onPreferencesChange)
@@ -260,6 +285,8 @@ onMounted(() => {
   window.addEventListener('pointermove', onPointerMove, { passive: true })
   window.addEventListener('blur', resetPointer)
   window.addEventListener('resize', resize, { passive: true })
+  document.addEventListener('pointerdown', onOutsidePointer)
+  document.addEventListener('keydown', onPanelKeydown)
 
   resizeObserver = new ResizeObserver(resize)
   resizeObserver.observe(root.value)
@@ -278,7 +305,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   mounted = false
   clock.setRunning(false, performance.now())
-  transitionClock.setRunning(false, performance.now())
   if (frame) cancelAnimationFrame(frame)
   resizeObserver?.disconnect()
   visibleObserver?.disconnect()
@@ -289,6 +315,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('blur', resetPointer)
   window.removeEventListener('resize', resize)
+  document.removeEventListener('pointerdown', onOutsidePointer)
+  document.removeEventListener('keydown', onPanelKeydown)
 })
 </script>
 
@@ -296,7 +324,43 @@ onBeforeUnmount(() => {
   <div ref="root" class="nh3-root">
     <div ref="plane" class="nh3-plane" :style="planeStyle">
       <canvas ref="canvas" class="nh3-mark" role="img" aria-label="Inkeys" />
+      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ ...tiltStyle, opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px` }" aria-hidden="true">
+        <div class="nh3-art-lettering" :style="{ backgroundImage: colorBackground(artFrame.previousColor) }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
+        <div class="nh3-art-lettering nh3-art-overlay" :style="{ backgroundImage: colorBackground(artFrame.artColor), opacity: artFrame.colorMix }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
+        <div class="nh3-art-lettering nh3-art-overlay nh3-art-shine" :style="{ opacity: artFrame.shimmer < 0 ? 0 : 1, backgroundPosition: `${135 - artFrame.shimmer * 170}% 50%` }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
+      </div>
     </div>
+    <div ref="controls" class="nh3-controls">
+      <div v-if="panelOpen" id="nh3-style-panel" ref="panel" class="nh3-style-panel" role="dialog" aria-label="书写样式">
+        <button class="nh3-panel-close" type="button" aria-label="关闭样式调整" @click="closePanel($event.detail === 0)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
+        </button>
+        <fieldset class="nh3-options">
+          <legend>笔类型</legend>
+          <div class="nh3-pen-options">
+            <label v-for="pen in PEN_ORDER" :key="pen"><input v-model="selectedPens" type="checkbox" :value="pen" @change="updateSettings">{{ penLabels[pen] }}</label>
+          </div>
+        </fieldset>
+        <fieldset class="nh3-options">
+          <legend>颜色</legend>
+          <div class="nh3-color-options">
+            <label v-for="color in colorChoices" :key="color" class="nh3-color-choice" :style="{ '--nh3-swatch': colorBackground(color) }">
+              <input v-model="selectedColor" type="radio" name="nh3-color" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
+              <span aria-hidden="true" />
+            </label>
+          </div>
+        </fieldset>
+        <fieldset class="nh3-options">
+          <legend>粗细</legend>
+          <div class="nh3-size-options">
+            <label v-for="size in sizeChoices" :key="size"><input v-model="selectedSize" type="radio" name="nh3-size" :value="size" @change="updateSettings"><span>{{ sizeLabels[size] }}</span></label>
+          </div>
+        </fieldset>
+      </div>
+      <button ref="paletteButton" class="nh3-playback nh3-palette" type="button" aria-label="调整书写样式" aria-controls="nh3-style-panel" :aria-expanded="panelOpen" @click="togglePanel">
+        <svg class="nh3-playback-surface" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 1C44 1 47 4 47 24C47 44 44 47 24 47C4 47 1 44 1 24C1 4 4 1 24 1Z" /></svg>
+        <svg class="nh3-playback-icon nh3-palette-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.3a2.1 2.1 0 0 0 1.4-3.6c-.6-.6-.2-1.7.7-1.7h1.2A4.4 4.4 0 0 0 21 11.3 8.5 8.5 0 0 0 12 3Z" /><circle cx="7.2" cy="10" r="1" /><circle cx="10.5" cy="6.8" r="1" /><circle cx="15" cy="7.4" r="1" /><circle cx="17.5" cy="11" r="1" /></svg>
+      </button>
     <button
       class="nh3-playback"
       type="button"
@@ -312,6 +376,7 @@ onBeforeUnmount(() => {
         <path :d="iconPath" />
       </svg>
     </button>
+    </div>
   </div>
 </template>
 
@@ -408,10 +473,17 @@ onBeforeUnmount(() => {
   will-change: transform;
 }
 
-.nh3-playback {
+.nh3-controls {
   position: absolute;
   right: var(--nh3-control-gap);
   bottom: var(--nh3-control-gap);
+  display: flex;
+  gap: 12px;
+  z-index: 2;
+}
+
+.nh3-playback {
+  position: relative;
   display: grid;
   place-items: center;
   width: 48px;
@@ -472,6 +544,99 @@ onBeforeUnmount(() => {
   opacity: 0.55;
   cursor: default;
 }
+
+.nh3-palette-icon {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.nh3-palette-icon circle {
+  fill: currentColor;
+  stroke: none;
+}
+
+.nh3-style-panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 16px);
+  width: min(320px, calc(100vw - 2 * var(--nh3-control-gap)));
+  max-height: calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 64px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid var(--nh3-control-border);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--nh3-bg) 91%, transparent);
+  box-shadow: 0 12px 40px rgba(15, 32, 49, 0.12);
+  backdrop-filter: blur(24px);
+  color: var(--vp-c-text-1);
+}
+
+.nh3-panel-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+}
+
+.nh3-panel-close:hover { background: var(--nh3-playback-hover); }
+.nh3-panel-close svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.nh3-panel-close:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
+.nh3-options { min-width: 0; margin: 0; padding: 0; border: 0; }
+.nh3-options + .nh3-options { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--nh3-control-border); }
+.nh3-options legend { float: left; width: 100%; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
+.nh3-pen-options { clear: both; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.nh3-pen-options label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.nh3-pen-options input { width: 16px; height: 16px; margin: 0; accent-color: var(--vp-c-brand-1); }
+.nh3-color-options { clear: both; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.nh3-color-choice { position: relative; display: grid; place-items: center; height: 36px; cursor: pointer; }
+.nh3-color-choice input, .nh3-size-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.nh3-color-choice span { width: 25px; height: 25px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); }
+.nh3-color-choice input:checked + span { outline: 2px solid var(--vp-c-text-2); outline-offset: 4px; }
+.nh3-color-choice input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 4px; }
+.nh3-size-options { clear: both; display: flex; gap: 8px; }
+.nh3-size-options label { position: relative; flex: 1; cursor: pointer; }
+.nh3-size-options span { display: block; padding: 7px 0; text-align: center; font-size: 13px; border: 1px solid var(--nh3-control-border); border-radius: 10px; }
+.nh3-size-options input:checked + span { background: var(--nh3-playback-hover); border-color: var(--vp-c-brand-1); }
+.nh3-size-options input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+
+/* 艺术字只复用字体规则；扫光位置由活跃时钟驱动，隐藏页面不会悄悄推进。 */
+.nh3-art {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.nh3-art-lettering {
+  grid-area: 1 / 1;
+  line-height: 1.2;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  padding: 0.08em 0.12em;
+}
+
+.nh3-art-ink { font-family: 'Google Sans Flex', 'HarmonyOS Sans SC', system-ui, sans-serif; font-weight: 650; }
+.nh3-art-eys { font-family: 'DM Serif Display', Georgia, serif; font-style: italic; font-weight: 400; }
+.nh3-art-shine { background-image: linear-gradient(110deg, transparent 42%, rgba(255, 255, 255, 0.65) 50%, transparent 58%); background-size: 200% 100%; }
 
 @media (max-width: 640px) {
   .nh3-plane {

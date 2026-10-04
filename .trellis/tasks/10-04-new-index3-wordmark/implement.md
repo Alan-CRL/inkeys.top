@@ -15,3 +15,10 @@
 用户看到首版后要求彩虹不受模型/灰色输入约束。直接按平滑贝塞尔曲线绘制；灰点仅示意。移除物理模拟及其因果测试，继续验证笔顺、压感、循环、离屏绘制、响应式和构建。该修订是明确实施指令，无需重复询问。
 
 用户进一步要求：取消固定四笔，优先全词字体协调；y/s 拆开，灰色示意也允许断开。不得保留为实现旧四笔约束的牵强连接。
+
+## Approved multi-pen implementation sequence
+1. Keep glyphs/routes/native app and unrelated uncommitted work intact. Renderer worker owns softPen.ts/styles.ts and material regression tests; UI worker owns NewHome3.vue/playback.ts and scheduler/lifecycle tests.
+2. Agree local RenderStyle contract before edits. Native Draw3 research supplies highlighter sweep/MAX alpha and laser coverage/material formulas; do not add runtime dependencies.
+3. Main coordinates artifacts and existing render regressions (30 material/theme/size cache and bounds cases). Verify scheduler all32pen sets, settings boundary, pause/default overrides, no-selection art and random color stability.
+4. After both workers stabilize, dedicated trellis-check reviews interaction/render boundaries; self-fix local defects. Main runs strict TypeScript, nativeCanvas/lifecycle/scheduler tests, SSR build and output inspection without GUI.
+5. Record test/build evidence and limitations. No commit/push or implicit auto-commit/archive this feature iteration.

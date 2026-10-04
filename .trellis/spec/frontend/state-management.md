@@ -30,3 +30,11 @@ Do not introduce a global store or query library by default. If a future task ha
 - Derive values instead of duplicating them in mutable refs.
 - Keep route state in the router rather than copying it into a separate global object.
 - Normalize remote payloads before they become render state.
+
+## NewHome3 playback contract
+
+The local `NewHome3/playback.ts` scheduler owns selected settings separately from the active appearance. Changes apply after the current pen's fade, not after a full rotation; changing the pen set restarts at its first ordered entry, while color/size alone keep the next pen. Pause snapshots the outgoing frame and transitions to the default hard/rainbow/medium style without mutating selection. Empty selection enters persistent art lettering. Inject randomness into scheduler tests and resolve a solid color once per unsupported-rainbow pen appearance; repaint/theme/resize must never resample it.
+
+`RenderStyle` is shared only by this feature's scheduler and renderer (`styles.ts`): pen, color and size are all render-cache inputs alongside theme. Highlighter alpha is applied once per stroke coverage, so self-overlap stays .35 and two independent strokes reach approximately .5775. Laser coverage channels merge with MAX before material resolution; do not substitute repeated translucent/glowing segment compositing. The native application sources are read-only references, not a frontend runtime dependency.
+
+Regression entry points live in `.trellis/tasks/10-04-new-index3-wordmark/`: scheduler selection/boundary tests, compiled Vue lifecycle tests and native Canvas pixel/material tests. Production `pnpm docs:build` remains required; these checks do not establish browser visual acceptance.

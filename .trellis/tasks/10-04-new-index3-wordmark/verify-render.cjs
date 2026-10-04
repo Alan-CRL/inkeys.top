@@ -163,3 +163,28 @@ for (const w of [900, 901]) for (const name of ['I', 'n', 's']) {
   assert.equal(holes, 0, `${name} at ${w}px contains ${holes} enclosed transparent seam pixels`)
 }
 console.log(JSON.stringify({ result: 'PASS', deterministicFrames: frames, rawEventsDiscrete: true, resizeCases: 4 }, null, 2))
+
+// 切换笔型/粗细/颜色后重用画布，必须与新建画布一致，最粗材质也不能被裁切。
+const { PEN_ORDER } = load('styles')
+let materialCases = 0
+for (const theme of ['light', 'dark']) for (const pen of PEN_ORDER) for (const size of ['thin', 'medium', 'thick']) {
+  const style = { pen, size, color: 'cyan' }
+  const w = 320
+  const h = Math.ceil(w / scene.aspect)
+  const state = { phase: 'static', rawTime: -1, inkTime: 4.2, opacity: 1 }
+  painter.render(state, w, h, 1, theme, style)
+  const fresh = createCanvas(1, 1)
+  createPainter(scene, fresh).render(state, w, h, 1, theme, style)
+  assert.equal(hash(shared), hash(fresh), `material cache mismatch: ${theme}/${pen}/${size}`)
+  const rgba = pixels(shared)
+  for (let x = 0; x < w; x++) {
+    assert.equal(rgba[x * 4 + 3], 0, `material clips top: ${pen}/${size}`)
+    assert.equal(rgba[((h - 1) * w + x) * 4 + 3], 0, `material clips bottom: ${pen}/${size}`)
+  }
+  for (let y = 0; y < h; y++) {
+    assert.equal(rgba[(y * w) * 4 + 3], 0, `material clips left: ${pen}/${size}`)
+    assert.equal(rgba[(y * w + w - 1) * 4 + 3], 0, `material clips right: ${pen}/${size}`)
+  }
+  materialCases++
+}
+console.log(`PASS ${materialCases} material/theme/size cache and edge cases`)

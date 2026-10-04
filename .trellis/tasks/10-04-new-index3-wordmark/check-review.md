@@ -50,3 +50,10 @@ No actionable findings or reviewer edits. Native Plume source and SSR output con
 
 ## Icon control and graceful pause review
 No actionable findings or reviewer edits. Actual compiledVue lifecycle and additional dev?t=13, offscreen/resize duringfade, reducedmotion cancellation in bothdesiredstates pass. Iconpaths finite through slight springovershoot[-.04,1.04], same2M/8Qcommands. Native48px iconbutton/no title/dynamicaria, unclippedfocus, fine-pointer hover, press and reducedmotion CSS verified. Transitionclock stops whilehidden/unmounted; mainclock frozen throughbothlegs, rapidtoggle continuous. Main buildPASS52pages; productdiffonlyNewHome3.vue. NoGUI.
+
+## Multi-pen / panel final review
+Renderer contracts checked against actual Draw3 shader/material source: rectangle8:1 union, alpha.35, brushopaque, laser4coverageMAX and premultipliedresolve. No renderer defect found; incremental cached and freshframes match. UI/scheduler reviewed allselectedsets/current-penboundary/defaultpause/emptyart/nativeinputkeyboard/outsideclose/teardown. Fixed reducedmotion entrance restoration (intro/art), reducedconfiguration staticappearance and initialreducedmount; corresponding regression tests added.
+Final scheduler, lifecycle, material, strictTS and diff checks PASS. Main finalproductionbuild PASS52pages/17.08s. CLI laser timing depends on systemload and is not browserFPS evidence. No GUI, nativeapp writes, commit or push. Wholepage browservisualacceptance remains unperformed per userinstructions.
+
+## Soft tail-only refinement review
+No findings or reviewer edits. Start/body factor remains1; only finalmin(length*.22,55) uses .12+.88 quintic envelope with zero endpoint first/second derivatives. Other pens, centerlines and pressure/timing unchanged. Focused nativeCanvas start/body identity and gradualtail tests, strictTS and diffcheck PASS. Main material regression and productionbuild PASS52pages/21.24s. NoGUI.

@@ -41,3 +41,12 @@
 ## Icon-only control and graceful pause implementation
 仅NewHome3.vue改动：48px原生button以SVG超椭圆作为背景，焦点轮廓在外层；两子路径同命令圆角轮廓通过既有RAF弹簧插值合并为播放图标。悬停1.07、按压0.94，fill与transform非线性过渡；无title或可见文字，动态aria-label保留。
 getPaintState(now)集中解析画面：独立transitionClock累计可见活跃时间，冻结from帧220ms渐隐，再完整无灰彩虹300ms渐显。过渡中再点击仅改目标paused，不重置当前包络；最终目标为继续时从原有7.2秒淡出接回循环。主题/resize重绘不推进时钟；reduced取消过渡静态显示，卸载停止两时钟和RAF。背景配色、字形与原播放时间轴不变。
+
+## Multi-pen implementation boundary and contract
+Product scope NewHome3.vue/softPen.ts plus localstyles.ts/playback.ts. Glyphdata,new-index2,globaltheme/nav/routes/nativeapp untouched. Renderer owns styles.ts andsoftPen; UIworkerownsplayback.ts/NewHome3.vue. No runtime deps.
+Internal styles: PenKind hard|soft|highlighter|laser|brush, ColorChoice rainbow|neutral|red|amber|green|cyan|blue|purple, StrokeSize thin|medium|thick; RenderStyle={pen,color,size}. Export PEN_ORDER,DEFAULT_STYLE,SIZE_SCALE,resolveSolidColor(nonRainbow,theme):hex. Painter.render(state,width,height,dpr=1,theme=light,style=DEFAULT_STYLE). Explicit scheduler replacesfixedmodulotimeline inVue; purestate separatesrequestedsettings/activeappearance/pendingboundary, randominjectedfortests; painterstabletheme+stylecache.
+Nativeevidence under D:/Project/Inkeys/Repo/Inkeys/Inkeys/Inkeys/Drawing/Draw3/: fixedvertical8:1sweep Draw3.StrokeGeometry.cpp:325–368; highlighteralpha min(selectedAlpha,.35) Draw3.DrawingController.cpp:216–230; samepenMAX Draw3.Renderer.cpp:440–472. Laser Draw3.RendererLaser.cpp:37–68 and Assets/inkPixelShader.hlsl:156–225,311–322: core=AA(coreCapsuleSDF), scatter=AA(abs(coreSDF)-.4coreRadius),border=AA(bodySDF),diffuse=clamp(1-bodySDF/outerWidth,0,1)^2. AAwidth=max(fwidth*1.25,1e-4). AllchannelsMAXwithinpen beforematerial. diffuseedgeMix=smoothstep(.20,.29,diffuse)*(1-border)*.72;diffuseRGB=mix(C,mix(C,white,.43),edgeMix); thenpremultipliedover(diffusealpha1,borderC/.98,scattermix(C,white,.94)/.94,corewhite/1). CPUlocalcoverage+ImageData permitsnobrowserGPUdependency; cachecompletedgeometry, updateactivebounds, never persegmentglowstack.
+Nativewidthconstants50/5areold; websitevisualadaptationapproved. ArtreusefontstacksGoogleSansFlex/HarmonyOSSansSC/system-ui andDMSerifDisplay/Georgia/serif, sameInk650/eysitalic400; copyonlytypographyruleswithoutdependingonuntrackedNewHome2. Iconandpanelretainaccessibility, outclickandkeyhandlerscleanup.
+
+## 软笔尾锋曲线修订
+取消起段8%的收尖因子。末端收锋区长度min(全笔弧长×22%,55字形单位)，倍率0.12+0.88×quinticSmoothstep(距末端/收锋区长度)，输入限于0..1。起止的一、二阶导数为零，代替旧12%/26长度与max(.12,...)截断；尾锋外保持原压感宽度及圆头。以真实Canvas合成直线检查起笔/主体像素与hard一致、尾部逐渐收细，保留原字形回归。

@@ -45,3 +45,15 @@
 本轮按钮专属优化：超椭圆图标按钮，无可见文字、无title/tooltip；保留动态aria-label、键盘操作和focus-visible。悬停轻微放大并渐深底色，按压缩小，非线性柔和过渡；暂停/播放图标应有粘连般连续形变，不新增依赖。
 暂停不再瞬跳完整字：冻结当前帧，先渐隐当前墨迹/灰线，再渐显完整不透明彩虹。继续仍渐隐后重播；快速连续点击、主题切换、窗口缩放、离屏/隐藏与reduced-motion需保持一致且不突跳。减少动态效果时直接静态且禁用动画按钮。
 用户明确要求先提交上一轮、完成后再次提交。上一轮commit首次因1Password签名failed to fill whole buffer失败；用户明确要求重试后正常签名成功，提交92a733f。最终按钮修改亦已获单独提交授权。
+
+## Approved multi-pen plan (current implementation scope)
+2026-10-04 user explicitly approved implementation; no commit/push. Initial complete default rainbow hard medium: .5s fadein,3hold,.7fadeout then configuredloop. Defaults pens=[hard],color=rainbow,size=medium; state not persisted.
+Pen order hard,soft,highlighter,laser,brush; each4.2write+3hold+.7fade. Only exactly one hard OR exactly one soft adds4.2raw+.35rawhold beforeink; raw disappearswheninkcomplete. Pendingpen/color/size apply afterCURRENT PEN fade, not allpensround. Penlistchanged startsfirst; onlycolor/size keepsnextorder. Mergeeditslatest.
+Palette48pxsquircle leftofpause12pxgap; popovernonmodal abovecontrols max320px narrow16margin; toggle/X/Escape/outsideclose, keyboardclosefocusreturns; animationscontinue. Threegroups:5checkboxes(multiselect/empty),8colorradios(rainbow,neutral,red,amber,green,cyan,blue,purple),3sizeradios(thin/medium/thick=.7/1/1.4).
+Pauseanyphase freezesoutgoing .22fadeout then .30fadein defaultfullhard/rainbow/medium; selection retainedandeditablepending. Resume default.7fade→firstselectedorart. Rapidtogglecontinuous. Theme/resize/visibility preserveclock.
+Hard unchangedbaseline15.5 pressure. Soft samepath pressure plussmoothstart/end taper overatmost8%/12%strokearclength; noDraw3buggytaper. Highlighter fixedverticalrectangle8:1; medium31x3.875 designunits,alpha.35; samepenunion/MAXnoalphastacking, separatepenoverlapsourceover. Brushsamegeometryalpha1. LaseronlymaterialNOpaticles: middlebody15.5,whitecorebody/3,scatterhalfwidthcoreRadius*.4,fixedouterdiffuse15.5 regardlesssizes;4coverageMAXsamepenthenpremultipliedmaterialresolve asnative. Wholewordtimingwebsite. Allstylespreserveacceptedglyphs/lifts; maxboundsinclthicklaserandtilt.
+Onlyhard/soft supportrainbow; unsupportedselectedrainbow getsoneuniformrandomregularcolor perappearance, stableuntilnextappearance; themeonlymapscolorid. Artwhenempty: Ink sans+eysserifitalicfromNewHome2 (NO3/noimportdependence), purecolororrainbow; nofadecycle,diagonalclippedhighlight6speriod1.8ssweep. Artcolorchange shortcolortransition, thicknessstoredonly. Selectpensfromartfade→first. Keepcenter/responsive/tilt.
+Reducedmotion noanimation/loop/shimmer/transitions: displayappropriatefullstaticstyle; cleanupRAFs/listeners. NewHome3productmodulesonly; noGUI/nativeRepowrites/dependencies. Testsselectioncombinations/boundaries/randomstability/pause/empty/reduced/visibility; pixelsalpha.5775twostrokes,opaqueBrush,laserwhitecore/MAX/thickbounds. Buildexistingpnpm docs:build.
+
+## 软笔末端收锋修订（当前要求优先）
+起笔不再收尖，保持与硬笔相同的完整圆头。仅末端渐细，扩大平滑收锋区，消除突然变细的视觉拐点。保留现有中心线、压感与书写速度，其他笔型不改。用户明确要求完成后commit；包含本轮修正及上轮尚未提交的多笔型功能，不包含NewHome2、client.ts的既有草稿或生成预览文件，不push。

@@ -1,5 +1,7 @@
 import { buildCenterlines } from './glyphs'
 import type { Point } from './glyphs'
+import { DEFAULT_STYLE, SIZE_SCALE, resolveSolidColor } from './styles'
+import type { RenderStyle } from './styles'
 
 export const WRITE_SECONDS = 4.2
 export const BASE_WIDTH = 15.5
@@ -182,7 +184,8 @@ export function createScene(): Scene {
   const bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
   for (const stroke of strokes) {
     for (const point of [...stroke.raw, ...stroke.ink]) {
-      const padding = BASE_WIDTH * 1.15 / 2 + 6
+      // 所有笔型共用边界：粗激光实体半径 + 固定漫反射外扩，切笔不改变版面。
+      const padding = BASE_WIDTH * SIZE_SCALE.thick / 2 + BASE_WIDTH + 3
       bounds.minX = Math.min(bounds.minX, point.x - padding)
       bounds.minY = Math.min(bounds.minY, point.y - padding)
       bounds.maxX = Math.max(bounds.maxX, point.x + padding)
@@ -293,7 +296,213 @@ function ribbon(points: RimPoint[], start: number, end: number, roundStart: bool
 }
 
 export interface Painter {
-  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme) => void
+  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme, style?: RenderStyle) => void
+}
+
+function styledInk(points: InkPoint[], stroke: Stroke, style: RenderStyle) {
+  const scale = SIZE_SCALE[style.size]
+  const first = stroke.ink[0].s
+  const last = stroke.ink[stroke.ink.length - 1].s
+  const length = last - first
+  return points.map(point => {
+    // 起笔保持原有圆头，只在末端舒缓收束；五次曲线两端斜率/曲率归零，无硬截断。
+    const tail = clamp((last - point.s) / Math.min(length * 0.22, 55))
+    const taper = style.pen === 'soft'
+      ? 0.12 + 0.88 * tail * tail * tail * (tail * (tail * 6 - 15) + 10)
+      : 1
+    return { ...point, width: point.width * scale * taper }
+  })
+}
+
+/** 竖直矩形笔尖的连续扫掠；所有凸多边形同向填充，一笔只合成一次透明度。 */
+function fixedNibPath(points: InkPoint[], height: number) {
+  const path = new Path2D()
+  const hx = height / 16
+  const hy = height / 2
+  const cross = (a: Point, b: Point, c: Point) =>
+    (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x)
+  for (let i = 0; i < Math.max(1, points.length - 1); i++) {
+    const a = points[i]
+    const b = points[Math.min(i + 1, points.length - 1)]
+    const corners = [a, b].flatMap(p => [
+      { x: p.x - hx, y: p.y - hy }, { x: p.x + hx, y: p.y - hy },
+      { x: p.x + hx, y: p.y + hy }, { x: p.x - hx, y: p.y + hy },
+    ]).sort((p, q) => p.x - q.x || p.y - q.y)
+    const hull: Point[] = []
+    for (const p of corners) {
+      while (hull.length >= 2 && cross(hull[hull.length - 2], hull[hull.length - 1], p) <= 0) hull.pop()
+      hull.push(p)
+    }
+    const lower = hull.length
+    for (let j = corners.length - 2; j >= 0; j--) {
+      const p = corners[j]
+      while (hull.length > lower && cross(hull[hull.length - 2], hull[hull.length - 1], p) <= 0) hull.pop()
+      hull.push(p)
+    }
+    path.moveTo(hull[0].x, hull[0].y)
+    for (let j = 1; j < hull.length; j++) path.lineTo(hull[j].x, hull[j].y)
+    path.closePath()
+  }
+  return path
+}
+
+interface LaserLayer { canvas: HTMLCanvasElement, x: number, y: number }
+
+function laserSamples(points: InkPoint[], pixelScale: number) {
+  const keep = new Set([0, points.length - 1])
+  const spans = [[0, points.length - 1]]
+  while (spans.length) {
+    const [from, to] = spans.pop()!
+    const a = points[from]
+    const b = points[to]
+    let error = 0.15
+    let split = -1
+    for (let i = from + 1; i < to; i++) {
+      const p = points[i]
+      const t = (p.t - a.t) / (b.t - a.t)
+      const deviation = Math.hypot(p.x - mix(a.x, b.x, t), p.y - mix(a.y, b.y, t)) * pixelScale
+      if (deviation > error) { error = deviation; split = i }
+    }
+    if (split !== -1) {
+      keep.add(split)
+      spans.push([from, split], [split, to])
+    }
+  }
+  // 按时间插值的屏幕误差小于 0.15 像素，既保留书写速度，也避免同一区域反复栅格化。
+  return [...keep].sort((a, b) => a - b).map(index => points[index])
+}
+
+function createLaserLayer(stroke: Stroke, diameter: number, color: string, k: number, tx: number, ty: number) {
+  const radius = diameter * k / 2
+  const coreRadius = radius / 3
+  const scatterWidth = coreRadius * 0.4
+  // 对应 Draw3：漫反射外扩不随所选实体宽度变化，只随整个字形缩放。
+  const glow = BASE_WIDTH * k
+  const pad = radius + glow + 2
+  const points = laserSamples(visibleInk(stroke.ink, Infinity), k)
+  const pixels = points.map(p => ({ x: p.x * k + tx, y: p.y * k + ty, t: p.t }))
+  const x = Math.floor(Math.min(...pixels.map(p => p.x)) - pad)
+  const y = Math.floor(Math.min(...pixels.map(p => p.y)) - pad)
+  const width = Math.ceil(Math.max(...pixels.map(p => p.x)) + pad) - x
+  const height = Math.ceil(Math.max(...pixels.map(p => p.y)) + pad) - y
+  const coverage = new Float32Array(width * height * 4)
+  const frame = new Float32Array(coverage.length)
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')!
+  const image = context.createImageData(width, height)
+  const rgb = [1, 3, 5].map(index => parseInt(color.slice(index, index + 2), 16) / 255)
+  let nextSegment = 1
+  let lastTime = -1
+  type Region = { left: number, top: number, right: number, bottom: number }
+  let lastPartial: Region | undefined
+
+  function segmentRegion(a: Point, b: Point): Region {
+    return {
+      left: Math.max(0, Math.floor(Math.min(a.x, b.x) - pad) - x),
+      top: Math.max(0, Math.floor(Math.min(a.y, b.y) - pad) - y),
+      right: Math.min(width, Math.ceil(Math.max(a.x, b.x) + pad) - x),
+      bottom: Math.min(height, Math.ceil(Math.max(a.y, b.y) + pad) - y),
+    }
+  }
+
+  function addSegment(target: Float32Array, a: Point, b: Point) {
+    const dx = b.x - a.x
+    const dy = b.y - a.y
+    const squared = dx * dx + dy * dy
+    const region = segmentRegion(a, b)
+    const { left, top, right, bottom } = region
+    for (let py = top; py < bottom; py++) {
+      for (let px = left; px < right; px++) {
+        const vx = px + x + 0.5 - a.x
+        const vy = py + y + 0.5 - a.y
+        const t = squared > 1e-8 ? clamp((vx * dx + vy * dy) / squared) : 0
+        const nx = vx - t * dx
+        const ny = vy - t * dy
+        const distance = Math.hypot(nx, ny)
+        if (distance > radius + glow + 1) continue
+        const aa = Math.max(1.25, 1.25 * (Math.abs(nx) + Math.abs(ny)) / Math.max(distance, 1e-4))
+        const core = distance - coreRadius
+        const border = distance - radius
+        const offset = (py * width + px) * 4
+        // 同笔先做四通道 MAX，再解析材质；不能逐段叠加发光，否则交叉会过曝。
+        target[offset] = Math.max(target[offset], 1 - smooth(core / aa + 0.5))
+        target[offset + 1] = Math.max(target[offset + 1], 1 - smooth((Math.abs(core) - scatterWidth) / aa + 0.5))
+        target[offset + 2] = Math.max(target[offset + 2], 1 - smooth(border / aa + 0.5))
+        target[offset + 3] = Math.max(target[offset + 3], clamp(1 - border / glow) ** 2)
+      }
+    }
+    return region
+  }
+
+  return {
+    render(time: number): LaserLayer {
+      if (time === lastTime) return { canvas, x, y }
+      let dirty = lastPartial
+      const include = (region: Region) => {
+        dirty = dirty ? {
+          left: Math.min(dirty.left, region.left), top: Math.min(dirty.top, region.top),
+          right: Math.max(dirty.right, region.right), bottom: Math.max(dirty.bottom, region.bottom),
+        } : region
+      }
+      if (time < lastTime) {
+        coverage.fill(0)
+        nextSegment = 1
+        dirty = { left: 0, top: 0, right: width, bottom: height }
+      }
+      lastTime = time
+      const count = visibleCount(pixels, time)
+      // 只栅格化新完成的线段。活动尾段不写入前缀，避免插值圆头残影及定格回退不一致。
+      while (nextSegment < count) {
+        include(addSegment(coverage, pixels[nextSegment - 1], pixels[nextSegment]))
+        nextSegment++
+      }
+      let partial: [Point, Point] | undefined
+      lastPartial = undefined
+      if (count > 0 && count < pixels.length) {
+        const a = pixels[count - 1]
+        const b = pixels[count]
+        const fraction = (time - a.t) / (b.t - a.t)
+        partial = [a, { x: mix(a.x, b.x, fraction), y: mix(a.y, b.y, fraction) }]
+        lastPartial = segmentRegion(...partial)
+        include(lastPartial)
+      }
+      if (!dirty) return { canvas, x, y }
+      // 仅恢复/解析新墨迹和上一活动笔尖的包围盒，完整前缀不反复上传或计算材质。
+      const { left, top, right, bottom } = dirty
+      for (let row = top; row < bottom; row++) {
+        const start = (row * width + left) * 4
+        frame.set(coverage.subarray(start, (row * width + right) * 4), start)
+      }
+      if (partial) addSegment(frame, ...partial)
+      for (let row = top; row < bottom; row++) {
+        for (let offset = (row * width + left) * 4; offset < (row * width + right) * 4; offset += 4) {
+          const core = frame[offset]
+          const scatter = frame[offset + 1] * 0.94
+          const border = frame[offset + 2] * 0.98
+          const diffuse = frame[offset + 3]
+          if (diffuse === 0 && core === 0 && scatter === 0 && border === 0) {
+            image.data.fill(0, offset, offset + 4)
+            continue
+          }
+          const edge = smooth((diffuse - 0.20) / 0.09) * (1 - frame[offset + 2]) * 0.72
+          const alpha = 1 - (1 - diffuse) * (1 - border) * (1 - scatter) * (1 - core)
+          for (let channel = 0; channel < 3; channel++) {
+            const c = rgb[channel]
+            let value = mix(c, mix(c, 1, 0.43), edge) * diffuse
+            value = c * border + value * (1 - border)
+            value = mix(c, 1, 0.94) * scatter + value * (1 - scatter)
+            value = core + value * (1 - core)
+            image.data[offset + channel] = Math.round(value / alpha * 255)
+          }
+          image.data[offset + 3] = Math.round(alpha * 255)
+        }
+      }
+      context.putImageData(image, 0, 0, left, top, right - left, bottom - top)
+      return { canvas, x, y }
+    },
+  }
 }
 
 export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter {
@@ -301,15 +510,22 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
   const inkCanvas = document.createElement('canvas')
   const inkCtx = inkCanvas.getContext('2d')!
   let lastKey = ''
+  let lastInkKey = ''
+  let laserCacheKey = ''
+  const laserCache = new Map<Stroke, ReturnType<typeof createLaserLayer>>()
   return {
-    render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light') {
+    render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light', style = DEFAULT_STYLE) {
       if (cssWidth < 1 || cssHeight < 1) return
       const dpr = clamp(pixelRatio, 1, 2)
       const pixelWidth = Math.round(cssWidth * dpr)
       const pixelHeight = Math.round(cssHeight * dpr)
-      const key = [pixelWidth, pixelHeight, state.rawTime, state.inkTime, state.opacity, theme].join(':')
+      const styleKey = [theme, style.pen, style.color, style.size].join(':')
+      const inkKey = [pixelWidth, pixelHeight, cssWidth, cssHeight, state.inkTime, styleKey].join(':')
+      const key = [inkKey, state.rawTime, state.opacity].join(':')
       if (key === lastKey) return
       lastKey = key
+      const redrawInk = inkKey !== lastInkKey
+      lastInkKey = inkKey
       if (canvas.width !== pixelWidth || canvas.height !== pixelHeight
         || inkCanvas.width !== pixelWidth || inkCanvas.height !== pixelHeight) {
         canvas.width = inkCanvas.width = pixelWidth
@@ -322,8 +538,13 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       const ty = (cssHeight - (maxY + minY) * scale) * dpr / 2
       for (const context of [ctx, inkCtx]) {
         context.setTransform(1, 0, 0, 1, 0, 0)
-        context.clearRect(0, 0, pixelWidth, pixelHeight)
+        if (context === ctx || redrawInk) context.clearRect(0, 0, pixelWidth, pixelHeight)
         context.setTransform(k, 0, 0, k, tx, ty)
+      }
+      const nextLaserKey = [k, tx, ty, styleKey].join(':')
+      if (laserCacheKey !== nextLaserKey) {
+        laserCache.clear()
+        laserCacheKey = nextLaserKey
       }
       ctx.globalAlpha = state.opacity
       ctx.lineWidth = 1.15 / scale
@@ -349,8 +570,33 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       }
 
       const previous: Array<[InkPoint, InkPoint]> = []
-      for (const stroke of scene.strokes) {
-        const visible = visibleInk(stroke.ink, state.inkTime)
+      // 不支持彩虹的笔型由播放控制器选定本轮纯色；直接调用绘制器时也有稳定退路。
+      const solid = resolveSolidColor(style.color === 'rainbow' ? 'cyan' : style.color, theme)
+      for (const stroke of redrawInk ? scene.strokes : []) {
+        const visible = styledInk(visibleInk(stroke.ink, state.inkTime), stroke, style)
+        if (!visible.length) continue
+        if (style.pen === 'highlighter' || style.pen === 'brush') {
+          inkCtx.save()
+          inkCtx.globalAlpha = style.pen === 'highlighter' ? 0.35 : 1
+          inkCtx.fillStyle = solid
+          inkCtx.fill(fixedNibPath(visible, BASE_WIDTH * 2 * SIZE_SCALE[style.size]))
+          inkCtx.restore()
+          continue
+        }
+        if (style.pen === 'laser') {
+          const time = Math.min(state.inkTime, stroke.end)
+          let cached = laserCache.get(stroke)
+          if (!cached) {
+            cached = createLaserLayer(stroke, BASE_WIDTH * SIZE_SCALE[style.size], solid, k, tx, ty)
+            laserCache.set(stroke, cached)
+          }
+          const layer = cached.render(time)
+          inkCtx.save()
+          inkCtx.setTransform(1, 0, 0, 1, 0, 0)
+          inkCtx.drawImage(layer.canvas, layer.x, layer.y)
+          inkCtx.restore()
+          continue
+        }
         if (visible.length < 2) continue
         for (const part of splitAtCorners(visible)) {
           const rim: RimPoint[] = part.map((point, i) => {
@@ -394,8 +640,8 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
               inkCtx.restore()
             }
             const gradient = inkCtx.createLinearGradient(a.x, a.y, b.x + 0.0001, b.y)
-            gradient.addColorStop(0, colorAt(a.s / scene.length, theme))
-            gradient.addColorStop(1, colorAt(b.s / scene.length, theme))
+            gradient.addColorStop(0, style.color === 'rainbow' ? colorAt(a.s / scene.length, theme) : solid)
+            gradient.addColorStop(1, style.color === 'rainbow' ? colorAt(b.s / scene.length, theme) : solid)
             // 连续圆接头作为实心内核：原生 stroke 对整段中心线做圆角并集，覆盖轮廓自交的小孔。
             // 内核取本段最小宽度，外缘仍由变宽轮廓决定；不是沿采样点逐个盖圆章。
             const first = Math.max(0, from - 1)

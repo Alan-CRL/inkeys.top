@@ -51,3 +51,19 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - Updated compiledVue lifecycle PASS: outgoing geometry frozen,220msout/300msin, originalopacity retained at click, all5stage pause/resume, rapidtoggles continuous, theme/visibility duringfade, reducedmotion, resize and teardown.120frame icon settling verifies both endpoints and noRAF after pausedsettle.
 - Existing nativeCanvas renderer regression PASS. SSR builtbutton verified icon-only/no title/has accessible pause label; SVG surface does not clip keyboardfocus.
 - Existing pnpm docs:build PASS exit0,52pages,21.92s; only plugin timing notices, no dependency/config change. gitdiffcheck PASS, UTF8LF preserved. No GUI/browser animation acceptance run.
+
+## Multi-pen / style panel implementation
+- New local styles.ts and playback.ts; product edits limited to NewHome3.vue/softPen.ts plus those modules. Accepted glyph paths and existing backgrounds/navbar untouched; no dependency/native-app change or commit/push.
+- Full default rainbow intro.5/3/.7, ordered selectedpen rotation, rawonlysinglehard/soft, pendingsettingspercurrentpenfade, pauseddefaultoverride, emptyselectionart/shimmer, localnonpersisted8colors/3sizes/5checkboxpanel.
+- Scheduler regression covers all32subsets and two rotations, pendingpen/color/size boundaries, randomsolidperappearance stability, rapidpause/defaultrestore, artentrance/exit/color/sweep, reducedmotion. CompiledVue checks panelkeyboard focus/Escape/outside close, visibility/resize/theme, material/artpause, pointer and cleanup. PASS before finalreviewpatch; rerun finalbelow.
+- Existing geometry100cycles/20responsivecases PASS; painter13historicalframes and30material/theme/size cache+emptyedge cases PASS. Material30cases PASS: highlighter samepenalpha.35/interstroke.5775, brushopaque, softtaper, laserwhitecore/coverageMAX, incremental-v-fresh pixels after forward/backward/resize/theme/color/penlifts.
+- Laser uses native4channelMAX thenmaterialresolve; stableprefix cached and active-tail dirtyrect recomputed. Time-constrained simplification tolerance.15physicalpixel. NativeCanvas900px/DPR2/thick253frames measured median9.87ms,p9514.81ms,max32.58ms inmainrun. Timing is workload-sensitive; no browserFPS guarantee. AA differsfromD3D; highlighter AAedge maydiffer1/255 onself-retrace, interioralphaunchanged.
+- Inspected actualCanvas light/dark five-material sheets in frames/material-sheet-{light,dark}.png, plus individual frames. They are materialproofs onsolidthemebase, not page screenshots. NoGUI/browser visualacceptance performed.
+- Initialproductionbuild PASS52pages exit0 in21.89s; plugin timing noticesonly. SSR retainsnewhomepageclass+bothiconcontrols, closedinitialpanel; no localstorage orNewHome2componentdependency. Finalreviewfoundreducedmotionentrances restoredpartialopacity; reviewer corrected and addedregressions. Finalpostreviewcheck recordedbelow.
+- Final post-review verification: scheduler32subsets/boundaries and compiledVue lifecycle PASS; strictTypeScript all4modules PASS. Final pnpm docs:build exit0,52pages,17.08s; plugin timing noticesonly. Source+newtestfiles UTF8noBOM/LF; gitdiffcheck PASS. Original client.ts NewHome2-only edits leftunchanged.
+- Review fixes: settle intro/art entrances when enablingreducedmotion; newlyselectedstaticstyles settletohold/art; initialreducedmount settlesbeforefirstpaint. Regression confirms preference restoredoesnotreturntohalftransparententrance. No remainingreviewfinding.
+
+## 软笔仅末端收锋修订
+- 移除起笔收尖，起笔与主体保持硬笔的圆头及压感宽度；末端改为更长的22%/55弧长范围与五次平滑包络，起止导数归零，不再使用硬阈值截断。
+- 实际Canvas直线测试通过：起笔和主体与hard逐像素一致、尾部单调收细、逐列宽度变化无突跳且渐变跨度足够。30组材料回归、TypeScript与diff检查通过；离屏成品已检查。
+- 独立review无问题。pnpm docs:build成功退出0，52页，21.24s，仅插件耗时提示。未进行GUI验收。用户授权提交此修订及待提交多笔型功能，不推送。
