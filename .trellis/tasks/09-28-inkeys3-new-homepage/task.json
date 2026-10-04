@@ -18,7 +18,9 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [],
+  "children": [
+    "10-04-new-index3-wordmark"
+  ],
   "parent": null,
   "relatedFiles": [],
   "notes": "",

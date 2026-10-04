@@ -67,3 +67,23 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Status
 
 [OK] **Completed**
+
+
+## Session 4: new-index3 手写文字重做与圆接头修复
+<!-- trellis-session: v=2 fp=8e454c91e1fd5425 -->
+
+**Date**: 2026-10-04
+**Task**: new-index3 手写文字重做与圆接头修复
+**Branch**: `main`
+
+### Summary
+
+按用户反馈改为独立平滑曲线，统一字形、拆开y/s、灰线局部加密、修复round join透明缺口；像素/时间轴/生命周期/生产构建通过，未提交。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Status
+
+[OK] **Completed**

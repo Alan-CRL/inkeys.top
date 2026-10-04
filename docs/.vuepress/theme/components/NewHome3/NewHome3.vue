@@ -1,0 +1,244 @@
+<script setup lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computeLayout, createActiveClock, createPainter, createScene, timelineAt } from './softPen'
+import type { Painter } from './softPen'
+
+const scene = createScene()
+const root = ref<HTMLDivElement>()
+const plane = ref<HTMLDivElement>()
+const canvas = ref<HTMLCanvasElement>()
+const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspect) })
+const clock = createActiveClock()
+
+let painter: Painter | undefined
+let frame = 0
+let previousFrame = 0
+let frozen: number | undefined
+let reduced = false
+let inViewport = true
+let mounted = false
+let width = 0
+let height = 0
+let resizeObserver: ResizeObserver | undefined
+let visibleObserver: IntersectionObserver | undefined
+let motionPreference: MediaQueryList | undefined
+let pointerPreference: MediaQueryList | undefined
+let targetX = 0
+let targetY = 0
+let tiltX = 0
+let tiltY = 0
+
+function canAnimate() {
+  return mounted && !document.hidden && inViewport
+}
+
+function paint(now: number) {
+  const node = canvas.value
+  if (!node || !painter) return
+  const state = timelineAt(frozen ?? clock.read(now), reduced)
+  painter.render(state, width, height, window.devicePixelRatio)
+}
+
+function applyTilt() {
+  const node = canvas.value
+  if (!node) return
+  node.style.transform = `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)`
+}
+
+function requestFrame() {
+  if (!frame && canAnimate()) frame = requestAnimationFrame(tick)
+}
+
+function tick(now: number) {
+  frame = 0
+  if (!canAnimate()) return
+  const dt = previousFrame ? Math.min((now - previousFrame) / 1000, 0.1) : 1 / 60
+  previousFrame = now
+  const follow = 1 - Math.exp(-dt / 0.16)
+  tiltX += (targetX - tiltX) * follow
+  tiltY += (targetY - tiltY) * follow
+  const moving = Math.abs(targetX - tiltX) + Math.abs(targetY - tiltY) > 0.0005
+  if (!moving) {
+    tiltX = targetX
+    tiltY = targetY
+  }
+  applyTilt()
+  paint(now)
+  if ((!reduced && frozen === undefined) || moving) requestFrame()
+}
+
+function syncPlayback() {
+  const now = performance.now()
+  clock.setRunning(canAnimate() && !reduced && frozen === undefined, now)
+  if (!canAnimate()) {
+    if (frame) cancelAnimationFrame(frame)
+    frame = 0
+    previousFrame = 0
+    return
+  }
+  paint(now)
+  requestFrame()
+}
+
+function resetPointer() {
+  targetX = 0
+  targetY = 0
+  requestFrame()
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (reduced || !pointerPreference?.matches || event.pointerType === 'touch' || !canAnimate()) return
+  const box = plane.value?.getBoundingClientRect()
+  if (!box || !box.width || !box.height) return
+  // 从未变换的外层测量，避免旋转后的边界反过来改变指针目标而抖动。
+  const outsideX = Math.max(box.left - event.clientX, 0, event.clientX - box.right)
+  const outsideY = Math.max(box.top - event.clientY, 0, event.clientY - box.bottom)
+  const distance = Math.hypot(outsideX, outsideY)
+  const proximity = Math.max(0, 1 - distance / 120)
+  const strength = proximity * proximity * (3 - 2 * proximity)
+  const normalizedX = Math.max(-1, Math.min(1, (event.clientX - box.left - box.width / 2) / (box.width / 2)))
+  const normalizedY = Math.max(-1, Math.min(1, (event.clientY - box.top - box.height / 2) / (box.height / 2)))
+  targetX = normalizedX * strength
+  targetY = normalizedY * strength
+  requestFrame()
+}
+
+function onPreferencesChange() {
+  reduced = motionPreference?.matches ?? false
+  if (reduced || !pointerPreference?.matches) {
+    targetX = targetY = tiltX = tiltY = 0
+    applyTilt()
+  }
+  syncPlayback()
+}
+
+function onVisibilityChange() {
+  resetPointer()
+  syncPlayback()
+}
+
+function resize() {
+  const node = root.value
+  if (!node) return
+  const layout = computeLayout(node.clientWidth, node.clientHeight, scene.aspect)
+  width = layout.width
+  height = layout.height
+  planeStyle.value = {
+    width: `${width}px`,
+    height: `${height}px`,
+    top: `${layout.centerY}px`,
+  }
+  resetPointer()
+  paint(performance.now())
+}
+
+onMounted(() => {
+  const node = canvas.value
+  if (!node || !root.value) return
+  mounted = true
+  painter = createPainter(scene, node)
+  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
+  pointerPreference = window.matchMedia('(hover: hover) and (pointer: fine)')
+  reduced = motionPreference.matches
+
+  // 仅开发环境冻结完整时间轴，例如 ?t=13 可检查循环中的第二次彩虹书写。
+  if (import.meta.env.DEV) {
+    const query = new URLSearchParams(window.location.search).get('t')
+    if (query !== null && query.trim() && Number.isFinite(Number(query))) frozen = Math.max(0, Number(query))
+  }
+
+  motionPreference.addEventListener('change', onPreferencesChange)
+  pointerPreference.addEventListener('change', onPreferencesChange)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  document.documentElement.addEventListener('pointerleave', resetPointer)
+  window.addEventListener('pointermove', onPointerMove, { passive: true })
+  window.addEventListener('blur', resetPointer)
+  window.addEventListener('resize', resize, { passive: true })
+
+  resizeObserver = new ResizeObserver(resize)
+  resizeObserver.observe(root.value)
+  if ('IntersectionObserver' in window) {
+    visibleObserver = new IntersectionObserver(entries => {
+      inViewport = entries.some(entry => entry.isIntersecting)
+      if (!inViewport) resetPointer()
+      syncPlayback()
+    })
+    visibleObserver.observe(root.value)
+  }
+  resize()
+  syncPlayback()
+})
+
+onBeforeUnmount(() => {
+  mounted = false
+  clock.setRunning(false, performance.now())
+  if (frame) cancelAnimationFrame(frame)
+  resizeObserver?.disconnect()
+  visibleObserver?.disconnect()
+  motionPreference?.removeEventListener('change', onPreferencesChange)
+  pointerPreference?.removeEventListener('change', onPreferencesChange)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  document.documentElement.removeEventListener('pointerleave', resetPointer)
+  window.removeEventListener('pointermove', onPointerMove)
+  window.removeEventListener('blur', resetPointer)
+  window.removeEventListener('resize', resize)
+})
+</script>
+
+<template>
+  <div ref="root" class="nh3-root">
+    <div ref="plane" class="nh3-plane" :style="planeStyle">
+      <canvas ref="canvas" class="nh3-mark" role="img" aria-label="Inkeys" />
+    </div>
+  </div>
+</template>
+
+<style>
+.nh3-root {
+  min-height: calc(100svh - var(--vp-nav-height, 64px));
+  box-sizing: border-box;
+  position: relative;
+  background-color: #fff;
+  background-image:
+    linear-gradient(to right, rgba(15, 17, 21, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 17, 21, 0.04) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+[data-theme='dark'] .nh3-root {
+  background-color: #121417;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+.nh3-plane {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(56vw, 900px, calc(100vw - 84px));
+  transform: translate(-50%, -50%);
+  perspective: 1200px;
+}
+
+.nh3-mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@media (max-width: 640px) {
+  .nh3-plane {
+    width: calc(100vw - 84px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nh3-mark {
+    will-change: auto;
+  }
+}
+</style>

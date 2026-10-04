@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend index"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Frontend component-guidelines"}
+{"file": ".trellis/spec/frontend/hook-guidelines.md", "reason": "Frontend hook-guidelines"}
+{"file": ".trellis/spec/frontend/type-safety.md", "reason": "Frontend type-safety"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Frontend quality-guidelines"}

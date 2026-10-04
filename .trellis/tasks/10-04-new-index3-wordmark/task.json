@@ -1,0 +1,30 @@
+{
+  "id": "new-index3-wordmark",
+  "name": "new-index3-wordmark",
+  "title": "new-index3 Inkeys 手写动画重做",
+  "description": "统一首屏手写字形，直接平滑彩虹书写、独立灰线示意、圆接头及鼠标视差",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-10-04",
+  "completedAt": null,
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-28-inkeys3-new-homepage",
+  "relatedFiles": [
+    "docs/.vuepress/theme/components/NewHome3/glyphs.ts",
+    "docs/.vuepress/theme/components/NewHome3/softPen.ts",
+    "docs/.vuepress/theme/components/NewHome3/NewHome3.vue"
+  ],
+  "notes": "本轮实施和自动验证完成，生产构建通过；保留活动任务以便用户继续视觉调整。按要求未提交或推送。用户已取消物理模型和固定四笔/点数要求，最新约束见prd.md。",
+  "meta": {}
+}
