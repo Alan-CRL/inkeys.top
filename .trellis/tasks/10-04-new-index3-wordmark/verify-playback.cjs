@@ -2,6 +2,10 @@ const assert = require('node:assert/strict')
 const { load } = require('./harness.cjs')
 const { createPlayback } = load('playback')
 const { PEN_ORDER, DEFAULT_STYLE } = load('styles')
+const { ERASE_SECONDS } = load('eraser')
+assert.equal(ERASE_SECONDS, 4.8)
+const eraseLead = 0.28 + 0.22
+const eraseTotal = eraseLead + ERASE_SECONDS + 0.2 + 0.3 + 0.35
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-7, `${a} != ${b}`)
 const settings = (pens, color = 'rainbow', size = 'medium', eraser = false) => ({ pens, color, size, eraser })
 
@@ -27,15 +31,15 @@ for (let mask = 0; mask < 64; mask++) {
     close(p.read(4.35).state.opacity, 0.5)
     close(p.read(4.5).state.opacity, 1)
     if (eraser) {
-      for (const at of [4.5, 10.6]) {
+      for (const at of [4.5, 4.5 + 3 + eraseTotal + 0.3]) {
         const hold = p.read(at)
         assert.equal(hold.shimmer, -1)
         assert.equal(hold.eraseProgress, -1)
         close(p.read(at + 3).eraseProgress, 0)
-        close(p.read(at + 4.4).eraseProgress, 0.5)
-        assert.equal(p.read(at + 4.4).view, 'art')
-        close(p.read(at + 5.8).state.opacity, 0)
-        assert.equal(p.read(at + 5.8).eraseProgress, -1)
+        close(p.read(at + 3 + eraseLead + ERASE_SECONDS / 2).eraseProgress, 0.5)
+        assert.equal(p.read(at + 3 + eraseLead + ERASE_SECONDS / 2).view, 'art')
+        close(p.read(at + 3 + eraseTotal).state.opacity, 0)
+        assert.equal(p.read(at + 3 + eraseTotal).eraseProgress, -1)
       }
     }
     else for (const t of [5, 6.4, 100, 900]) assert.equal(p.read(t).state.opacity, 1)
@@ -68,14 +72,14 @@ for (let mask = 0; mask < 64; mask++) {
     const exit = p.read(writeAt + 7.2)
     if (erase) {
       close(exit.eraseProgress, 0)
-      close(p.read(writeAt + 8.6).eraseProgress, 0.5)
-      assert.equal(p.read(writeAt + 8.6).state.opacity, 1)
+      close(p.read(writeAt + 7.2 + eraseLead + ERASE_SECONDS / 2).eraseProgress, 0.5)
+      assert.equal(p.read(writeAt + 7.2 + eraseLead + ERASE_SECONDS / 2).state.opacity, 1)
     }
     else {
       assert.equal(exit.state.phase, 'fade')
       assert.equal(exit.eraseProgress, -1)
     }
-    at = writeAt + 7.2 + (erase ? 2.8 : 0.7)
+    at = writeAt + 7.2 + (erase ? eraseTotal : 0.7)
   }
 }
 
@@ -199,7 +203,7 @@ for (const current of PEN_ORDER) {
     const outgoing = p.read(exitAt)
     assert.deepEqual(outgoing.style, { pen: current, color: 'red', size: 'medium' })
     assert.equal(outgoing.eraseProgress, eraser && !later ? 0 : -1)
-    const next = p.read(exitAt + (eraser && !later ? 2.8 : 0.7))
+    const next = p.read(exitAt + (eraser && !later ? eraseTotal : 0.7))
     if (pens.length) assert.deepEqual(next.style, { pen: later ?? pens[0], color: 'blue', size: 'thin' })
     else assert.equal(next.view, 'art')
   }
@@ -212,7 +216,7 @@ for (const eraser of [false, true]) {
   const exitAt = 11.4
   assert.equal(p.read(exitAt).eraseProgress, eraser ? 0 : -1)
   p.configure(settings(['brush'], 'blue', 'thin', !eraser), 11.5)
-  const nextAt = exitAt + (eraser ? 2.8 : 0.7)
+  const nextAt = exitAt + (eraser ? eraseTotal : 0.7)
   assert.deepEqual(p.read(nextAt).style, { pen: 'highlighter', color: 'red', size: 'medium' })
   // 排队的新刷子在下一次边界生效，不会被旧锁定设置覆盖。
   assert.equal(p.read(nextAt + 7.2).eraseProgress, -1)
@@ -264,7 +268,7 @@ assert.equal(artToPen.read(5.7).style.pen, 'brush')
 for (const pens of [[], ['highlighter']]) {
   const p = createPlayback()
   p.configure(settings(pens, 'blue', 'medium', true), 0)
-  const at = pens.length ? 12.8 : 8.9
+  const at = (pens.length ? 11.4 : 7.5) + eraseLead + ERASE_SECONDS / 2
   const erased = p.read(at)
   close(erased.eraseProgress, 0.5)
   p.toggle(at)
@@ -283,7 +287,7 @@ for (const pens of [[], ['highlighter']]) {
 for (const pens of [[], ['highlighter']]) {
   const p = createPlayback()
   p.configure(settings(pens, 'green', 'medium', true), 0)
-  const at = pens.length ? 12.8 : 8.9
+  const at = (pens.length ? 11.4 : 7.5) + eraseLead + ERASE_SECONDS / 2
   p.read(at)
   p.configure(settings(['soft'], 'blue'), at)
   p.settleReduced(at)
@@ -293,4 +297,78 @@ for (const pens of [[], ['highlighter']]) {
   assert.equal(p.read(at).state.opacity, 1)
 }
 
-console.log('PASS: all 64 tool subsets, 320 successor mutations, locked exits/queued art, eraser-only cycles, pause snapshots, random stability and reduced motion')
+// 光标先出现并停顿、全不透明擦除，再停顿消失，空白间隔后才能消费锁定下一项。
+const erasePhases = [
+  [0, 0, 0], [0.14, 0, 0.5], [0.28, 0, 1], [0.39, 0, 1], [0.5, 0, 1],
+  [2.9, 0.5, 1], [5.3, 1, 1], [5.4, 1, 1], [5.5, 1, 1], [5.65, 1, 0.5],
+  [5.8, 1, 0], [6, 1, 0],
+]
+for (const pens of [[], ['highlighter']]) {
+  const p = createPlayback()
+  p.configure(settings(pens, 'blue', 'medium', true), 0)
+  const exitAt = pens.length ? 11.4 : 7.5
+  for (const [offset, progress, opacity] of erasePhases) {
+    const frame = p.read(exitAt + offset)
+    close(frame.eraseProgress, progress)
+    close(frame.eraseOpacity, opacity)
+    assert.equal(frame.state.opacity, 1)
+    assert.equal(frame.state.inkTime, 4.2)
+    assert.equal(frame.shimmer, -1)
+    assert.equal(frame.view, pens.length ? 'ink' : 'art')
+  }
+  assert.equal(p.read(exitAt + eraseTotal).eraseProgress, -1)
+  assert.equal(p.read(exitAt + eraseTotal).eraseOpacity, 0)
+}
+
+for (const pens of [[], ['highlighter']]) {
+  for (const offset of [0.14, 0.39, 2.9, 5.4, 5.65, 6]) {
+    const exitAt = pens.length ? 11.4 : 7.5
+    const at = exitAt + offset
+    const make = () => {
+      const p = createPlayback()
+      p.configure(settings(pens, 'red', 'medium', true), 0)
+      return p
+    }
+    const paused = make()
+    const snapshot = paused.read(at)
+    paused.toggle(at)
+    assert.deepEqual(paused.read(at), snapshot)
+    const half = paused.read(at + 0.11)
+    close(half.eraseProgress, snapshot.eraseProgress)
+    close(half.eraseOpacity, snapshot.eraseOpacity)
+    close(half.state.opacity, 0.5)
+    // 快速改意图也不能跳变光标或擦除蒙版。
+    paused.toggle(at + 0.11)
+    paused.toggle(at + 0.11)
+    assert.deepEqual(paused.read(at + 0.11), half)
+    assert.equal(paused.read(at + 0.52).eraseOpacity, 0)
+
+    const reduced = make()
+    reduced.read(at)
+    reduced.settleReduced(at)
+    for (const reduce of [false, true]) {
+      const frame = reduced.read(at, reduce)
+      assert.equal(frame.eraseProgress, -1)
+      assert.equal(frame.eraseOpacity, 0)
+      assert.equal(frame.state.opacity, 1)
+      assert.equal(frame.view, pens.length ? 'ink' : 'art')
+    }
+
+    const pending = make()
+    pending.configure(settings(['brush'], 'blue'), at)
+    const locked = pending.read(exitAt + eraseTotal)
+    assert.equal(locked.view, pens.length ? 'ink' : 'art')
+    assert.equal(locked.eraseOpacity, 0)
+    if (pens.length) {
+      assert.equal(locked.style.pen, 'highlighter')
+      assert.equal(locked.style.color, 'red')
+      assert.equal(pending.read(exitAt + eraseTotal + 7.9).style.pen, 'brush')
+    }
+    else {
+      assert.equal(locked.artColor, 'red')
+      assert.equal(pending.read(exitAt + eraseTotal + 0.3 + 3 + 0.7).style.pen, 'brush')
+    }
+  }
+}
+
+console.log('PASS: 64 tool subsets, 320 successor mutations, complete eraser entry/hold/exit/gap, locked settings and per-phase pause/reduced restoration')

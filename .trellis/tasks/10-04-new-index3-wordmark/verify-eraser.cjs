@@ -5,7 +5,8 @@ const { load, canvasRuntime } = require('./harness.cjs')
 const { createCanvas, Path2D } = canvasRuntime()
 global.Path2D = Path2D
 global.document = { createElement: () => createCanvas(1, 1) }
-const { getEraserFrame } = load('eraser')
+const { getEraserFrame, createEraserRoute, ERASE_SECONDS } = load('eraser')
+const revealSteps = ERASE_SECONDS * 120
 const { createScene, createPainter, computeLayout } = load('softPen')
 const { PEN_ORDER, SIZE_SCALE } = load('styles')
 const pixels = canvas => canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data
@@ -73,8 +74,8 @@ let minimumClearance = Infinity
 let minimumVerticalClearance = Infinity
 for (const viewport of [320, 375, 640, 768, 1100, 1440, 1920]) for (const available of [180, 300, 402, 505, 555, 700]) {
   const { width, height, centerY } = computeLayout(viewport, available, scene.aspect)
-  for (let step = 0; step <= 336; step++) {
-    const cursor = getEraserFrame(step / 336, width, height).cursor
+  for (let step = 0; step <= revealSteps; step++) {
+    const cursor = getEraserFrame(step / revealSteps, width, height).cursor
     for (const tx of [-1, 1]) for (const ty of [-1, 1]) for (let i = 0; i < 32; i++) {
       const angle = i * Math.PI / 16
       const x = cursor.x + Math.cos(angle) * cursor.radius - width / 2
@@ -94,31 +95,61 @@ for (const viewport of [320, 375, 640, 768, 1100, 1440, 1920]) for (const availa
   }
 }
 
-const trace = Array.from({ length: 337 }, (_, i) => getEraserFrame(i / 336, 900, 406).cursor)
-const steps = trace.slice(1).map((p, i) => ({ dx: p.x - trace[i].x, dy: p.y - trace[i].y, distance: Math.hypot(p.x - trace[i].x, p.y - trace[i].y) }))
-assert.ok(steps.filter(p => p.dx * p.dy < 0 && Math.abs(p.dy / p.dx) > 0.3).length > steps.length * 0.6, 'dominant motion must be up-right / down-left, not horizontal')
-const runs = []
-let start = 0
-for (let i = 1; i < steps.length; i++) if (Math.sign(steps[i].dy) !== Math.sign(steps[i - 1].dy)) {
-  runs.push([start, i])
-  start = i
+const route = createEraserRoute(900, 406)
+const evaluate = (points, t) => {
+  let work = points.map(p => ({ ...p }))
+  while (work.length > 1) work = work.slice(1).map((p, i) => ({ x: work[i].x * (1 - t) + p.x * t, y: work[i].y * (1 - t) + p.y * t }))
+  return work[0]
 }
-runs.push([start, steps.length])
+const derivative = points => points.slice(1).map((p, i) => ({ x: (p.x - points[i].x) * (points.length - 1), y: (p.y - points[i].y) * (points.length - 1) }))
+const endpoint = (points, t) => {
+  const first = derivative(points)
+  const d = evaluate(first, t)
+  const a = evaluate(derivative(first), t)
+  const speed = Math.hypot(d.x, d.y)
+  const tangent = { x: d.x / speed, y: d.y / speed }
+  const along = tangent.x * a.x + tangent.y * a.y
+  return { tangent, curvature: { x: (a.x - tangent.x * along) / speed ** 2, y: (a.y - tangent.y * along) / speed ** 2 } }
+}
 let bowedPasses = 0
-let acceleratingPasses = 0
-for (const [from, to] of runs) {
-  const a = trace[from]
-  const b = trace[to]
-  const length = Math.hypot(b.x - a.x, b.y - a.y)
-  if (length < 150 || (b.x - a.x) * (b.y - a.y) >= 0) continue
-  const deviation = Math.max(...trace.slice(from, to + 1).map(p => Math.abs((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) / length))
-  if (deviation > 406 * 0.02) bowedPasses++
-  const speeds = steps.slice(from, to).map(p => p.distance)
-  const edge = Math.max(speeds[0], speeds.at(-1))
-  if (Math.max(...speeds.slice(1, -1)) > edge * 1.5) acceleratingPasses++
+let smoothJoins = 0
+for (const [index, curve] of route.curves.entries()) {
+  const a = curve.points[0]
+  const b = curve.points.at(-1)
+  if (curve.kind === 'sweep' && Math.hypot(b.x - a.x, b.y - a.y) > 150) {
+    assert.ok((b.x - a.x) * (b.y - a.y) < 0, 'long swipes must follow the diagonal / direction')
+    for (const t of [0.2, 0.5, 0.8]) {
+      const p = evaluate(curve.points, t)
+      assert.ok(p.y < a.y * (1 - t) + b.y * t - 406 * 0.01, 'every long swipe must bow above its chord in either direction')
+    }
+    assert.equal(curve.points.length, 3, 'single quadratic curvature cannot introduce an S-shaped inflection')
+    bowedPasses++
+  }
+  if (!index) continue
+  const previous = route.curves[index - 1]
+  assert.deepEqual(previous.points.at(-1), curve.points[0], 'route joins must coincide')
+  const before = endpoint(previous.points, 1)
+  const after = endpoint(curve.points, 0)
+  assert.ok(Math.hypot(before.tangent.x - after.tangent.x, before.tangent.y - after.tangent.y) < 1e-9, 'joined curves must share actual tangent, not straight-chord tangent')
+  assert.ok(Math.hypot(before.curvature.x - after.curvature.x, before.curvature.y - after.curvature.y) < 1e-9, 'joined curves must share arc-length curvature')
+  smoothJoins++
 }
-assert.ok(bowedPasses >= 6, `clearly bowed sweeps required, got ${bowedPasses}`)
-assert.ok(acceleratingPasses >= 6, `each long hand sweep must accelerate/decelerate, got ${acceleratingPasses}`)
+assert.ok(bowedPasses >= 8)
+let offset = 0
+const meanSpeeds = route.curves.map(curve => {
+  const count = (curve.kind === 'turn' ? 96 : 128) + (offset === 0 ? 1 : 0)
+  const points = route.guide.slice(offset, offset + count)
+  offset += count
+  return points.reduce((sum, p) => sum + p.speed, 0) / count
+})
+let acceleratingPasses = 0
+for (let i = 1; i < route.curves.length - 1; i++) {
+  if (route.curves[i].kind === 'sweep' && meanSpeeds[i] > Math.max(meanSpeeds[i - 1], meanSpeeds[i + 1]) * 1.1) acceleratingPasses++
+}
+assert.ok(acceleratingPasses >= 8, 'low-curvature swipes must be faster than neighboring reversals')
+assert.ok(route.guide[0].speed < 0.04 && route.guide.at(-1).speed < 0.04, 'start and end near rest')
+assert.equal(ERASE_SECONDS, 4.8)
+assert.equal(getEraserFrame(1, 900, 406).paths.length, revealSteps + 1, '120Hz reveal must track shared duration')
 
 let appearances = 0
 for (const pen of PEN_ORDER) for (const theme of ['light', 'dark']) for (const size of Object.keys(SIZE_SCALE)) {
@@ -190,7 +221,7 @@ for (const [index, progress] of [0, 0.2, 0.4, 0.6, 0.8, 1].entries()) {
   const d = cursor.radius * 2
   sheetContext.save()
   sheetContext.translate(x + cursor.x, y + cursor.y)
-  sheetContext.globalAlpha = 0.5
+  sheetContext.globalAlpha = 1
   sheetContext.fillStyle = '#fff'
   sheetContext.beginPath()
   sheetContext.arc(0, 0, cursor.radius, 0, Math.PI * 2)
@@ -213,4 +244,4 @@ for (const [index, progress] of [0, 0.2, 0.4, 0.6, 0.8, 1].entries()) {
 fs.mkdirSync(path.join(__dirname, 'frames'), { recursive: true })
 fs.writeFileSync(path.join(__dirname, 'frames/eraser-sweep-contact.png'), sheet.toBuffer('image/png'))
 console.log(`Eraser: ${masks} monotonic masks / conservative art envelopes, ${appearances} material rewind cases, ${viewportAppearances} viewport/material/theme/size full-clear cases passed.`)
-console.log(`Diagonal motion: ${bowedPasses} bowed and ${acceleratingPasses} accelerating/decelerating passes; cursor minimum horizontal/vertical clearance ${minimumClearance.toFixed(2)} / ${minimumVerticalClearance.toFixed(2)}px.`)
+console.log(`Diagonal motion: ${bowedPasses} upward-bowed passes, ${smoothJoins} C2 joins, ${acceleratingPasses} curvature-paced passes; cursor minimum horizontal/vertical clearance ${minimumClearance.toFixed(2)} / ${minimumVerticalClearance.toFixed(2)}px.`)

@@ -359,9 +359,9 @@ onBeforeUnmount(() => {
         <div class="nh3-art-lettering nh3-art-overlay" :style="{ backgroundImage: colorBackground(artFrame.artColor), opacity: artFrame.colorMix }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay nh3-art-shine" :style="{ opacity: artFrame.shimmer < 0 ? 0 : 1, backgroundPosition: `${135 - artFrame.shimmer * 170}% 50%` }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
       </div>
-      <svg v-if="eraserFrame" class="nh3-eraser-cursor" :viewBox="`0 0 ${width} ${height}`" :style="{ ...tiltStyle, opacity: artFrame.state.opacity * 0.5 }" aria-hidden="true">
+      <svg v-if="eraserFrame" class="nh3-eraser-cursor" :viewBox="`0 0 ${width} ${height}`" :style="{ ...tiltStyle, opacity: artFrame.state.opacity * artFrame.eraseOpacity }" aria-hidden="true">
         <g :transform="`translate(${eraserFrame.cursor.x} ${eraserFrame.cursor.y})`">
-          <!-- 原生 EraserGripVisual：白底、向内 0.04D 灰边，双竖向胶囊；整组透明度 0.5。 -->
+          <!-- 原生按下状态：白底、向内 0.04D 灰边与双竖向胶囊，擦除中保持不透明。 -->
           <circle :r="eraserFrame.cursor.radius" fill="white" />
           <circle :r="eraserFrame.cursor.radius * 0.96" fill="none" stroke="#cfcfcf" :stroke-width="eraserFrame.cursor.radius * 0.08" />
           <rect v-for="side in [-1, 1]" :key="side" :x="(side * 0.24 - 0.1) * eraserFrame.cursor.radius" :y="-0.48 * eraserFrame.cursor.radius" :width="0.2 * eraserFrame.cursor.radius" :height="0.96 * eraserFrame.cursor.radius" :rx="0.1 * eraserFrame.cursor.radius" fill="#cfcfcf" />

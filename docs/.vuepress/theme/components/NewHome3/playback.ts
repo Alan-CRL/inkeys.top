@@ -1,4 +1,5 @@
 import type { AnimationState } from './softPen'
+import { ERASE_SECONDS } from './eraser'
 import { DEFAULT_STYLE, PEN_ORDER } from './styles'
 import type { ColorChoice, PenKind, RenderStyle, StrokeSize } from './styles'
 
@@ -18,19 +19,21 @@ export interface PlaybackFrame {
   colorMix: number
   shimmer: number
   eraseProgress: number
+  eraseOpacity: number
 }
 
-type Stage = 'intro-in' | 'intro-hold' | 'intro-out' | 'raw' | 'raw-hold' | 'ink' | 'hold' | 'fade' | 'erase' | 'art-in' | 'art-hold' | 'art' | 'art-out' | 'pause-out' | 'pause-in' | 'paused' | 'resume'
+type Stage = 'intro-in' | 'intro-hold' | 'intro-out' | 'raw' | 'raw-hold' | 'ink' | 'hold' | 'fade' | 'erase-in' | 'erase-ready' | 'erase' | 'erase-hold' | 'erase-out' | 'erase-gap' | 'art-in' | 'art-hold' | 'art' | 'art-out' | 'pause-out' | 'pause-in' | 'paused' | 'resume'
 const duration: Record<Stage, number> = {
   'intro-in': 0.5, 'intro-hold': 3, 'intro-out': 0.7,
-  raw: 4.2, 'raw-hold': 0.35, ink: 4.2, hold: 3, fade: 0.7, erase: 2.8,
+  raw: 4.2, 'raw-hold': 0.35, ink: 4.2, hold: 3, fade: 0.7,
+  'erase-in': 0.28, 'erase-ready': 0.22, erase: ERASE_SECONDS, 'erase-hold': 0.2, 'erase-out': 0.3, 'erase-gap': 0.35,
   'art-in': 0.3, 'art-hold': 3, art: Infinity, 'art-out': 0.7, 'pause-out': 0.22, 'pause-in': 0.3, paused: Infinity, resume: 0.7,
 }
 const solids: Exclude<ColorChoice, 'rainbow'>[] = ['neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
 const ease = (n: number) => { const t = Math.max(0, Math.min(1, n)); return t * t * (3 - 2 * t) }
 const normalize = (s: PlaybackSettings): PlaybackSettings => ({ ...s, eraser: !!s.eraser, pens: PEN_ORDER.filter(p => s.pens.includes(p)) })
 const full = (): AnimationState => ({ phase: 'static', rawTime: -1, inkTime: 4.2, opacity: 1 })
-const inkFrame = (style: RenderStyle): PlaybackFrame => ({ view: 'ink', state: full(), style, artColor: 'rainbow', previousColor: 'rainbow', colorMix: 1, shimmer: -1, eraseProgress: -1 })
+const inkFrame = (style: RenderStyle): PlaybackFrame => ({ view: 'ink', state: full(), style, artColor: 'rainbow', previousColor: 'rainbow', colorMix: 1, shimmer: -1, eraseProgress: -1, eraseOpacity: 0 })
 
 /** 只消费可见页面的活跃时间；退场前锁定下一项，退场中的修改留给下一次边界。 */
 export function createPlayback(random: () => number = Math.random) {
@@ -74,7 +77,7 @@ export function createPlayback(random: () => number = Math.random) {
       ? settings.pens.find(pen => PEN_ORDER.indexOf(pen) > PEN_ORDER.indexOf(style.pen)) : undefined
     exitPlan = { settings, pen: later ?? settings.pens[0] }
     snapshot = { ...current, shimmer: -1 }
-    enter(allowErase && settings.eraser && !later ? 'erase' : current.view === 'art' ? 'art-out' : 'fade', at)
+    enter(allowErase && settings.eraser && !later ? 'erase-in' : current.view === 'art' ? 'art-out' : 'fade', at)
   }
 
   function finishExit(at: number) {
@@ -116,7 +119,12 @@ export function createPlayback(random: () => number = Math.random) {
           }
           else lockExit(end, artFrame(end))
           break
-        case 'fade': case 'art-out': case 'erase': finishExit(end); break
+        case 'erase-in': enter('erase-ready', end); break
+        case 'erase-ready': enter('erase', end); break
+        case 'erase': enter('erase-hold', end); break
+        case 'erase-hold': enter('erase-out', end); break
+        case 'erase-out': enter('erase-gap', end); break
+        case 'fade': case 'art-out': case 'erase-gap': finishExit(end); break
         case 'pause-out': enter('pause-in', end); break
         case 'pause-in': enter(paused ? 'paused' : 'resume', end); break
       }
@@ -134,7 +142,14 @@ export function createPlayback(random: () => number = Math.random) {
     if (stage === 'pause-out' || stage === 'art-out') {
       return { ...snapshot, state: { ...snapshot.state, opacity: snapshot.state.opacity * (1 - ease(elapsed / duration[stage])) } }
     }
-    if (stage === 'erase') return { ...snapshot, eraseProgress: Math.min(1, elapsed / duration.erase) }
+    if (stage.startsWith('erase')) {
+      // 入退场仅改变光标透明度；实际擦除不透明，结束后的空白停顿也不重现文字。
+      const eraseProgress = stage === 'erase-in' || stage === 'erase-ready' ? 0
+        : stage === 'erase' ? Math.min(1, elapsed / duration.erase) : 1
+      const eraseOpacity = stage === 'erase-in' ? ease(elapsed / duration['erase-in'])
+        : stage === 'erase-out' ? 1 - ease(elapsed / duration['erase-out']) : stage === 'erase-gap' ? 0 : 1
+      return { ...snapshot, eraseProgress, eraseOpacity }
+    }
     if (stage === 'art' || stage === 'art-in' || stage === 'art-hold') {
       return { ...artFrame(time),
         state: { ...full(), opacity: stage === 'art-in' ? ease(elapsed / 0.3) : 1 },
@@ -165,7 +180,7 @@ export function createPlayback(random: () => number = Math.random) {
       if (stage === 'intro-in') enter('intro-hold', time)
       if (stage === 'art-in') enter(active.eraser ? 'art-hold' : 'art', time)
       // 减少动态效果已呈现完整字，恢复时先停留，不能突然回到半擦除状态。
-      if (stage === 'erase') enter(snapshot.view === 'art' ? 'art-hold' : 'hold', time)
+      if (stage.startsWith('erase')) enter(snapshot.view === 'art' ? 'art-hold' : 'hold', time)
     },
     configure(next: PlaybackSettings, time: number, reduced = false) {
       const current = read(time, reduced)
