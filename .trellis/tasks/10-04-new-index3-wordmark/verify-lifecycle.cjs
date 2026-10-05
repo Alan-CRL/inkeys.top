@@ -33,7 +33,8 @@ class Observer {
   disconnect() { this.disconnected = true }
 }
 const motion = Object.assign(new Events(), { matches: false })
-const pointer = Object.assign(new Events(), { matches: true })
+// 能力媒体查询为 false，但真实 mouse 事件仍有效（混合输入设备场景）。
+const pointer = Object.assign(new Events(), { matches: false })
 global.window = Object.assign(new Events(), {
   devicePixelRatio: 1,
   location: { search: '' },
@@ -90,6 +91,8 @@ close(lastPaint.opacity, 0.5)
 advance(300)
 document.hidden = true
 document.emit('visibilitychange')
+window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
+assert.equal(state.targetX, 0)
 assert.equal(scheduled.size, 0)
 const frozen = lastPaint.opacity
 now = 10300
@@ -99,6 +102,8 @@ close(lastPaint.opacity, frozen)
 advance(10500)
 close(lastPaint.opacity, 1)
 state.visibleObserver.callback([{ isIntersecting: false }])
+window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
+assert.equal(state.targetX, 0)
 assert.equal(scheduled.size, 0)
 now = 20500
 state.visibleObserver.callback([{ isIntersecting: true }])
@@ -215,6 +220,8 @@ for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(Math.abs(state.tiltX) < 0.001)
 window.emit('pointermove', { pointerType: 'touch', clientX: 1120, clientY: 500 })
 assert.equal(state.targetX, 0)
+window.emit('pointermove', { pointerType: 'pen', clientX: 1120, clientY: 500 })
+assert.equal(state.targetX, 0)
 
 // 艺术字暂停同样先淡出；快速点击只改变最终状态。
 state.togglePlayback()
@@ -230,6 +237,9 @@ assert.equal(state.artFrame.value.view, 'ink')
 close(lastPaint.opacity, 1)
 motion.matches = true
 motion.emit('change')
+window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
+assert.equal(state.targetX, 0)
+assert.equal(state.tiltX, 0)
 state.togglePlayback()
 assert.equal(state.paused.value, true)
 assert.equal(lastPaint.opacity, 1)

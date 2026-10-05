@@ -51,7 +51,6 @@ let height = 0
 let resizeObserver: ResizeObserver | undefined
 let visibleObserver: IntersectionObserver | undefined
 let motionPreference: MediaQueryList | undefined
-let pointerPreference: MediaQueryList | undefined
 let targetX = 0
 let targetY = 0
 let tiltX = 0
@@ -265,7 +264,8 @@ function resetPointer() {
 }
 
 function onPointerMove(event: PointerEvent) {
-  if (reduced.value || !pointerPreference?.matches || event.pointerType === 'touch' || !canAnimate()) return
+  // 以实际输入事件为准；混合设备的 hover/pointer 媒体能力可能与当前鼠标不一致。
+  if (reduced.value || event.pointerType !== 'mouse' || !canAnimate()) return
   const box = plane.value?.getBoundingClientRect()
   if (!box || !box.width || !box.height) return
   // 从未变换的外层测量，避免旋转后的边界反过来改变指针目标而抖动。
@@ -289,7 +289,7 @@ function onPreferencesChange() {
     iconVelocity = 0
     iconPath.value = iconPaths(iconProgress)
   }
-  if (reduced.value || !pointerPreference?.matches) {
+  if (reduced.value) {
     targetX = targetY = tiltX = tiltY = 0
     applyTilt()
   }
@@ -322,7 +322,6 @@ onMounted(() => {
   mounted = true
   painter = createPainter(scene, node)
   motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  pointerPreference = window.matchMedia('(any-hover: hover) and (any-pointer: fine)')
   reduced.value = motionPreference.matches
 
   // 仅开发环境冻结完整时间轴，例如 ?t=10 可检查默认循环的硬笔书写。
@@ -333,7 +332,6 @@ onMounted(() => {
   if (reduced.value) playback.settleReduced(frozen ?? clock.read(performance.now()))
 
   motionPreference.addEventListener('change', onPreferencesChange)
-  pointerPreference.addEventListener('change', onPreferencesChange)
   document.addEventListener('visibilitychange', onVisibilityChange)
   document.documentElement.addEventListener('pointerleave', resetPointer)
   window.addEventListener('pointermove', onPointerMove, { passive: true })
@@ -363,7 +361,6 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   visibleObserver?.disconnect()
   motionPreference?.removeEventListener('change', onPreferencesChange)
-  pointerPreference?.removeEventListener('change', onPreferencesChange)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   document.documentElement.removeEventListener('pointerleave', resetPointer)
   window.removeEventListener('pointermove', onPointerMove)

@@ -57,3 +57,5 @@ There is no automated accessibility standard at present. Review changed interact
 ## Page-specific Plume appearance
 
 `docs/new-index3.md` uses frontmatter `pageClass: new-home3-page`; Plume applies this class to its layout wrapper during SSR. Scope custom navbar/background CSS under that class, including nested divider/search selectors, so route navigation restores other pages automatically. Use `useDarkMode()` from `vuepress-theme-plume/client` for Canvas theme changes; repaint the current frame and include the theme in any render cache key. A paused or reduced-motion frame must update without restarting its animation clock. Preserve native mobile-menu and dropdown surfaces when making the navbar transparent.
+
+For NewHome3 mouse parallax, use the actual `PointerEvent.pointerType === 'mouse'` as the input contract; hover/pointer capability queries must not discard an otherwise valid mouse event. Touch, pen, reduced-motion, hidden and offscreen states do not enable parallax. Measure distance on the untransformed outer plane and transform the shared inner surface. The lifecycle regression must include a false pointer media query with valid mouse events.
