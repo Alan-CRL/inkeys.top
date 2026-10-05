@@ -4,6 +4,8 @@ import { useDarkMode } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
 import { createPlayback } from './playback'
+import { getEraserFrame } from './eraser'
+import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
 
@@ -23,15 +25,19 @@ const paletteButton = ref<HTMLButtonElement>()
 const panel = ref<HTMLDivElement>()
 const panelOpen = ref(false)
 const selectedPens = ref<PenKind[]>(['hard'])
+const selectedEraser = ref(false)
+const eraserFrame = ref<ReturnType<typeof getEraserFrame>>()
+const toolChoices = [...PEN_ORDER, 'eraser'] as const
 const selectedColor = ref<ColorChoice>('rainbow')
 const selectedSize = ref<StrokeSize>('medium')
 const artFrame = ref(playback.read(0))
 const tiltStyle = ref<Record<string, string>>({})
-const penLabels: Record<PenKind, string> = { hard: '硬笔', soft: '软笔', highlighter: '荧光笔', laser: '激光笔', brush: '刷子' }
+const penLabels: Record<PenKind | 'eraser', string> = { eraser: '橡皮', hard: '硬笔', soft: '软笔', highlighter: '荧光笔', laser: '激光笔', brush: '刷子' }
 const colorChoices: ColorChoice[] = ['rainbow', 'neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
 const colorLabels = { rainbow: '彩虹色', neutral: '中性色', red: '红色', amber: '琥珀色', green: '绿色', cyan: '青色', blue: '蓝色', purple: '紫色' }
 const sizeChoices: StrokeSize[] = ['thin', 'medium', 'thick']
 const sizeLabels = { thin: '细', medium: '中', thick: '粗' }
+const sizeWidths = { thin: 2.8, medium: 4, thick: 5.6 }
 
 let painter: Painter | undefined
 let frame = 0
@@ -89,8 +95,10 @@ function paint(now: number) {
   if (!node || !painter) return
   const current = playback.read(frozen ?? clock.read(now), reduced.value)
   artFrame.value = current
+  eraserFrame.value = current.eraseProgress >= 0 && width > 0 && height > 0
+    ? getEraserFrame(current.eraseProgress, width, height) : undefined
   painter.render(current.view === 'ink' ? current.state : { ...current.state, opacity: 0 }, width, height,
-    window.devicePixelRatio, isDark.value ? 'dark' : 'light', current.style)
+    window.devicePixelRatio, isDark.value ? 'dark' : 'light', current.style, current.eraseProgress)
 }
 
 // 主题切换只重绘当前帧；手动暂停、减少动态效果和离屏状态都不重置时间轴。
@@ -168,20 +176,34 @@ function togglePlayback() {
 }
 
 function updateSettings() {
-  playback.configure({ pens: selectedPens.value, color: selectedColor.value, size: selectedSize.value },
+  playback.configure({ pens: selectedPens.value, eraser: selectedEraser.value, color: selectedColor.value, size: selectedSize.value },
     frozen ?? clock.read(performance.now()), reduced.value)
   syncPlayback()
 }
 
+function toggleTool(tool: PenKind | 'eraser') {
+  if (tool === 'eraser') selectedEraser.value = !selectedEraser.value
+  else selectedPens.value = selectedPens.value.includes(tool)
+    ? selectedPens.value.filter(pen => pen !== tool) : [...selectedPens.value, tool]
+  updateSettings()
+}
+
 function closePanel(returnFocus = false) {
+  // 收起后立即 inert，先移出内部焦点，避免不可见控件继续接收键盘操作。
+  if (returnFocus || panel.value?.contains(document.activeElement)) paletteButton.value?.focus()
   panelOpen.value = false
-  if (returnFocus) paletteButton.value?.focus()
 }
 
 function togglePanel(event: MouseEvent) {
-  panelOpen.value = !panelOpen.value
-  if (panelOpen.value && event.detail === 0) {
-    void nextTick(() => panel.value?.querySelector<HTMLInputElement>('input')?.focus())
+  if (panelOpen.value) {
+    closePanel(event.detail === 0)
+    return
+  }
+  panelOpen.value = true
+  if (event.detail === 0) {
+    void nextTick(() => {
+      if (panelOpen.value) panel.value?.querySelector<HTMLButtonElement>('button')?.focus()
+    })
   }
 }
 
@@ -324,38 +346,59 @@ onBeforeUnmount(() => {
   <div ref="root" class="nh3-root">
     <div ref="plane" class="nh3-plane" :style="planeStyle">
       <canvas ref="canvas" class="nh3-mark" role="img" aria-label="Inkeys" />
-      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ ...tiltStyle, opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px` }" aria-hidden="true">
+      <svg class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
+        <defs>
+          <mask id="nh3-art-erasure" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" :width="width" :height="height" x="0" y="0" style="mask-type: luminance">
+            <rect :width="width" :height="height" fill="white" />
+            <path v-for="(path, index) in eraserFrame?.paths || []" :key="index" :d="path" fill="black" />
+          </mask>
+        </defs>
+      </svg>
+      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ ...tiltStyle, opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px`, maskImage: eraserFrame ? 'url(#nh3-art-erasure)' : 'none' }" aria-hidden="true">
         <div class="nh3-art-lettering" :style="{ backgroundImage: colorBackground(artFrame.previousColor) }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay" :style="{ backgroundImage: colorBackground(artFrame.artColor), opacity: artFrame.colorMix }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay nh3-art-shine" :style="{ opacity: artFrame.shimmer < 0 ? 0 : 1, backgroundPosition: `${135 - artFrame.shimmer * 170}% 50%` }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
       </div>
+      <svg v-if="eraserFrame" class="nh3-eraser-cursor" :viewBox="`0 0 ${width} ${height}`" :style="{ ...tiltStyle, opacity: artFrame.state.opacity * 0.5 }" aria-hidden="true">
+        <g :transform="`translate(${eraserFrame.cursor.x} ${eraserFrame.cursor.y})`">
+          <!-- 原生 EraserGripVisual：白底、向内 0.04D 灰边，双竖向胶囊；整组透明度 0.5。 -->
+          <circle :r="eraserFrame.cursor.radius" fill="white" />
+          <circle :r="eraserFrame.cursor.radius * 0.96" fill="none" stroke="#cfcfcf" :stroke-width="eraserFrame.cursor.radius * 0.08" />
+          <rect v-for="side in [-1, 1]" :key="side" :x="(side * 0.24 - 0.1) * eraserFrame.cursor.radius" :y="-0.48 * eraserFrame.cursor.radius" :width="0.2 * eraserFrame.cursor.radius" :height="0.96 * eraserFrame.cursor.radius" :rx="0.1 * eraserFrame.cursor.radius" fill="#cfcfcf" />
+        </g>
+      </svg>
     </div>
     <div ref="controls" class="nh3-controls">
-      <div v-if="panelOpen" id="nh3-style-panel" ref="panel" class="nh3-style-panel" role="dialog" aria-label="书写样式">
-        <button class="nh3-panel-close" type="button" aria-label="关闭样式调整" @click="closePanel($event.detail === 0)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" /></svg>
-        </button>
-        <fieldset class="nh3-options">
-          <legend>笔类型</legend>
-          <div class="nh3-pen-options">
-            <label v-for="pen in PEN_ORDER" :key="pen"><input v-model="selectedPens" type="checkbox" :value="pen" @change="updateSettings">{{ penLabels[pen] }}</label>
-          </div>
-        </fieldset>
-        <fieldset class="nh3-options">
-          <legend>颜色</legend>
-          <div class="nh3-color-options">
-            <label v-for="color in colorChoices" :key="color" class="nh3-color-choice" :style="{ '--nh3-swatch': colorBackground(color) }">
-              <input v-model="selectedColor" type="radio" name="nh3-color" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
-              <span aria-hidden="true" />
-            </label>
-          </div>
-        </fieldset>
-        <fieldset class="nh3-options">
-          <legend>粗细</legend>
-          <div class="nh3-size-options">
-            <label v-for="size in sizeChoices" :key="size"><input v-model="selectedSize" type="radio" name="nh3-size" :value="size" @change="updateSettings"><span>{{ sizeLabels[size] }}</span></label>
-          </div>
-        </fieldset>
+      <div id="nh3-style-panel" ref="panel" class="nh3-style-panel" :class="{ 'is-open': panelOpen }" :inert="!panelOpen" :aria-hidden="!panelOpen" role="group" aria-label="书写样式">
+        <div class="nh3-style-content">
+          <fieldset class="nh3-options">
+            <legend class="nh3-sr-only">笔类型</legend>
+            <div class="nh3-pen-options">
+              <button v-for="tool in toolChoices" :key="tool" class="nh3-tool" type="button" :aria-pressed="tool === 'eraser' ? selectedEraser : selectedPens.includes(tool)" @click="toggleTool(tool)">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" v-html="toolIcons[tool]" />
+                <span>{{ penLabels[tool] }}</span>
+              </button>
+            </div>
+          </fieldset>
+          <fieldset class="nh3-options">
+            <legend class="nh3-sr-only">颜色</legend>
+            <div class="nh3-color-options">
+              <label v-for="color in colorChoices" :key="color" class="nh3-color-choice" :style="{ '--nh3-swatch': colorBackground(color) }">
+                <input v-model="selectedColor" type="radio" name="nh3-color" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
+                <span aria-hidden="true" />
+              </label>
+            </div>
+          </fieldset>
+          <fieldset class="nh3-options">
+            <legend class="nh3-sr-only">粗细</legend>
+            <div class="nh3-size-options">
+              <label v-for="size in sizeChoices" :key="size">
+                <input v-model="selectedSize" type="radio" name="nh3-size" :value="size" :aria-label="sizeLabels[size]" @change="updateSettings">
+                <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6" :stroke-width="sizeWidths[size]" /></svg></span>
+              </label>
+            </div>
+          </fieldset>
+        </div>
       </div>
       <button ref="paletteButton" class="nh3-playback nh3-palette" type="button" aria-label="调整书写样式" aria-controls="nh3-style-panel" :aria-expanded="panelOpen" @click="togglePanel">
         <svg class="nh3-playback-surface" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 1C44 1 47 4 47 24C47 44 44 47 24 47C4 47 1 44 1 24C1 4 4 1 24 1Z" /></svg>
@@ -560,58 +603,82 @@ onBeforeUnmount(() => {
 
 .nh3-style-panel {
   position: absolute;
-  right: 0;
-  bottom: calc(100% + 16px);
-  width: min(320px, calc(100vw - 2 * var(--nh3-control-gap)));
-  max-height: calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 64px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  right: calc(100% + 12px);
+  bottom: 0;
+  width: 868px;
+  height: 48px;
   box-sizing: border-box;
-  padding: 22px;
   border: 1px solid var(--nh3-control-border);
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--nh3-bg) 91%, transparent);
-  box-shadow: 0 12px 40px rgba(15, 32, 49, 0.12);
+  border-radius: 16px;
+  corner-shape: squircle;
+  background: color-mix(in srgb, var(--nh3-bg) 86%, transparent);
+  box-shadow: 0 8px 28px rgba(15, 32, 49, 0.08);
   backdrop-filter: blur(24px);
   color: var(--vp-c-text-1);
+  clip-path: inset(0 0 0 100% round 16px);
+  opacity: 0;
+  transform: translateX(8px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: clip-path 300ms cubic-bezier(0.22, 0.8, 0.25, 1),
+    transform 300ms cubic-bezier(0.22, 0.8, 0.25, 1), opacity 220ms ease, visibility 0s 300ms;
 }
 
-.nh3-panel-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--vp-c-text-2);
-  cursor: pointer;
+.nh3-style-panel.is-open {
+  clip-path: inset(0 0 0 0 round 16px);
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
 }
 
-.nh3-panel-close:hover { background: var(--nh3-playback-hover); }
-.nh3-panel-close svg { width: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
-.nh3-panel-close:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
+/* 只揭示容器，不缩放内容；改变展开方向也不会拉伸图标。 */
+.nh3-style-content { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 100%; padding: 5px 10px; box-sizing: border-box; }
 .nh3-options { min-width: 0; margin: 0; padding: 0; border: 0; }
-.nh3-options + .nh3-options { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--nh3-control-border); }
-.nh3-options legend { float: left; width: 100%; margin-bottom: 12px; font-size: 13px; font-weight: 600; }
-.nh3-pen-options { clear: both; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.nh3-pen-options label { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
-.nh3-pen-options input { width: 16px; height: 16px; margin: 0; accent-color: var(--vp-c-brand-1); }
-.nh3-color-options { clear: both; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.nh3-color-choice { position: relative; display: grid; place-items: center; height: 36px; cursor: pointer; }
+.nh3-options + .nh3-options { padding-left: 10px; border-left: 1px solid var(--nh3-control-border); }
+.nh3-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.nh3-pen-options { display: flex; gap: 4px; }
+.nh3-tool { box-sizing: border-box; display: flex; align-items: center; gap: 5px; flex-shrink: 0; height: 36px; padding: 0 8px; border: 1px solid transparent; border-radius: 12px; corner-shape: squircle; background: transparent; color: var(--vp-c-text-2); font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease, color 220ms ease; }
+.nh3-tool svg { width: 18px; height: 18px; flex-shrink: 0; pointer-events: none; }
+.nh3-tool[aria-pressed='true'] { color: var(--vp-c-brand-1); background: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent); border-color: color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent); }
+.nh3-tool:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
+.nh3-tool:active { transform: scale(0.94); transition-duration: 120ms; }
+.nh3-color-options { display: flex; gap: 2px; }
+.nh3-color-choice { position: relative; display: grid; place-items: center; width: 28px; height: 34px; cursor: pointer; }
 .nh3-color-choice input, .nh3-size-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.nh3-color-choice span { width: 25px; height: 25px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); }
-.nh3-color-choice input:checked + span { outline: 2px solid var(--vp-c-text-2); outline-offset: 4px; }
-.nh3-color-choice input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 4px; }
-.nh3-size-options { clear: both; display: flex; gap: 8px; }
-.nh3-size-options label { position: relative; flex: 1; cursor: pointer; }
-.nh3-size-options span { display: block; padding: 7px 0; text-align: center; font-size: 13px; border: 1px solid var(--nh3-control-border); border-radius: 10px; }
-.nh3-size-options input:checked + span { background: var(--nh3-playback-hover); border-color: var(--vp-c-brand-1); }
-.nh3-size-options input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.nh3-color-choice span { width: 19px; height: 19px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35); }
+.nh3-color-choice input:checked + span { outline: 2px solid var(--vp-c-text-2); outline-offset: 2px; }
+.nh3-color-choice input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.nh3-size-options { display: flex; gap: 3px; }
+.nh3-size-options label { position: relative; width: 32px; cursor: pointer; }
+.nh3-size-options span { display: grid; place-items: center; height: 34px; border: 1px solid transparent; border-radius: 10px; corner-shape: squircle; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease; }
+.nh3-size-options svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-linecap: round; }
+.nh3-size-options input:checked + span { background: var(--nh3-playback-hover); border-color: var(--nh3-control-border); }
+.nh3-size-options input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
+.nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); transition-duration: 120ms; }
+
+@media (hover: hover) and (pointer: fine) {
+  .nh3-tool:hover { transform: scale(1.04); background: var(--nh3-playback-hover); }
+  .nh3-tool:active { transform: scale(0.94); }
+  .nh3-color-choice:hover span, .nh3-size-options label:hover span { transform: scale(1.07); }
+  .nh3-size-options label:hover span { background: var(--nh3-playback-hover); }
+  .nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); }
+}
+
+@media (max-width: 1099px) {
+  .nh3-style-panel { right: 0; bottom: calc(100% + 12px); width: min(480px, calc(100vw - 2 * var(--nh3-control-gap))); height: auto; max-height: max(48px, calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); overflow-y: auto; overscroll-behavior: contain; }
+  .nh3-style-content { flex-direction: column; align-items: stretch; gap: 12px; padding: 12px; }
+  .nh3-options + .nh3-options { border-left: 0; border-top: 1px solid var(--nh3-control-border); padding-left: 0; padding-top: 12px; }
+  .nh3-pen-options { flex-wrap: wrap; gap: 6px; }
+  .nh3-tool { flex: 1 0 calc(33.333% - 6px); justify-content: center; font-size: 13px; }
+  .nh3-color-options { justify-content: space-between; }
+  .nh3-color-choice { height: 36px; }
+  .nh3-size-options label { flex: 1; }
+}
+
+.nh3-mask-defs { position: absolute; pointer-events: none; }
+.nh3-eraser-cursor { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform-origin: center; color: var(--vp-c-text-2); }
 
 /* 艺术字只复用字体规则；扫光位置由活跃时钟驱动，隐藏页面不会悄悄推进。 */
 .nh3-art {
@@ -646,7 +713,11 @@ onBeforeUnmount(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .nh3-playback,
-  .nh3-playback-surface {
+  .nh3-playback-surface,
+  .nh3-style-panel,
+  .nh3-tool,
+  .nh3-color-choice span,
+  .nh3-size-options span {
     transition: none;
   }
 

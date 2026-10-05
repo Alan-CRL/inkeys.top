@@ -63,7 +63,7 @@ componentModule.require = name => {
     watch: (source, callback) => { assert.equal(source, darkMode); themeChanged = callback },
   }
   if (name === 'vuepress-theme-plume/client') return { useDarkMode: () => darkMode }
-  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme, style) => { lastPaint = { ...state, width, height, theme, style } } }) }
+  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme, style, eraseProgress) => { lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
   if (name.startsWith('./')) return load(name.slice(2))
   return require(name)
 }
@@ -109,7 +109,7 @@ close(lastPaint.rawTime, 0)
 let paletteFocused = 0
 let inputFocused = 0
 state.paletteButton.value = { focus: () => paletteFocused++ }
-state.panel.value = { querySelector: () => ({ focus: () => inputFocused++ }) }
+state.panel.value = { contains: target => target === 'focused-option', querySelector: selector => { assert.equal(selector, 'button'); return { focus: () => inputFocused++ } } }
 state.controls.value = { contains: target => target === 'inside' }
 state.togglePanel({ detail: 0 })
 assert.equal(state.panelOpen.value, true)
@@ -125,6 +125,20 @@ state.togglePanel({ detail: 1 })
 document.emit('pointerdown', { target: 'outside' })
 assert.equal(state.panelOpen.value, false)
 assert.equal(paletteFocused, 1)
+state.togglePanel({ detail: 0 })
+document.activeElement = 'focused-option'
+document.emit('pointerdown', { target: 'outside' })
+assert.equal(state.panelOpen.value, false)
+assert.equal(paletteFocused, 2)
+state.togglePanel({ detail: 1 })
+state.togglePanel({ detail: 1 })
+assert.equal(state.panelOpen.value, false)
+assert.equal(paletteFocused, 3)
+document.activeElement = undefined
+state.toggleTool('eraser')
+assert.equal(state.selectedEraser.value, true)
+state.toggleTool('eraser')
+assert.equal(state.selectedEraser.value, false)
 state.selectedPens.value = ['laser']
 state.selectedColor.value = 'blue'
 state.selectedSize.value = 'thick'
@@ -224,11 +238,47 @@ assert.equal(lastPaint.opacity, 1)
 advance(now + 1000)
 assert.equal(scheduled.size, 0)
 
+// 艺术字仅橡皮：共享几何、无扫光，暂停保留擦除进度，主题/缩放不重置。
+motion.matches = false
+motion.emit('change')
+state.selectedPens.value = []
+state.selectedEraser.value = true
+state.updateSettings()
+for (let i = 0; i < 200 && (state.artFrame.value.view !== 'art' || state.artFrame.value.eraseProgress <= 0); i++) advance(now + 100)
+assert.equal(state.artFrame.value.view, 'art')
+assert.ok(state.artFrame.value.eraseProgress > 0)
+assert.equal(state.artFrame.value.shimmer, -1)
+assert.ok(state.eraserFrame.value.path.length > 0)
+const eraseProgress = state.artFrame.value.eraseProgress
+const erasePath = state.eraserFrame.value.path
+themeChanged()
+state.resizeObserver.callback()
+assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
+assert.equal(state.eraserFrame.value.path, erasePath)
+state.root.value.clientWidth = 375
+state.resizeObserver.callback()
+assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
+assert.deepEqual(state.eraserFrame.value, load('eraser').getEraserFrame(eraseProgress,
+  parseFloat(state.planeStyle.value.width), parseFloat(state.planeStyle.value.height)))
+state.root.value.clientWidth = 1440
+state.resizeObserver.callback()
+assert.equal(state.eraserFrame.value.path, erasePath)
+state.togglePlayback()
+advance(now + 100)
+assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
+assert.equal(state.eraserFrame.value.path, erasePath)
+assert.ok(state.artFrame.value.state.opacity > 0 && state.artFrame.value.state.opacity < 1)
+advance(now + 500)
+assert.equal(state.eraserFrame.value, undefined)
+assert.equal(lastPaint.eraseProgress, -1)
+
 unmountedHook()
 assert.equal(scheduled.size, 0)
 assert.ok(observers.every(observer => observer.disconnected))
 assert.equal(window.count() + document.count() + document.documentElement.count() + motion.count() + pointer.count(), 0)
-assert.ok(descriptor.template.content.includes('type="checkbox"'))
+assert.ok(!descriptor.template.content.includes('type="checkbox"'))
+assert.ok(descriptor.template.content.includes(':aria-pressed="tool'))
+assert.ok(descriptor.template.content.includes(':inert="!panelOpen"'))
 assert.ok(descriptor.template.content.includes('type="radio"'))
 assert.ok(!descriptor.template.content.includes('title='))
 console.log('PASS: compiled Vue lifecycle: opening, visibility, panel keyboard/outside close, deferred settings, material/art pause, theme/resize, parallax, reduced motion and teardown')

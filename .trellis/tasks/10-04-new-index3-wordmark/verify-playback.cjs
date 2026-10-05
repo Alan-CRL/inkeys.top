@@ -3,7 +3,7 @@ const { load } = require('./harness.cjs')
 const { createPlayback } = load('playback')
 const { PEN_ORDER, DEFAULT_STYLE } = load('styles')
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-7, `${a} != ${b}`)
-const settings = (pens, color = 'rainbow', size = 'medium') => ({ pens, color, size })
+const settings = (pens, color = 'rainbow', size = 'medium', eraser = false) => ({ pens, color, size, eraser })
 
 const intro = createPlayback()
 assert.deepEqual(intro.read(0).style, DEFAULT_STYLE)
@@ -14,18 +14,31 @@ assert.equal(intro.read(3.5).state.phase, 'fade')
 close(intro.read(3.85).state.opacity, 0.5)
 assert.equal(intro.read(4.2).state.phase, 'raw')
 
-// 全部 32 种勾选组合与两轮笔顺；随机色只在不支持彩虹的笔出场时抽取一次。
-for (let mask = 0; mask < 32; mask++) {
+// 全部 64 种工具组合与两轮笔顺；橡皮不影响灰线条件，也不抽取材质颜色。
+for (let mask = 0; mask < 64; mask++) {
   let draws = 0
   const p = createPlayback(() => { draws++; return 0.6 })
   const pens = PEN_ORDER.filter((_, index) => mask & (1 << index))
-  p.configure(settings(pens), 0)
+  const eraser = !!(mask & 32)
+  p.configure(settings(pens, 'rainbow', 'medium', eraser), 0)
   if (!pens.length) {
     assert.equal(p.read(4.2).view, 'art')
     close(p.read(4.2).state.opacity, 0)
     close(p.read(4.35).state.opacity, 0.5)
     close(p.read(4.5).state.opacity, 1)
-    for (const t of [5, 6.4, 100, 900]) assert.equal(p.read(t).state.opacity, 1)
+    if (eraser) {
+      for (const at of [4.5, 10.6]) {
+        const hold = p.read(at)
+        assert.equal(hold.shimmer, -1)
+        assert.equal(hold.eraseProgress, -1)
+        close(p.read(at + 3).eraseProgress, 0)
+        close(p.read(at + 4.4).eraseProgress, 0.5)
+        assert.equal(p.read(at + 4.4).view, 'art')
+        close(p.read(at + 5.8).state.opacity, 0)
+        assert.equal(p.read(at + 5.8).eraseProgress, -1)
+      }
+    }
+    else for (const t of [5, 6.4, 100, 900]) assert.equal(p.read(t).state.opacity, 1)
     assert.equal(draws, 0)
     continue
   }
@@ -51,8 +64,18 @@ for (let mask = 0; mask < 32; mask++) {
     assert.equal(draws, expectedDraws)
     assert.equal(p.read(writeAt + 4.2).state.rawTime, -1)
     assert.equal(p.read(writeAt + 4.2).state.phase, 'hold')
-    assert.equal(p.read(writeAt + 7.2).state.phase, 'fade')
-    at = writeAt + 7.9
+    const erase = eraser && pen === pens.at(-1)
+    const exit = p.read(writeAt + 7.2)
+    if (erase) {
+      close(exit.eraseProgress, 0)
+      close(p.read(writeAt + 8.6).eraseProgress, 0.5)
+      assert.equal(p.read(writeAt + 8.6).state.opacity, 1)
+    }
+    else {
+      assert.equal(exit.state.phase, 'fade')
+      assert.equal(exit.eraseProgress, -1)
+    }
+    at = writeAt + 7.2 + (erase ? 2.8 : 0.7)
   }
 }
 
@@ -65,7 +88,7 @@ assert.deepEqual(pending.read(12.1).style, { pen: 'soft', color: 'red', size: 't
 pending.configure(settings(['brush', 'hard'], 'green'), 13)
 pending.configure(settings(['laser', 'soft'], 'blue', 'thin'), 14)
 assert.equal(pending.read(19).style.pen, 'soft')
-assert.deepEqual(pending.read(20).style, { pen: 'soft', color: 'blue', size: 'thin' })
+assert.deepEqual(pending.read(20).style, { pen: 'laser', color: 'blue', size: 'thin' })
 
 // 暂停任何材质/灰线/艺术字均保留旧快照，成品始终是默认样式。
 for (const pens of [['hard'], ['soft'], ['highlighter'], ['laser'], ['brush'], []]) {
@@ -162,4 +185,112 @@ for (const pens of [[], ['hard'], ['soft', 'laser']]) {
   }
   else assert.equal(p.read(100).view, 'art')
 }
-console.log('PASS: opening, all 32 pen subsets, ordered loops, pending boundaries, random stability, pause/rapid toggles, art/shimmer and reduced motion')
+// 当前笔取消/新增前项与后项：始终按固定笔顺向后找，只有本轮末尾才擦除。
+for (const current of PEN_ORDER) {
+  for (let mask = 0; mask < 64; mask++) {
+    const p = createPlayback(() => 0)
+    p.configure(settings([current], 'red'), 0)
+    const writeAt = 4.2 + (['hard', 'soft'].includes(current) ? 4.55 : 0)
+    const pens = PEN_ORDER.filter((_, index) => mask & (1 << index))
+    const eraser = !!(mask & 32)
+    p.configure(settings(pens, 'blue', 'thin', eraser), writeAt + 1)
+    const later = pens.find(pen => PEN_ORDER.indexOf(pen) > PEN_ORDER.indexOf(current))
+    const exitAt = writeAt + 7.2
+    const outgoing = p.read(exitAt)
+    assert.deepEqual(outgoing.style, { pen: current, color: 'red', size: 'medium' })
+    assert.equal(outgoing.eraseProgress, eraser && !later ? 0 : -1)
+    const next = p.read(exitAt + (eraser && !later ? 2.8 : 0.7))
+    if (pens.length) assert.deepEqual(next.style, { pen: later ?? pens[0], color: 'blue', size: 'thin' })
+    else assert.equal(next.view, 'art')
+  }
+}
+
+// 退场一旦开始，后续勾选与颜色不能改写已锁定的下一次出场。
+for (const eraser of [false, true]) {
+  const p = createPlayback()
+  p.configure(settings(['highlighter'], 'red', 'medium', eraser), 0)
+  const exitAt = 11.4
+  assert.equal(p.read(exitAt).eraseProgress, eraser ? 0 : -1)
+  p.configure(settings(['brush'], 'blue', 'thin', !eraser), 11.5)
+  const nextAt = exitAt + (eraser ? 2.8 : 0.7)
+  assert.deepEqual(p.read(nextAt).style, { pen: 'highlighter', color: 'red', size: 'medium' })
+  // 排队的新刷子在下一次边界生效，不会被旧锁定设置覆盖。
+  assert.equal(p.read(nextAt + 7.2).eraseProgress, -1)
+  assert.deepEqual(p.read(nextAt + 7.9).style, { pen: 'brush', color: 'blue', size: 'thin' })
+}
+
+// 锁定下一项为空时，退场期间的新选择在艺术字渐显后仍有机会应用，不困在无限保持。
+for (const pendingSettings of [settings(['soft'], 'blue'), settings([], 'blue', 'medium', true), settings([], 'blue')]) {
+  const p = createPlayback()
+  p.configure(settings(['highlighter'], 'red'), 0)
+  p.configure(settings([], 'red'), 10)
+  p.read(11.4)
+  p.configure(pendingSettings, 11.5)
+  assert.equal(p.read(12.1).view, 'art')
+  assert.equal(p.read(12.1).artColor, 'red')
+  if (pendingSettings.pens.length) {
+    assert.equal(p.read(12.75).view, 'art')
+    close(p.read(12.75).state.opacity, 0.5)
+    assert.deepEqual(p.read(13.1).style, { pen: 'soft', color: 'blue', size: 'medium' })
+  }
+  else {
+    assert.equal(p.read(12.4).artColor, 'blue')
+    close(p.read(12.525).colorMix, 0.5)
+    if (pendingSettings.eraser) {
+      assert.equal(p.read(12.4).shimmer, -1)
+      close(p.read(15.4).eraseProgress, 0)
+    }
+    else assert.equal(p.read(100).state.opacity, 1)
+  }
+}
+
+// 仅橡皮的艺术字保持阶段修改仍排队，移除橡皮后平稳留在完整艺术字。
+const artErase = createPlayback()
+artErase.configure(settings([], 'red', 'medium', true), 0)
+artErase.configure(settings([], 'blue'), 5)
+assert.equal(artErase.read(6).artColor, 'red')
+assert.equal(artErase.read(7.5).eraseProgress, -1)
+assert.equal(artErase.read(7.5).artColor, 'blue')
+assert.equal(artErase.read(100).state.opacity, 1)
+
+// 持续艺术字新选笔时使用渐隐，即便新集合包括橡皮。
+const artToPen = createPlayback()
+artToPen.configure(settings([]), 0)
+artToPen.configure(settings(['brush'], 'green', 'thick', true), 5)
+assert.equal(artToPen.read(5.35).eraseProgress, -1)
+close(artToPen.read(5.35).state.opacity, 0.5)
+assert.equal(artToPen.read(5.7).style.pen, 'brush')
+
+for (const pens of [[], ['highlighter']]) {
+  const p = createPlayback()
+  p.configure(settings(pens, 'blue', 'medium', true), 0)
+  const at = pens.length ? 12.8 : 8.9
+  const erased = p.read(at)
+  close(erased.eraseProgress, 0.5)
+  p.toggle(at)
+  assert.deepEqual(p.read(at), erased)
+  close(p.read(at + 0.11).eraseProgress, 0.5)
+  close(p.read(at + 0.11).state.opacity, 0.5)
+  p.toggle(at + 0.12)
+  p.toggle(at + 0.13)
+  assert.equal(p.read(at + 0.52).eraseProgress, -1)
+  assert.deepEqual(p.read(at + 0.52).style, DEFAULT_STYLE)
+  p.toggle(at + 1)
+  assert.equal(p.read(at + 1.7).view, pens.length ? 'ink' : 'art')
+}
+
+// 减少动态效果不呈现半擦字；恢复从当前完整内容停留，排队样式不抢占。
+for (const pens of [[], ['highlighter']]) {
+  const p = createPlayback()
+  p.configure(settings(pens, 'green', 'medium', true), 0)
+  const at = pens.length ? 12.8 : 8.9
+  p.read(at)
+  p.configure(settings(['soft'], 'blue'), at)
+  p.settleReduced(at)
+  assert.equal(p.read(at, true).view, pens.length ? 'ink' : 'art')
+  assert.equal(p.read(at, true).eraseProgress, -1)
+  assert.equal(p.read(at).eraseProgress, -1)
+  assert.equal(p.read(at).state.opacity, 1)
+}
+
+console.log('PASS: all 64 tool subsets, 320 successor mutations, locked exits/queued art, eraser-only cycles, pause snapshots, random stability and reduced motion')

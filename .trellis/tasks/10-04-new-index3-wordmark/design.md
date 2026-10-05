@@ -50,3 +50,16 @@ Nativewidthconstants50/5areold; websitevisualadaptationapproved. Artreusefontsta
 
 ## 软笔尾锋曲线修订
 取消起段8%的收尖因子。末端收锋区长度min(全笔弧长×22%,55字形单位)，倍率0.12+0.88×quinticSmoothstep(距末端/收锋区长度)，输入限于0..1。起止的一、二阶导数为零，代替旧12%/26长度与max(.12,...)截断；尾锋外保持原压感宽度及圆头。以真实Canvas合成直线检查起笔/主体像素与hard一致、尾部逐渐收细，保留原字形回归。
+
+
+## 2026-10-05 左展开栏与擦除增量设计
+修改边界是NewHome3局部组件、playback调度、softPen最终合成及新增eraser局部模块/SVG资源。字形/材质/公共API/路由/依赖不改。PenKind保留五笔，PlaybackSettings新增eraser:boolean（兼容旧调用可选，规范化false）；PlaybackFrame新增eraseProgress:number（-1禁用，0..1擦除），暂停快照复制它。播放在保持结束锁定exit计划，fade/erase完成消费锁定计划；退出期间configure只更新selected。仅橡皮增加art-hold/erase路径，艺术字擦除无shimmer。
+绘制器render末尾增加eraseProgress=-1参数，必须计入最终合成缓存key而不改变原材质缓存。eraser.ts导出 getEraserFrame(progress,width,height): {path:string,cursor:{x:number,y:number,radius:number}}；路径表示已擦除区域，SVG/Cavas Path2D共用几何，按CSS像素对齐plane并覆盖完整字形及光晕。最终Canvas以destination-out清除；组件DOM艺术字用白底黑path SVG mask，同步cursor SVG。擦除只影响字层，光标叠在mask外并与同一平面一起倾斜。主题/尺寸只重绘不重置阶段。
+
+2026-10-05 实施中补充：用户再次强调橡皮光标必须与软件同款。复用 Draw3 EraserGripCircle：白色圆盘、#cfcfcf 内描边（直径0.04）、两根灰色竖向胶囊握持条（中心±0.12D、半径0.05D、半高0.24D），整体透明度0.5；轮廓外径等于擦除直径。以 Assets/EraserGripVisual.h 和 inkPixelShader.hlsl type6 为准，不用普通空心圈替代。
+
+最新擦除几何以用户第二幅方向示意图为准：斜向往复弧线，整体从左往右推进，初段/末段较短，中段舒展。getEraserFrame 追加 paths: readonly string[]，实际 Canvas/SVG 以固定120Hz不可变胶囊前缀逐段合成，path仅诊断整条几何；不得整条复合path一次填充，否则相交轮廓的抗锯齿可能让边缘像素重现。
+
+斜向手势验收以可见内容为准：各笔型/粗细（含激光光晕）最终 alpha=0；艺术字使用中央90%宽×88%高的保守字形包围区域验证，外侧原本透明的虚拟平面不要求额外清扫。旧横向版本的不透明整屏矩形测试过于宽泛，不能为通过该合成测试添加违背用户示意图的周边补擦动作。几何内部480Hz采样，120Hz成组显示，保证弧线细密且光标与擦除端点一致。
+
+矮屏高度预算：原 maxHeight 上限再除以1.36，为最大橡皮光标外延及4°/6px视差预留高度。仅影响高度受限时的统一平面缩放，各动画阶段尺寸保持一致；正常高屏56vw/900px宽度目标不变。独立投影检查须覆盖宽度320～1920及高度约束切换点，不能只测固定手机尺寸。

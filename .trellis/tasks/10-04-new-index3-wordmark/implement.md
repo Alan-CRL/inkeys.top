@@ -22,3 +22,13 @@
 3. Main coordinates artifacts and existing render regressions (30 material/theme/size cache and bounds cases). Verify scheduler all32pen sets, settings boundary, pause/default overrides, no-selection art and random color stability.
 4. After both workers stabilize, dedicated trellis-check reviews interaction/render boundaries; self-fix local defects. Main runs strict TypeScript, nativeCanvas/lifecycle/scheduler tests, SSR build and output inspection without GUI.
 5. Record test/build evidence and limitations. No commit/push or implicit auto-commit/archive this feature iteration.
+
+
+## 2026-10-05 实施顺序
+1. 并行分工：组件/原生SVG及UI；playback调度/64组合测试；eraser几何/softPen合成及像素测试。各自独占文件、遵守共同eraseProgress/getEraserFrame接口。
+2. 集成后strict TypeScript、既有CLI回归及新增轮播/擦除/布局键盘检查。只更新因批准行为改变而过时的断言。
+3. trellis-check独立检查全范围，修复并复验；执行pnpm docs:build，检查编码/换行/diff及外部草稿未变。记录真实验证结果及视觉未GUI验收限制。不commit/push。
+
+最新验收追加：检查斜向弧线走向及每次挥动变速，不能水平逐行扫描。用户已授权完成后一次常规签名commit，只暂存本任务产品/验证/规范记录，不包含原有未跟踪草稿；不push。
+
+斜向手势验收以可见内容为准：各笔型/粗细（含激光光晕）最终 alpha=0；艺术字使用中央90%宽×88%高的保守字形包围区域验证，外侧原本透明的虚拟平面不要求额外清扫。旧横向版本的不透明整屏矩形测试过于宽泛，不能为通过该合成测试添加违背用户示意图的周边补擦动作。几何内部480Hz采样，120Hz成组显示，保证弧线细密且光标与擦除端点一致。

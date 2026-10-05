@@ -2,6 +2,7 @@ import { buildCenterlines } from './glyphs'
 import type { Point } from './glyphs'
 import { DEFAULT_STYLE, SIZE_SCALE, resolveSolidColor } from './styles'
 import type { RenderStyle } from './styles'
+import { getEraserFrame } from './eraser'
 
 export const WRITE_SECONDS = 4.2
 export const BASE_WIDTH = 15.5
@@ -91,7 +92,8 @@ export function computeLayout(viewportWidth: number, availableHeight: number, as
   const maxWidth = Math.max(0, viewportWidth - 48 - safety * 2)
   const target = viewportWidth <= 640 ? maxWidth : Math.min(viewportWidth * 0.56, 900)
   const centerY = Math.max(0, availableHeight * 0.42)
-  const maxHeight = Math.max(0, centerY * 2 - safety * 2 - 24)
+  // 矮屏为完整橡皮圆周及透视预留纵向外延；所有阶段共用尺寸，擦除开始时不跳变。
+  const maxHeight = Math.max(0, (centerY * 2 - safety * 2 - 24) / 1.36)
   const width = Math.min(target, maxWidth, maxHeight * aspect)
   return { width, height: width / aspect, centerY, safety }
 }
@@ -296,7 +298,7 @@ function ribbon(points: RimPoint[], start: number, end: number, roundStart: bool
 }
 
 export interface Painter {
-  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme, style?: RenderStyle) => void
+  render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme, style?: RenderStyle, eraseProgress?: number) => void
 }
 
 function styledInk(points: InkPoint[], stroke: Stroke, style: RenderStyle) {
@@ -512,16 +514,18 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
   let lastKey = ''
   let lastInkKey = ''
   let laserCacheKey = ''
+  let eraserSizeKey = ''
+  const eraserPaths: Path2D[] = []
   const laserCache = new Map<Stroke, ReturnType<typeof createLaserLayer>>()
   return {
-    render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light', style = DEFAULT_STYLE) {
+    render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light', style = DEFAULT_STYLE, eraseProgress = -1) {
       if (cssWidth < 1 || cssHeight < 1) return
       const dpr = clamp(pixelRatio, 1, 2)
       const pixelWidth = Math.round(cssWidth * dpr)
       const pixelHeight = Math.round(cssHeight * dpr)
       const styleKey = [theme, style.pen, style.color, style.size].join(':')
       const inkKey = [pixelWidth, pixelHeight, cssWidth, cssHeight, state.inkTime, styleKey].join(':')
-      const key = [inkKey, state.rawTime, state.opacity].join(':')
+      const key = [inkKey, state.rawTime, state.opacity, eraseProgress].join(':')
       if (key === lastKey) return
       lastKey = key
       const redrawInk = inkKey !== lastInkKey
@@ -667,6 +671,23 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.drawImage(inkCanvas, 0, 0)
       ctx.globalAlpha = 1
+      if (eraseProgress > 0) {
+        // 只擦除最终合成层，材质缓存保留完整墨迹；暂停淡出、主题切换及进度回退均可重建。
+        ctx.save()
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        ctx.globalCompositeOperation = 'destination-out'
+        ctx.fillStyle = '#000'
+        const nextEraserSize = `${cssWidth}:${cssHeight}`
+        if (eraserSizeKey !== nextEraserSize) {
+          eraserPaths.length = 0
+          eraserSizeKey = nextEraserSize
+        }
+        const { paths } = getEraserFrame(eraseProgress, cssWidth, cssHeight)
+        // 分段栅格化固定前缀，避免复杂并集路径改变抗锯齿分解后让边缘像素重新出现。
+        while (eraserPaths.length < paths.length) eraserPaths.push(new Path2D(paths[eraserPaths.length]))
+        for (let index = 0; index < paths.length; index++) ctx.fill(eraserPaths[index])
+        ctx.restore()
+      }
     },
   }
 }
