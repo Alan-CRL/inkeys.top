@@ -4,7 +4,7 @@ const { createPlayback } = load('playback')
 const { PEN_ORDER, DEFAULT_STYLE } = load('styles')
 const { ERASE_SECONDS } = load('eraser')
 assert.equal(ERASE_SECONDS, 4.8)
-const eraseLead = 0.28 + 0.22
+const eraseLead = 0
 const eraseTotal = eraseLead + ERASE_SECONDS + 0.2 + 0.3 + 0.35
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-7, `${a} != ${b}`)
 const settings = (pens, color = 'rainbow', size = 'medium', eraser = false) => ({ pens, color, size, eraser })
@@ -297,11 +297,12 @@ for (const pens of [[], ['highlighter']]) {
   assert.equal(p.read(at).state.opacity, 1)
 }
 
-// 光标先出现并停顿、全不透明擦除，再停顿消失，空白间隔后才能消费锁定下一项。
+// 光标显现即运动，没有单独的静止入场；完成后停顿、淡出及空白间隔保持。
 const erasePhases = [
-  [0, 0, 0], [0.14, 0, 0.5], [0.28, 0, 1], [0.39, 0, 1], [0.5, 0, 1],
-  [2.9, 0.5, 1], [5.3, 1, 1], [5.4, 1, 1], [5.5, 1, 1], [5.65, 1, 0.5],
-  [5.8, 1, 0], [6, 1, 0],
+  [0, 0, 0], [0.09, 0.09 / ERASE_SECONDS, 0.5], [0.18, 0.18 / ERASE_SECONDS, 1],
+  [ERASE_SECONDS / 2, 0.5, 1], [ERASE_SECONDS, 1, 1], [ERASE_SECONDS + 0.1, 1, 1],
+  [ERASE_SECONDS + 0.2, 1, 1], [ERASE_SECONDS + 0.35, 1, 0.5],
+  [ERASE_SECONDS + 0.5, 1, 0], [ERASE_SECONDS + 0.7, 1, 0],
 ]
 for (const pens of [[], ['highlighter']]) {
   const p = createPlayback()
@@ -321,7 +322,7 @@ for (const pens of [[], ['highlighter']]) {
 }
 
 for (const pens of [[], ['highlighter']]) {
-  for (const offset of [0.14, 0.39, 2.9, 5.4, 5.65, 6]) {
+  for (const offset of [0.09, 0.18, ERASE_SECONDS / 2, ERASE_SECONDS + 0.1, ERASE_SECONDS + 0.35, ERASE_SECONDS + 0.7]) {
     const exitAt = pens.length ? 11.4 : 7.5
     const at = exitAt + offset
     const make = () => {
@@ -371,4 +372,4 @@ for (const pens of [[], ['highlighter']]) {
   }
 }
 
-console.log('PASS: 64 tool subsets, 320 successor mutations, complete eraser entry/hold/exit/gap, locked settings and per-phase pause/reduced restoration')
+console.log('PASS: 64 tool subsets, 320 successor mutations, immediate moving eraser reveal/hold/exit/gap, locked settings and per-phase pause/reduced restoration')

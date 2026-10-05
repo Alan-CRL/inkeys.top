@@ -511,10 +511,14 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
   const ctx = canvas.getContext('2d')!
   const inkCanvas = document.createElement('canvas')
   const inkCtx = inkCanvas.getContext('2d')!
+  const eraserCanvas = document.createElement('canvas')
+  const eraserCtx = eraserCanvas.getContext('2d')!
   let lastKey = ''
   let lastInkKey = ''
   let laserCacheKey = ''
   let eraserSizeKey = ''
+  let eraserMaskKey = ''
+  let erasedCount = 0
   const eraserPaths: Path2D[] = []
   const laserCache = new Map<Stroke, ReturnType<typeof createLaserLayer>>()
   return {
@@ -672,21 +676,37 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       ctx.drawImage(inkCanvas, 0, 0)
       ctx.globalAlpha = 1
       if (eraseProgress > 0) {
-        // 只擦除最终合成层，材质缓存保留完整墨迹；暂停淡出、主题切换及进度回退均可重建。
-        ctx.save()
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-        ctx.globalCompositeOperation = 'destination-out'
-        ctx.fillStyle = '#000'
         const nextEraserSize = `${cssWidth}:${cssHeight}`
         if (eraserSizeKey !== nextEraserSize) {
           eraserPaths.length = 0
           eraserSizeKey = nextEraserSize
         }
         const { paths } = getEraserFrame(eraseProgress, cssWidth, cssHeight)
-        // 分段栅格化固定前缀，避免复杂并集路径改变抗锯齿分解后让边缘像素重新出现。
+        const nextMaskKey = `${nextEraserSize}:${pixelWidth}:${pixelHeight}:${dpr}`
+        if (eraserMaskKey !== nextMaskKey || paths.length < erasedCount) {
+          eraserCanvas.width = pixelWidth
+          eraserCanvas.height = pixelHeight
+          eraserCtx.fillStyle = '#fff'
+          eraserCtx.fillRect(0, 0, pixelWidth, pixelHeight)
+          eraserMaskKey = nextMaskKey
+          erasedCount = 0
+        }
         while (eraserPaths.length < paths.length) eraserPaths.push(new Path2D(paths[eraserPaths.length]))
-        for (let index = 0; index < paths.length; index++) ctx.fill(eraserPaths[index])
+        // 正向播放只栅格化新增固定块；主题/淡出只重新合成，历史擦除不再逐帧重放。
+        eraserCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
+        eraserCtx.globalCompositeOperation = 'destination-out'
+        eraserCtx.fillStyle = '#000'
+        while (erasedCount < paths.length) eraserCtx.fill(eraserPaths[erasedCount++])
+        // 单独保留剩余覆盖率，材质缓存始终完整；分块抗锯齿不会恢复已擦除的边缘。
+        ctx.save()
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.drawImage(eraserCanvas, 0, 0)
         ctx.restore()
+      }
+      else {
+        // 新一轮、暂停默认字及定格回到起点都应从完整蒙版重新开始。
+        eraserMaskKey = ''
+        erasedCount = 0
       }
     },
   }

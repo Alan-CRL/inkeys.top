@@ -31,8 +31,8 @@ for (const [width, height] of dimensions) {
   for (let step = 0; step <= 168; step++) {
     const frame = getEraserFrame(step / 168, width, height)
     assert.ok(Object.values(frame.cursor).every(Number.isFinite))
-    assert.ok(frame.cursor.radius >= height * 0.14)
-    assert.ok(frame.cursor.radius <= (height * 0.14 + 1) * 1.35)
+    assert.ok(frame.cursor.radius >= height * 0.18)
+    assert.ok(frame.cursor.radius <= (height * 0.18 + 1) * 1.35)
     assert.ok(Math.abs(frame.cursor.radius - previousRadius) < height * 0.008, 'growth and turns must remain gradual')
     previousRadius = frame.cursor.radius
   }
@@ -47,10 +47,14 @@ for (const [width, height] of dimensions) {
       assert.ok(current[i] <= previous[i], 'erased pixels must never reappear, including antialiased edges')
     }
     if (!progress) assert.equal(alphaSum(current), width * height * 255)
-    // 用户指定斜向真人擦拭后，以真实内容验收；虚拟平面本身透明的外围不需要增加机械补擦。
+    // DOM 艺术字的空角不属于墨迹：90%×88% 的圆角代理仍覆盖宽字体，避免为满矩形加入机械补擦。
     if (progress === 1) for (let y = Math.floor(height * 0.06); y <= Math.ceil(height * 0.94); y++) {
       for (let x = Math.floor(width * 0.05); x <= Math.ceil(width * 0.95); x++) {
-        assert.equal(current[(y * width + x) * 4 + 3], 0, 'sweep must cover conservative art envelope')
+        const corner = height * 0.30
+        const cx = Math.max(width * 0.05 + corner, Math.min(width * 0.95 - corner, x))
+        const cy = Math.max(height * 0.06 + corner, Math.min(height * 0.94 - corner, y))
+        if (Math.hypot(x - cx, y - cy) > corner) continue
+        assert.equal(current[(y * width + x) * 4 + 3], 0, `sweep must cover conservative art envelope ${width}x${height} at ${x},${y}`)
       }
     }
     previous = current
@@ -65,7 +69,12 @@ for (const [width, height] of dimensions) {
   for (const segment of complete.paths) context.fill(new Path2D(segment))
   const artMask = pixels(canvas)
   for (let y = Math.floor(height * 0.06); y <= Math.ceil(height * 0.94); y++) {
-    for (let x = Math.floor(width * 0.05); x <= Math.ceil(width * 0.95); x++) assert.equal(artMask[(y * width + x) * 4], 0)
+    for (let x = Math.floor(width * 0.05); x <= Math.ceil(width * 0.95); x++) {
+      const corner = height * 0.30
+      const cx = Math.max(width * 0.05 + corner, Math.min(width * 0.95 - corner, x))
+      const cy = Math.max(height * 0.06 + corner, Math.min(height * 0.94 - corner, y))
+      if (Math.hypot(x - cx, y - cy) <= corner) assert.equal(artMask[(y * width + x) * 4], 0)
+    }
   }
 }
 
@@ -131,10 +140,14 @@ for (const [index, curve] of route.curves.entries()) {
   const before = endpoint(previous.points, 1)
   const after = endpoint(curve.points, 0)
   assert.ok(Math.hypot(before.tangent.x - after.tangent.x, before.tangent.y - after.tangent.y) < 1e-9, 'joined curves must share actual tangent, not straight-chord tangent')
-  assert.ok(Math.hypot(before.curvature.x - after.curvature.x, before.curvature.y - after.curvature.y) < 1e-9, 'joined curves must share arc-length curvature')
+  // 整个回身而非只看接头：宽弯半径至少是平面高度的 5%，杜绝近尖点。
+  if (curve.kind === 'turn') for (let step = 0; step <= 256; step++) {
+    const at = endpoint(curve.points, step / 256)
+    assert.ok(Math.hypot(at.curvature.x, at.curvature.y) <= 1 / (406 * 0.05), 'reversal interior must retain a broad turning radius')
+  }
   smoothJoins++
 }
-assert.ok(bowedPasses >= 8)
+assert.ok(bowedPasses >= 6)
 let offset = 0
 const meanSpeeds = route.curves.map(curve => {
   const count = (curve.kind === 'turn' ? 96 : 128) + (offset === 0 ? 1 : 0)
@@ -146,10 +159,40 @@ let acceleratingPasses = 0
 for (let i = 1; i < route.curves.length - 1; i++) {
   if (route.curves[i].kind === 'sweep' && meanSpeeds[i] > Math.max(meanSpeeds[i - 1], meanSpeeds[i + 1]) * 1.1) acceleratingPasses++
 }
-assert.ok(acceleratingPasses >= 8, 'low-curvature swipes must be faster than neighboring reversals')
+assert.ok(acceleratingPasses >= 6, 'low-curvature swipes must be faster than neighboring reversals')
 assert.ok(route.guide[0].speed < 0.04 && route.guide.at(-1).speed < 0.04, 'start and end near rest')
 assert.equal(ERASE_SECONDS, 4.8)
 assert.equal(getEraserFrame(1, 900, 406).paths.length, revealSteps + 1, '120Hz reveal must track shared duration')
+
+// 在真实帧率检查位置、方向和加速度，避免只验接头而漏掉弯内近尖点及高刷停帧。
+let maximumMove = 0
+let maximumHeading = 0
+let maximumAcceleration = 0
+for (const hz of [60, 120, 144, 240]) for (const offset of [0, 0.37]) {
+  let previous = getEraserFrame(offset / hz / ERASE_SECONDS, 900, 406).cursor
+  let previousVelocity
+  for (let step = 1; step <= Math.floor(ERASE_SECONDS * hz); step++) {
+    const cursor = getEraserFrame(Math.min(1, (step + offset) / hz / ERASE_SECONDS), 900, 406).cursor
+    const dx = cursor.x - previous.x
+    const dy = cursor.y - previous.y
+    const distance = Math.hypot(dx, dy)
+    assert.ok(distance > 1e-7, 'continuous cursor must not repeat a stationary quantized position on high-refresh frames')
+    const velocity = { x: dx * hz, y: dy * hz }
+    if (hz === 60) maximumMove = Math.max(maximumMove, distance)
+    if (previousVelocity) {
+      const delta = Math.atan2(dy, dx) - Math.atan2(previousVelocity.y, previousVelocity.x)
+      const heading = Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta))) * 180 / Math.PI
+      if (hz === 60) maximumHeading = Math.max(maximumHeading, heading)
+      maximumAcceleration = Math.max(maximumAcceleration, Math.hypot(velocity.x - previousVelocity.x, velocity.y - previousVelocity.y) * hz)
+      assert.ok(heading < 25, 'interior reversal must not snap direction between actual frames')
+    }
+    previous = cursor
+    previousVelocity = velocity
+  }
+}
+assert.ok(maximumMove < 24, '900px plane motion must stay below 24px per 60Hz frame')
+assert.ok(maximumAcceleration < 406 * 30, 'time-domain acceleration must remain bounded rather than spike at tight turns')
+assert.ok(route.curves.filter(curve => curve.kind === 'sweep').length <= 10, 'use broad swipes rather than filling with dense repeated passes')
 
 let appearances = 0
 for (const pen of PEN_ORDER) for (const theme of ['light', 'dark']) for (const size of Object.keys(SIZE_SCALE)) {
@@ -244,4 +287,5 @@ for (const [index, progress] of [0, 0.2, 0.4, 0.6, 0.8, 1].entries()) {
 fs.mkdirSync(path.join(__dirname, 'frames'), { recursive: true })
 fs.writeFileSync(path.join(__dirname, 'frames/eraser-sweep-contact.png'), sheet.toBuffer('image/png'))
 console.log(`Eraser: ${masks} monotonic masks / conservative art envelopes, ${appearances} material rewind cases, ${viewportAppearances} viewport/material/theme/size full-clear cases passed.`)
-console.log(`Diagonal motion: ${bowedPasses} upward-bowed passes, ${smoothJoins} C2 joins, ${acceleratingPasses} curvature-paced passes; cursor minimum horizontal/vertical clearance ${minimumClearance.toFixed(2)} / ${minimumVerticalClearance.toFixed(2)}px.`)
+console.log(`Actual-frame motion: ${maximumMove.toFixed(2)}px / ${maximumHeading.toFixed(2)}deg maximum at60Hz; acceleration ${maximumAcceleration.toFixed(0)}px/s², continuous at60–240Hz.`)
+console.log(`Diagonal motion: ${bowedPasses} upward-bowed passes, ${smoothJoins} tangent-continuous joins, ${acceleratingPasses} curvature-paced passes; cursor minimum horizontal/vertical clearance ${minimumClearance.toFixed(2)} / ${minimumVerticalClearance.toFixed(2)}px.`)

@@ -37,3 +37,8 @@
 1. 已完成旧版正常签名commit f4eb05b，后续改动作为独立未提交增量。
 2. 几何worker独占eraser.ts/verify-eraser，调度worker独占playback.ts/NewHome3.vue/对应playback+lifecycle+toolbar测试，约定ERASE_SECONDS及eraseOpacity接口。
 3. 先看轨迹离屏图确认上拱且连接平滑，再完成方向/曲率/速度、透明度单调/字形及光晕清空、视口全光标边界检查。独立trellis-check后顺序pnpm docs:build，避免并行像素验证引起内存不足。检查diff/编码，不开GUI，不push，本次新增修改不再commit。
+
+
+## 本轮执行分工与验证
+先读research/eraser-render-performance.md、eraser-motion-diagnosis.md。geometry代理独占eraser.ts+verify-eraser.cjs，performance代理独占softPen.ts+性能诊断/回归，UI代理独占NewHome3.vue/playback.ts+verify-playback/lifecycle/toolbar。三者共享getEraserFrame现有paths接口；扩展内部字段应先同步，避免冲突。root负责文档、协调和最终build，检查代理独立复核。
+验证渐进蒙版工作量不随历史长度增长，实际900px/DPR2晚段帧耗时与原94–224ms基线对比；保留回退/主题/缩放/暂停/最终零残留。路线检查整个折返内部曲率/速度、60–240Hz连续光标/方向和加速度，以及全尺寸视差留白；CLI离屏预览以图形判定无近尖点。UI检查真正模板更新对transform的覆盖、指针进入/离开和暂停仍可视差、艺术字和光标同步。最终串行pnpm docs:build、diff/编码检查；无GUI/原生仓库修改/commit/push。

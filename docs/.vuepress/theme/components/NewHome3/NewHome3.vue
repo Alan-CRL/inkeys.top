@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useDarkMode } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
@@ -26,7 +26,8 @@ const panel = ref<HTMLDivElement>()
 const panelOpen = ref(false)
 const selectedPens = ref<PenKind[]>(['hard'])
 const selectedEraser = ref(false)
-const eraserFrame = ref<ReturnType<typeof getEraserFrame>>()
+const eraserFrame = shallowRef<ReturnType<typeof getEraserFrame>>()
+const artMaskPaths = ref<SVGGElement>()
 const toolChoices = [...PEN_ORDER, 'eraser'] as const
 const selectedColor = ref<ColorChoice>('rainbow')
 const selectedSize = ref<StrokeSize>('medium')
@@ -57,6 +58,9 @@ let tiltX = 0
 let tiltY = 0
 let iconProgress = 0
 let iconVelocity = 0
+let maskNode: SVGGElement | undefined
+let maskPaths: readonly string[] = []
+let maskSize = ''
 
 function iconPaths(progress: number) {
   const pause = [
@@ -97,8 +101,38 @@ function paint(now: number) {
   artFrame.value = current
   eraserFrame.value = current.eraseProgress >= 0 && width > 0 && height > 0
     ? getEraserFrame(current.eraseProgress, width, height) : undefined
-  painter.render(current.view === 'ink' ? current.state : { ...current.state, opacity: 0 }, width, height,
-    window.devicePixelRatio, isDark.value ? 'dark' : 'light', current.style, current.eraseProgress)
+  if (current.view === 'ink') {
+    painter.render(current.state, width, height, window.devicePixelRatio,
+      isDark.value ? 'dark' : 'light', current.style, current.eraseProgress)
+  }
+  if (maskNode && (current.view !== 'art' || !eraserFrame.value)) {
+    maskNode = undefined
+    maskPaths = []
+    maskSize = ''
+  }
+  // 艺术字使用 DOM 字体；隐藏 Canvas 时不再绘制不可见墨迹或重复回放擦除。
+  if (current.view === 'art' && eraserFrame.value) void nextTick(syncArtMask)
+}
+
+function syncArtMask() {
+  const node = artMaskPaths.value
+  const paths = eraserFrame.value?.paths
+  if (!mounted || artFrame.value.view !== 'art' || !node || !paths) return
+  const size = `${width}:${height}`
+  // 仅追加不可变的新片段；回退、缩放或重新挂载时才重建，不逐帧 patch 整段历史 SVG。
+  if (node !== maskNode || size !== maskSize || paths.length < maskPaths.length
+    || (maskPaths.length && paths[maskPaths.length - 1] !== maskPaths[maskPaths.length - 1])) {
+    node.replaceChildren()
+    maskPaths = []
+  }
+  for (let index = maskPaths.length; index < paths.length; index++) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttribute('d', paths[index])
+    node.appendChild(path)
+  }
+  maskNode = node
+  maskSize = size
+  maskPaths = paths
 }
 
 // 主题切换只重绘当前帧；手动暂停、减少动态效果和离屏状态都不重置时间轴。
@@ -107,10 +141,8 @@ watch(isDark, () => {
 }, { flush: 'post' })
 
 function applyTilt() {
-  const node = canvas.value
-  if (!node) return
-  node.style.transform = `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)`
-  tiltStyle.value = { transform: node.style.transform }
+  // 文字、艺术字和光标由同一内层承担变换；外框保持不动，用于稳定测距。
+  tiltStyle.value = { transform: `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)` }
 }
 
 function requestFrame() {
@@ -290,7 +322,7 @@ onMounted(() => {
   mounted = true
   painter = createPainter(scene, node)
   motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  pointerPreference = window.matchMedia('(hover: hover) and (pointer: fine)')
+  pointerPreference = window.matchMedia('(any-hover: hover) and (any-pointer: fine)')
   reduced.value = motionPreference.matches
 
   // 仅开发环境冻结完整时间轴，例如 ?t=10 可检查默认循环的硬笔书写。
@@ -345,21 +377,22 @@ onBeforeUnmount(() => {
 <template>
   <div ref="root" class="nh3-root">
     <div ref="plane" class="nh3-plane" :style="planeStyle">
-      <canvas ref="canvas" class="nh3-mark" role="img" aria-label="Inkeys" />
-      <svg class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
+      <div class="nh3-surface" :style="tiltStyle" role="img" aria-label="Inkeys">
+      <canvas v-show="artFrame.view === 'ink'" ref="canvas" class="nh3-mark" aria-hidden="true" />
+      <svg v-if="artFrame.view === 'art' && eraserFrame" class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
         <defs>
           <mask id="nh3-art-erasure" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" :width="width" :height="height" x="0" y="0" style="mask-type: luminance">
             <rect :width="width" :height="height" fill="white" />
-            <path v-for="(path, index) in eraserFrame?.paths || []" :key="index" :d="path" fill="black" />
+            <g ref="artMaskPaths" fill="black" />
           </mask>
         </defs>
       </svg>
-      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ ...tiltStyle, opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px`, maskImage: eraserFrame ? 'url(#nh3-art-erasure)' : 'none' }" aria-hidden="true">
+      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px`, maskImage: eraserFrame ? 'url(#nh3-art-erasure)' : 'none' }" aria-hidden="true">
         <div class="nh3-art-lettering" :style="{ backgroundImage: colorBackground(artFrame.previousColor) }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay" :style="{ backgroundImage: colorBackground(artFrame.artColor), opacity: artFrame.colorMix }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay nh3-art-shine" :style="{ opacity: artFrame.shimmer < 0 ? 0 : 1, backgroundPosition: `${135 - artFrame.shimmer * 170}% 50%` }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
       </div>
-      <svg v-if="eraserFrame" class="nh3-eraser-cursor" :viewBox="`0 0 ${width} ${height}`" :style="{ ...tiltStyle, opacity: artFrame.state.opacity * artFrame.eraseOpacity }" aria-hidden="true">
+      <svg v-if="eraserFrame" class="nh3-eraser-cursor" :viewBox="`0 0 ${width} ${height}`" :style="{ opacity: artFrame.state.opacity * artFrame.eraseOpacity }" aria-hidden="true">
         <g :transform="`translate(${eraserFrame.cursor.x} ${eraserFrame.cursor.y})`">
           <!-- 原生按下状态：白底、向内 0.04D 灰边与双竖向胶囊，擦除中保持不透明。 -->
           <circle :r="eraserFrame.cursor.radius" fill="white" />
@@ -367,6 +400,7 @@ onBeforeUnmount(() => {
           <rect v-for="side in [-1, 1]" :key="side" :x="(side * 0.24 - 0.1) * eraserFrame.cursor.radius" :y="-0.48 * eraserFrame.cursor.radius" :width="0.2 * eraserFrame.cursor.radius" :height="0.96 * eraserFrame.cursor.radius" :rx="0.1 * eraserFrame.cursor.radius" fill="#cfcfcf" />
         </g>
       </svg>
+      </div>
     </div>
     <div ref="controls" class="nh3-controls">
       <div id="nh3-style-panel" ref="panel" class="nh3-style-panel" :class="{ 'is-open': panelOpen }" :inert="!panelOpen" :aria-hidden="!panelOpen" role="group" aria-label="书写样式">
@@ -507,13 +541,19 @@ onBeforeUnmount(() => {
   perspective: 1200px;
 }
 
+.nh3-surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  will-change: transform;
+}
+
 .nh3-mark {
   display: block;
   width: 100%;
   height: 100%;
   background: transparent;
-  transform-origin: center;
-  will-change: transform;
 }
 
 .nh3-controls {
@@ -721,7 +761,7 @@ onBeforeUnmount(() => {
     transition: none;
   }
 
-  .nh3-mark {
+  .nh3-surface {
     will-change: auto;
   }
 }

@@ -22,6 +22,7 @@ let nextFrame = 1
 let mountedHook
 let unmountedHook
 let lastPaint
+let paintCalls = 0
 let themeChanged
 const darkMode = { value: false }
 const scheduled = new Map()
@@ -36,10 +37,10 @@ const pointer = Object.assign(new Events(), { matches: true })
 global.window = Object.assign(new Events(), {
   devicePixelRatio: 1,
   location: { search: '' },
-  matchMedia: query => query.includes('reduced-motion') ? motion : pointer,
+  matchMedia: query => query.includes('reduced-motion') ? motion : query.includes('any-pointer') ? pointer : { ...pointer, matches: false },
   IntersectionObserver: Observer,
 })
-global.document = Object.assign(new Events(), { hidden: false, documentElement: new Events() })
+global.document = Object.assign(new Events(), { hidden: false, documentElement: new Events(), createElementNS: () => ({ setAttribute() {} }) })
 global.performance = { now: () => now }
 global.ResizeObserver = Observer
 global.IntersectionObserver = Observer
@@ -57,13 +58,14 @@ componentModule.require = name => {
   if (name === 'vue') return {
     defineComponent: options => options,
     ref: value => ({ value }),
+    shallowRef: value => ({ value }),
     nextTick: callback => callback(),
     onMounted: callback => { mountedHook = callback },
     onBeforeUnmount: callback => { unmountedHook = callback },
     watch: (source, callback) => { assert.equal(source, darkMode); themeChanged = callback },
   }
   if (name === 'vuepress-theme-plume/client') return { useDarkMode: () => darkMode }
-  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme, style, eraseProgress) => { lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
+  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme, style, eraseProgress) => { paintCalls++; lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
   if (name.startsWith('./')) return load(name.slice(2))
   return require(name)
 }
@@ -166,6 +168,16 @@ close(lastPaint.opacity, 1)
 for (let i = 0; i < 120; i++) advance(now + 1000 / 60)
 assert.equal(scheduled.size, 0)
 assert.equal(state.iconPath.value, state.iconPaths(1))
+// 暂停只冻结书写，混合设备的实际鼠标仍能驱动共同平面的视差。
+window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
+for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
+assert.ok(state.tiltX > 0.9)
+assert.equal(state.paused.value, true)
+assert.equal(lastPaint.opacity, 1)
+window.emit('pointermove', { pointerType: 'mouse', clientX: 2000, clientY: 900 })
+for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
+assert.ok(Math.abs(state.tiltX) < 0.001)
+
 state.selectedPens.value = []
 state.updateSettings()
 assert.equal(state.artFrame.value.view, 'ink')
@@ -196,7 +208,8 @@ close(state.artFrame.value.shimmer, sweep)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
 for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(state.tiltX > 0.9 && state.tiltX <= 1)
-assert.equal(state.tiltStyle.value.transform, state.canvas.value.style.transform)
+assert.ok(state.tiltStyle.value.transform.includes('rotateX('))
+assert.equal(state.canvas.value.style.transform, undefined)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 2000, clientY: 900 })
 for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(Math.abs(state.tiltX) < 0.001)
@@ -243,23 +256,62 @@ motion.matches = false
 motion.emit('change')
 state.selectedPens.value = []
 state.selectedEraser.value = true
+let maskAppends = 0
+let maskClears = 0
+const maskChildren = []
+state.artMaskPaths.value = { replaceChildren() { maskClears++; maskChildren.length = 0 }, appendChild(path) { maskAppends++; maskChildren.push(path) } }
 state.updateSettings()
 for (let i = 0; i < 200 && (state.artFrame.value.view !== 'art' || state.artFrame.value.eraseProgress <= 0); i++) advance(now + 100)
 assert.equal(state.artFrame.value.view, 'art')
 assert.ok(state.artFrame.value.eraseProgress > 0)
-assert.equal(state.artFrame.value.eraseOpacity, 1)
+assert.ok(state.artFrame.value.eraseOpacity > 0 && state.artFrame.value.eraseOpacity <= 1)
 assert.equal(state.artFrame.value.shimmer, -1)
 assert.ok(state.eraserFrame.value.path.length > 0)
+assert.equal(maskChildren.length, state.eraserFrame.value.paths.length)
+const previousAppends = maskAppends
+const previousPaths = state.eraserFrame.value.paths.length
+const artPaintCalls = paintCalls
+advance(now + 100)
+assert.equal(paintCalls, artPaintCalls, 'art must not repaint hidden ink Canvas')
+assert.equal(maskAppends - previousAppends, state.eraserFrame.value.paths.length - previousPaths)
+const stableAppends = maskAppends
+const stableClears = maskClears
+state.paint(now)
+assert.equal(maskAppends, stableAppends)
+assert.equal(maskClears, stableClears)
+
+// 开发定格回退和 SVG 重新挂载不能保留旧擦除节点；恢复后仍只追加缺失片段。
+const savedEraserFrame = state.eraserFrame.value
+const rewindCount = Math.max(1, Math.floor(savedEraserFrame.paths.length / 2))
+state.eraserFrame.value = { ...savedEraserFrame, paths: savedEraserFrame.paths.slice(0, rewindCount) }
+state.syncArtMask()
+assert.equal(maskChildren.length, rewindCount)
+assert.equal(maskClears, stableClears + 1)
+state.eraserFrame.value = savedEraserFrame
+state.syncArtMask()
+assert.equal(maskChildren.length, savedEraserFrame.paths.length)
+const previousMaskNode = state.artMaskPaths.value
+const remountedChildren = []
+state.artMaskPaths.value = { replaceChildren() { remountedChildren.length = 0 }, appendChild(path) { remountedChildren.push(path) } }
+state.syncArtMask()
+assert.equal(remountedChildren.length, savedEraserFrame.paths.length)
+state.artMaskPaths.value = previousMaskNode
+state.syncArtMask()
+assert.equal(maskChildren.length, savedEraserFrame.paths.length)
+
+const eraseOpacity = state.artFrame.value.eraseOpacity
 const eraseProgress = state.artFrame.value.eraseProgress
 const erasePath = state.eraserFrame.value.path
 themeChanged()
 state.resizeObserver.callback()
 assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
-assert.equal(state.artFrame.value.eraseOpacity, 1)
+assert.equal(state.artFrame.value.eraseOpacity, eraseOpacity)
+assert.ok(state.artFrame.value.eraseOpacity > 0 && state.artFrame.value.eraseOpacity <= 1)
 assert.equal(state.eraserFrame.value.path, erasePath)
 state.root.value.clientWidth = 375
 state.resizeObserver.callback()
 assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
+assert.equal(state.artFrame.value.eraseOpacity, eraseOpacity)
 assert.deepEqual(state.eraserFrame.value, load('eraser').getEraserFrame(eraseProgress,
   parseFloat(state.planeStyle.value.width), parseFloat(state.planeStyle.value.height)))
 state.root.value.clientWidth = 1440
@@ -268,15 +320,22 @@ assert.equal(state.eraserFrame.value.path, erasePath)
 state.togglePlayback()
 advance(now + 100)
 assert.equal(state.artFrame.value.eraseProgress, eraseProgress)
+assert.equal(state.artFrame.value.eraseOpacity, eraseOpacity)
 assert.equal(state.eraserFrame.value.path, erasePath)
 assert.ok(state.artFrame.value.state.opacity > 0 && state.artFrame.value.state.opacity < 1)
-assert.equal(state.artFrame.value.eraseOpacity, 1)
+assert.ok(state.artFrame.value.eraseOpacity > 0 && state.artFrame.value.eraseOpacity <= 1)
 advance(now + 500)
 assert.equal(state.eraserFrame.value, undefined)
 assert.equal(lastPaint.eraseProgress, -1)
 assert.equal(state.artFrame.value.eraseOpacity, 0)
 
 unmountedHook()
+// 卸载前排队的 nextTick 即使随后抵达，也不得再写已经离开的 SVG。
+const beforeUnmountAppends = maskAppends
+state.artFrame.value = { ...state.artFrame.value, view: 'art' }
+state.eraserFrame.value = savedEraserFrame
+state.syncArtMask()
+assert.equal(maskAppends, beforeUnmountAppends)
 assert.equal(scheduled.size, 0)
 assert.ok(observers.every(observer => observer.disconnected))
 assert.equal(window.count() + document.count() + document.documentElement.count() + motion.count() + pointer.count(), 0)

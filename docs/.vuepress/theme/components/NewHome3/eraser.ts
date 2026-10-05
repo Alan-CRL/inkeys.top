@@ -20,7 +20,7 @@ interface GuidePoint extends Point {
 }
 
 interface RouteCurve {
-  kind: 'sweep' | 'connector' | 'turn'
+  kind: 'sweep' | 'turn'
   points: Point[]
 }
 
@@ -83,80 +83,65 @@ function derivatives(points: readonly Point[]) {
 }
 
 function endpoint(points: readonly Point[], t: number) {
-  const first = derivatives(points)
-  const velocity = bezier(first, t)
-  const acceleration = bezier(derivatives(first), t)
+  const velocity = bezier(derivatives(points), t)
   const magnitude = Math.hypot(velocity.x, velocity.y) || 1
-  const tangent = { x: velocity.x / magnitude, y: velocity.y / magnitude }
-  const along = tangent.x * acceleration.x + tangent.y * acceleration.y
-  return { tangent, curvature: { x: (acceleration.x - tangent.x * along) / magnitude ** 2, y: (acceleration.y - tangent.y * along) / magnitude ** 2 } }
+  return { tangent: { x: velocity.x / magnitude, y: velocity.y / magnitude } }
 }
 
 /** 局部纯几何接口供遮罩与命令行验证共用；曲线数据不参与页面公共 API。 */
 export function createEraserRoute(width: number, height: number) {
-  const insetX = Math.min(height * 0.13, width * 0.16)
+  const insetX = Math.min(height * 0.16, width * 0.16)
   const insetY = height * 0.03
   const innerWidth = width - insetX * 2
   const innerHeight = height - insetY * 2
   const slant = innerWidth * 0.5
-  const lanes = Math.max(13, 2 * Math.ceil((innerWidth + slant) / (height * 0.27) / 2) + 1)
-  const vertices: Array<{ x: number, y: number }> = []
-  const strokeEnds = new Set<number>()
-  // 斜向弧线由左向右推进：两端自然缩短，中段形成完整的右上/左下擦拭，不沿水平行扫描。
-  for (let lane = 0; lane < lanes; lane++) {
-    const offset = (innerWidth + slant) * lane / (lanes - 1)
+  const lanes = Math.max(11, 2 * Math.ceil((innerWidth + slant) / (height * 0.42) / 2) + 1)
+  const lanesData: Array<{ start: Point, end: Point }> = []
+  const diagonalLength = Math.hypot(slant, innerHeight)
+  const up = { x: slant / diagonalLength, y: -innerHeight / diagonalLength }
+  const normal = { x: -up.y, y: up.x }
+  const project = (p: Point) => p.x * up.x + p.y * up.y
+  const shift = (p: Point, along: number) => ({ x: p.x + up.x * along, y: p.y + up.y * along })
+  // 每个斜带只挥动一次；相邻带间距与光标直径相配，不再过密往返。
+  for (let lane = 0; lane < lanes - 1; lane++) {
+    const offset = (innerWidth + slant) * (lane + 0.5) / (lanes - 1)
     const top = { x: insetX + Math.min(innerWidth, offset), y: insetY + Math.max(0, offset - innerWidth) / slant * innerHeight }
     const bottom = { x: insetX + Math.max(0, offset - slant), y: insetY + Math.min(1, offset / slant) * innerHeight }
-    for (const [within, p] of (lane % 2 ? [bottom, top] : [top, bottom]).entries()) {
-      const previous = vertices.at(-1)
-      if (!previous || Math.hypot(p.x - previous.x, p.y - previous.y) > 0.01) {
-        if (within === 1 && previous) strokeEnds.add(vertices.length)
-        vertices.push(p)
-      }
-    }
+    const [start, end] = lane % 2 ? [top, bottom] : [bottom, top]
+    lanesData.push({ start, end })
   }
-  const corners = vertices.map((p, index) => {
-    const previous = vertices[Math.max(0, index - 1)]
-    const next = vertices[Math.min(vertices.length - 1, index + 1)]
-    const incoming = Math.hypot(p.x - previous.x, p.y - previous.y)
-    const outgoing = Math.hypot(next.x - p.x, next.y - p.y)
-    const trim = Math.min(height * 0.13, incoming * 0.44, outgoing * 0.44)
-    return {
-      before: { x: p.x - (p.x - previous.x) / (incoming || 1) * trim, y: p.y - (p.y - previous.y) / (incoming || 1) * trim },
-      after: { x: p.x + (next.x - p.x) / (outgoing || 1) * trim, y: p.y + (next.y - p.y) / (outgoing || 1) * trim },
-    }
-  })
-  const legs: RouteCurve[] = []
-  for (let index = 1; index < vertices.length; index++) {
-    const start = corners[index - 1].after
-    const end = corners[index].before
-    const length = Math.hypot(end.x - start.x, end.y - start.y)
-    const diagonal = Math.abs(end.x - start.x) > width * 0.08 && Math.abs(end.y - start.y) > height * 0.2
-    const bow = diagonal ? Math.min(height * (0.09 + 0.012 * Math.sin(index * 0.9)), length * 0.10) : 0
-    // 二次弧控制点始终在弦的屏幕上方，两个方向的挥动均上拱，整段不引入 S 形反曲。
-    legs.push({ kind: strokeEnds.has(index) ? 'sweep' : 'connector', points: [start, { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - bow * 2 }, end] })
+  // 折返的两端先投到同一沿笔方向位置，形成宽半圆，而不是斜错位后强拧成尖弯。
+  for (let index = 0; index < lanesData.length - 1; index++) {
+    const current = lanesData[index]
+    const next = lanesData[index + 1]
+    const outward = index % 2 ? -1 : 1
+    const gap = Math.abs((next.start.x - current.end.x) * normal.x + (next.start.y - current.end.y) * normal.y)
+    const along = (outward > 0 ? Math.min(project(current.end), project(next.start)) : Math.max(project(current.end), project(next.start))) - outward * gap * 0.22
+    current.end = shift(current.end, along - project(current.end))
+    next.start = shift(next.start, along - project(next.start))
   }
-  const strokes = legs.filter((leg, index) => leg.kind === 'sweep' || index === 0 || index === legs.length - 1)
+  // 首个下回身略向下舒展，擦到大写 I 左下方的激光外扩；不追加外围补擦或放大整个光标。
+  lanesData[1].end.y += height * 0.05
+  lanesData[2].start.y += height * 0.05
   const curves: RouteCurve[] = []
-  for (let index = 0; index < strokes.length; index++) {
-    const leg = strokes[index]
+  for (let index = 0; index < lanesData.length; index++) {
+    const { start, end } = lanesData[index]
+    const length = Math.hypot(end.x - start.x, end.y - start.y)
+    const bow = Math.min(height * 0.025, length * 0.045)
+    const leg: RouteCurve = { kind: 'sweep', points: [start, { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 - bow * 2 }, end] }
     curves.push(leg)
-    const next = strokes[index + 1]
+    const next = lanesData[index + 1]
     if (!next) continue
-    const start = leg.points.at(-1)!
-    const end = next.points[0]
-    const from = endpoint(leg.points, 1)
-    const to = endpoint(next.points, 0)
-    const edgeReturn = Math.abs(end.x - start.x) < height * 0.04
-      && (Math.min(start.x, end.x) > width * 0.8 || Math.max(start.x, end.x) < width * 0.2)
-    // 两侧回身收小控制臂，完整圆形光标在最大视差下仍留在窄屏内；仍匹配同一切向与曲率。
-    const handle = Math.min(height * 0.60, Math.hypot(end.x - start.x, end.y - start.y) * 2.1) * (edgeReturn ? 0.65 : 1)
-    const p1 = { x: start.x + from.tangent.x * handle / 5, y: start.y + from.tangent.y * handle / 5 }
-    const p4 = { x: end.x - to.tangent.x * handle / 5, y: end.y - to.tangent.y * handle / 5 }
-    // 五次连接弧同时匹配单位切向和弧长曲率；不再把弯曲长弧接到直线圆角上。
-    const p2 = { x: 2 * p1.x - start.x + from.curvature.x * handle ** 2 / 20, y: 2 * p1.y - start.y + from.curvature.y * handle ** 2 / 20 }
-    const p3 = { x: 2 * p4.x - end.x + to.curvature.x * handle ** 2 / 20, y: 2 * p4.y - end.y + to.curvature.y * handle ** 2 / 20 }
-    curves.push({ kind: 'turn', points: [start, p1, p2, p3, p4, end] })
+    const nextLength = Math.hypot(next.end.x - next.start.x, next.end.y - next.start.y)
+    const nextBow = Math.min(height * 0.025, nextLength * 0.045)
+    const nextPoints = [next.start, { x: (next.start.x + next.end.x) / 2, y: (next.start.y + next.end.y) / 2 - nextBow * 2 }, next.end]
+    const from = endpoint(leg.points, 1).tangent
+    const to = endpoint(nextPoints, 0).tangent
+    const handle = Math.hypot(next.start.x - end.x, next.start.y - end.y) * 0.65
+    // 单个宽圆弧回身；两端保持切向连续，内部曲率另行约束，避免仅接头平滑却弯内近尖点。
+    curves.push({ kind: 'turn', points: [end,
+      { x: end.x + from.x * handle, y: end.y + from.y * handle },
+      { x: next.start.x - to.x * handle, y: next.start.y - to.y * handle }, next.start] })
   }
   const guide: GuidePoint[] = []
   for (const curve of curves) {
@@ -174,26 +159,26 @@ export function createEraserRoute(width: number, height: number) {
         length: previous ? previous.length + Math.hypot(p.x - previous.x, p.y - previous.y) : 0 })
     }
   }
-  // 沿弧长双向平滑目标速度，使减速先于折返发生；不存在全程不断加速的额外时间映射。
+  // 先按法向加速度限制弯内速度，再双向约束切向加速度；减速从入弯前开始。
+  const nominalSpeed = height * 2
+  const acceleration = height * 9
+  for (const p of guide) p.speed = Math.min(nominalSpeed, Math.sqrt(height * 5.5 / Math.max(p.curvature, 1e-8)))
+  guide[0].speed = 0
+  guide.at(-1)!.speed = 0
   for (const direction of [1, -1]) {
     const first = direction > 0 ? 1 : guide.length - 2
     const end = direction > 0 ? guide.length : -1
     for (let index = first; index !== end; index += direction) {
       const current = guide[index]
       const previous = guide[index - direction]
-      const weight = 1 - Math.exp(-Math.abs(current.length - previous.length) / (height * 0.025))
-      current.speed = mix(previous.speed, current.speed, weight)
+      const distance = Math.abs(current.length - previous.length)
+      current.speed = Math.min(current.speed, Math.sqrt(previous.speed ** 2 + 2 * acceleration * distance))
     }
   }
-  const length = guide.at(-1)!.length
-  for (let index = 0; index < guide.length; index++) {
+  for (let index = 1; index < guide.length; index++) {
     const p = guide[index]
-    const edge = Math.min(p.length, length - p.length)
-    p.speed *= Math.max(0.035, Math.sqrt(clamp(edge / (height * 0.22))))
-    if (index) {
-      const previous = guide[index - 1]
-      p.cost = previous.cost + (p.length - previous.length) / ((p.speed + previous.speed) / 2)
-    }
+    const previous = guide[index - 1]
+    p.cost = previous.cost + 2 * (p.length - previous.length) / (p.speed + previous.speed || 1)
   }
   return { curves, guide }
 }
@@ -202,10 +187,9 @@ function buildSweep(width: number, height: number) {
   const { guide } = createEraserRoute(width, height)
   const total = guide.at(-1)!.cost
   const cursors: Cursor[] = []
-  const prefixes: string[] = []
   const paths: string[] = []
   const dt = ERASE_SECONDS / (STEPS * SUBSTEPS)
-  const base = height * 0.14 + 1
+  const base = height * 0.18 + 1
   let radius = base
   let speed = 0
   let decreaseTime = 0
@@ -219,8 +203,21 @@ function buildSweep(width: number, height: number) {
     const a = guide[index - 1]
     const b = guide[index]
     const fraction = clamp((cost - a.cost) / (b.cost - a.cost || 1))
-    const x = mix(a.x, b.x, fraction)
-    const y = mix(a.y, b.y, fraction)
+    const direction = (at: number) => {
+      const before = guide[Math.max(0, at - 1)]
+      const after = guide[Math.min(guide.length - 1, at + 1)]
+      const length = Math.hypot(after.x - before.x, after.y - before.y) || 1
+      return { x: (after.x - before.x) / length, y: (after.y - before.y) / length }
+    }
+    const from = direction(index - 1)
+    const to = direction(index)
+    const span = b.cost - a.cost
+    const t2 = fraction * fraction
+    const t3 = t2 * fraction
+    const interpolate = (axis: 'x' | 'y') => (2 * t3 - 3 * t2 + 1) * a[axis] + (t3 - 2 * t2 + fraction) * from[axis] * a.speed * span
+      + (-2 * t3 + 3 * t2) * b[axis] + (t3 - t2) * to[axis] * b.speed * span
+    const x = interpolate('x')
+    const y = interpolate('y')
     if (previous) {
       const measured = Math.hypot(x - previous.x, y - previous.y) / dt
       speed += (measured - speed) * (1 - Math.exp(-dt / 0.12))
@@ -234,15 +231,14 @@ function buildSweep(width: number, height: number) {
     const cursor = { x, y, radius }
     chunk += previous ? sweep(previous, cursor) : circle(cursor)
     previous = cursor
-    // 几何细分到 480Hz，再按 120Hz 固定块显现；转弯不切角，SVG 节点数随演示时长有界。
+    cursors.push(cursor)
+    // 蒙版保留不可变 120Hz 块；光标独立保存 480Hz 细采样，显示时按真实时间插值。
     if (step % SUBSTEPS === 0) {
-      cursors.push(cursor)
       paths.push(chunk)
-      prefixes.push((prefixes.at(-1) || '') + chunk)
       chunk = ''
     }
   }
-  return { cursors, prefixes, paths }
+  return { cursors, paths }
 }
 
 // 只保留最近两种尺寸；所有帧按固定时间采样重建，跳帧、暂停和定格回退均不依赖上次画面。
@@ -261,8 +257,13 @@ export function getEraserFrame(progress: number, width: number, height: number):
   }
   const time = clamp(Number.isFinite(progress) ? progress : 0) * STEPS
   const index = Math.min(STEPS, Math.floor(time + 1e-9))
-  const a = cached.cursors[index]
-  if (time === 0) return { path: '', paths: [], cursor: { ...a } }
-  // 120Hz 固定步长同时更新遮罩和光标；前缀只增不换，避免重算活动圆头产生边缘覆盖率回退。
-  return { path: cached.prefixes[index], paths: cached.paths.slice(0, index + 1), cursor: { ...a } }
+  const precise = time * SUBSTEPS
+  const fineIndex = Math.min(STEPS * SUBSTEPS, Math.floor(precise))
+  const from = cached.cursors[fineIndex]
+  const to = cached.cursors[Math.min(fineIndex + 1, cached.cursors.length - 1)]
+  const fraction = precise - fineIndex
+  const cursor = { x: mix(from.x, to.x, fraction), y: mix(from.y, to.y, fraction), radius: mix(from.radius, to.radius, fraction) }
+  const paths = time === 0 ? [] : cached.paths.slice(0, index + 1)
+  // 诊断整条路径时才拼接；正常渲染只消费新块，避免缓存数百条巨大累计字符串。
+  return { get path() { return paths.join('') }, paths, cursor }
 }

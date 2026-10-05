@@ -22,11 +22,11 @@ export interface PlaybackFrame {
   eraseOpacity: number
 }
 
-type Stage = 'intro-in' | 'intro-hold' | 'intro-out' | 'raw' | 'raw-hold' | 'ink' | 'hold' | 'fade' | 'erase-in' | 'erase-ready' | 'erase' | 'erase-hold' | 'erase-out' | 'erase-gap' | 'art-in' | 'art-hold' | 'art' | 'art-out' | 'pause-out' | 'pause-in' | 'paused' | 'resume'
+type Stage = 'intro-in' | 'intro-hold' | 'intro-out' | 'raw' | 'raw-hold' | 'ink' | 'hold' | 'fade' | 'erase' | 'erase-hold' | 'erase-out' | 'erase-gap' | 'art-in' | 'art-hold' | 'art' | 'art-out' | 'pause-out' | 'pause-in' | 'paused' | 'resume'
 const duration: Record<Stage, number> = {
   'intro-in': 0.5, 'intro-hold': 3, 'intro-out': 0.7,
   raw: 4.2, 'raw-hold': 0.35, ink: 4.2, hold: 3, fade: 0.7,
-  'erase-in': 0.28, 'erase-ready': 0.22, erase: ERASE_SECONDS, 'erase-hold': 0.2, 'erase-out': 0.3, 'erase-gap': 0.35,
+  erase: ERASE_SECONDS, 'erase-hold': 0.2, 'erase-out': 0.3, 'erase-gap': 0.35,
   'art-in': 0.3, 'art-hold': 3, art: Infinity, 'art-out': 0.7, 'pause-out': 0.22, 'pause-in': 0.3, paused: Infinity, resume: 0.7,
 }
 const solids: Exclude<ColorChoice, 'rainbow'>[] = ['neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
@@ -77,7 +77,7 @@ export function createPlayback(random: () => number = Math.random) {
       ? settings.pens.find(pen => PEN_ORDER.indexOf(pen) > PEN_ORDER.indexOf(style.pen)) : undefined
     exitPlan = { settings, pen: later ?? settings.pens[0] }
     snapshot = { ...current, shimmer: -1 }
-    enter(allowErase && settings.eraser && !later ? 'erase-in' : current.view === 'art' ? 'art-out' : 'fade', at)
+    enter(allowErase && settings.eraser && !later ? 'erase' : current.view === 'art' ? 'art-out' : 'fade', at)
   }
 
   function finishExit(at: number) {
@@ -119,8 +119,6 @@ export function createPlayback(random: () => number = Math.random) {
           }
           else lockExit(end, artFrame(end))
           break
-        case 'erase-in': enter('erase-ready', end); break
-        case 'erase-ready': enter('erase', end); break
         case 'erase': enter('erase-hold', end); break
         case 'erase-hold': enter('erase-out', end); break
         case 'erase-out': enter('erase-gap', end); break
@@ -143,10 +141,9 @@ export function createPlayback(random: () => number = Math.random) {
       return { ...snapshot, state: { ...snapshot.state, opacity: snapshot.state.opacity * (1 - ease(elapsed / duration[stage])) } }
     }
     if (stage.startsWith('erase')) {
-      // 入退场仅改变光标透明度；实际擦除不透明，结束后的空白停顿也不重现文字。
-      const eraseProgress = stage === 'erase-in' || stage === 'erase-ready' ? 0
-        : stage === 'erase' ? Math.min(1, elapsed / duration.erase) : 1
-      const eraseOpacity = stage === 'erase-in' ? ease(elapsed / duration['erase-in'])
+      // 显现的同时就开始移动和擦除，不插入静止准备阶段；结束后保持已擦空画面。
+      const eraseProgress = stage === 'erase' ? Math.min(1, elapsed / duration.erase) : 1
+      const eraseOpacity = stage === 'erase' ? ease(elapsed / 0.18)
         : stage === 'erase-out' ? 1 - ease(elapsed / duration['erase-out']) : stage === 'erase-gap' ? 0 : 1
       return { ...snapshot, eraseProgress, eraseOpacity }
     }
