@@ -127,3 +127,29 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - pnpm11.11.0现有docs:build最终exit0，50页，10.00s，仅插件耗时提示。先停止本轮自行启动8099开发服务器，其他进程不动；沙箱外运行沿用已确认esbuild限制，不改工具链配置。
 - Windows WebKit测试不等于用户iPad Safari16.6.2实机。用户截图的默认硬笔全空白未在两个引擎或线上旧版复现，不能将艺术字mask修复或释放身份变换层说成已证明该根因。仍需用户实机按钮响应/控制台反馈与更新后复测。现有Vite全站语法基线Safari/iOS16.4，不承诺任意更旧浏览器。
 - git diff --check及源UTF8无BOM/LF检查通过；任务/规范保持原有换行。原有未跟踪草稿、NewHome2及缓存保持原状，本轮新修改未提交、未推送。
+
+
+## 2026-10-07 展开栏间距与角边框修正
+- 产品仅NewHome3.vue四处CSS替换与一条中文说明：desktop width:max-content / flex-start，揭示clip两态去round16px；外壳border-radius16/corner-shape:squircle、48px高度、原过渡、按钮坐标及窄屏样式保持。
+- 既有toolbar布局模型修正为实际14汉字，并移除自比较断言。编译Vue模板/CSS、toolbar/lifecycle命令行检查通过，独立trellis-check无剩余问题。
+- 最终生产产物隔离无窗口Edge（DPR2、网站data-theme亮暗各八视口）：320/375/768/1099/1100/1440/1920及1440×320，桌面实际内容宽838px，两处分组gap均10px、外框height48px；窄屏保持多行，全部左右留白至少16px且栏不越界。没有GUI或用户浏览器数据访问。
+- 超椭圆实际计算为superellipse(2)。角部截图与clip:none参照：旧round16裁切各角差异129–182个像素，新矩形裁切为1/1/9/1个像素（合成/AA少量差异）；旧的大面积边框截断已消除。整个截图有442个字节差异，不能称为逐像素完全相同。浅色截图也已检查完整轮廓。
+- 测试初次量测未等展开到identity导致边界差0.0025px，等待结束后通过；初版检测使用class.dark，后改网站实际data-theme并对最终产物重测。仅验证脚本调整，未据此修改产品。原临时浏览器关闭挂起仅清理已核实由测试启动的进程树，最终检查正常退出0。
+- 项目原pnpm11.11.0 docs:build退出0，50页面，12.83s；仅插件耗时提示。复用既有esbuild沙箱外构建方式，无依赖/配置变更。
+- diff检查及原编码/换行保持；本轮未commit/push，不包含既有草稿/缓存。播放、绘制与性能模块未修改。
+
+
+## 2026-10-07 首屏文案、亚克力 CTA 与轻微反光
+- 标语全文准确，宽屏单行、640px以下两句分行；VPLink下载入口生成/download.html并通过实际导航。copy位于视差平面外；Inkeys/标语/按钮0/180/360ms错峰，上浮24px、.7s ease-out，提前暂停入口仍完成，隐藏/离屏接续，resize/主题不重播、终态停止发布入口样式。
+- 内容高度参与首屏预算，含字区/橡皮外延；几何回归及真实Edge亮暗20视口320–1920px（含320×360、1440×320/500）通过留白、分行、居中和控制按钮无重叠。材质最终改动后Edge重测320×568/768×1024/1440×500，copy不参与真实matrix3d鼠标视差，焦点圆角26px，悬停不降低文字对比。
+- 用户认可的亚克力底面保持尺寸、模糊与轮廓；削弱亮边/反光，伪元素±3px、13s单程26s往返ease-in-out，仅transform动画。hover仅调opacity不争用transform，未动画blur、不加逐帧高光JS或常驻will-change。隐藏/离屏切animation-play-state，恢复相位；系统reduce=true仍播放。
+- 最终Edge亮暗实际伪元素animationDuration=13s、infinite/running，2秒内位置连续改变且限±3px；移出首屏paused、返回running。最终亮暗CTA截图已检查。独立trellis-check无待修问题，compiled Vue lifecycle/toolbar CLI、内存strict noEmit TS和diff检查通过；无新增依赖/配置，无绘制/调度模块变更。
+- 最终pnpm11.11.0 docs:build退出0，50页，14.49s；仅plugin timings提示。UTF8/BOM/EOL与HEAD一致，无无关格式重写；保留先前栏修订及外部草稿，不commit/push。
+- 最终Windows隔离无窗口WebKit16.4（revision1860）亮暗六视口、reduce=true通过材质13s无限动效、离屏暂停恢复、布局/焦点/真实下载导航和copy独立视差，pageerror=[]。旧引擎初始rAF采样稀疏，首次正opacity可能同帧；临时验证改为所有采样层次opacity有序及终态完成，精确错峰由CLI活跃时钟测试和Edge实测验证。此项不等同iPad Safari实机视觉验收；未打开GUI。
+
+
+## 高光宽范围修订与发布验收
+- 高光改为固定继承圆角的满宽伪元素，双宽背景中央渐变峰，background-position78%→22%使按钮中心水平线亮峰从22%→78%；总行程56%（内边界基准），13s单程、亮度、模糊、字色和控制逻辑保持。没有模糊动画或新增JS逐帧发布。
+- 独立trellis-check、既有toolbar/lifecycle、编码/EOL及diff检查通过。最终现有pnpm docs:build退出0，50页，15.09s，仅插件耗时提示。
+- 生产产物隔离无窗口Edge/WebKit16.4亮暗端点检查通过：148px按钮内层146px，实际定格亮峰约23%/77%，端点距离分别约54%/52%按钮宽（定格前已走少许进度），都超过半宽；原13s infinite/reduce=true规则有效、解除定格恢复running、pageerror=[]。边框半径保持26px、高光背景自圆角裁切。未开启GUI，不等同Safari实机验收。
+- 用户最新明确授权commit并push：包含本任务尚未提交的展开栏修正、首屏标语/入口和下载按钮材质/高光，以及对应验证/任务/规范；排除未跟踪草稿、NewHome2和缓存。沿用正常签名、非force push，若认证或签名失败停止，不绕过。

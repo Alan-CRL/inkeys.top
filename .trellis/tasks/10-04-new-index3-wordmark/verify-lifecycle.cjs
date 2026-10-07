@@ -81,6 +81,7 @@ state.root.value = { clientWidth: 1440, clientHeight: 836 }
 state.plane.value = { getBoundingClientRect: () => ({ left: 320, right: 1120, top: 180, bottom: 500, width: 800, height: 320 }) }
 state.canvas.value = { style: {} }
 mountedHook()
+assert.equal(state.glintRunning.value, true)
 assert.equal(lastPaint.inkTime, 4.2)
 assert.equal(lastPaint.opacity, 0)
 assert.equal(scheduled.size, 1)
@@ -93,17 +94,23 @@ const advance = time => {
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`)
 advance(250)
 close(lastPaint.opacity, 0.5)
+assert.ok(Number(state.entranceStyles.value[0].opacity) > Number(state.entranceStyles.value[1].opacity))
+assert.ok(Number(state.entranceStyles.value[1].opacity) > Number(state.entranceStyles.value[2].opacity))
 advance(300)
 document.hidden = true
 document.emit('visibilitychange')
+assert.equal(state.glintRunning.value, false)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
 assert.equal(state.targetX, 0)
 assert.equal(scheduled.size, 0)
 const frozen = lastPaint.opacity
+const frozenEntrance = state.entranceStyles.value.map(style => ({ ...style }))
 now = 10300
 document.hidden = false
 document.emit('visibilitychange')
+assert.equal(state.glintRunning.value, true)
 close(lastPaint.opacity, frozen)
+assert.deepEqual(state.entranceStyles.value, frozenEntrance)
 advance(10500)
 close(lastPaint.opacity, 1)
 const heldFrame = state.artFrame.value
@@ -116,13 +123,20 @@ assert.equal(state.artFrame.value, heldFrame)
 assert.equal(state.tiltStyle.value, heldTilt)
 assert.equal(paintCalls, heldPaints)
 assert.equal(global.__nh3IconCalls, heldIconCalls)
+advance(now + 100)
+assert.ok(state.entranceStyles.value.every(style => style.opacity === '1' && style.transform === 'none'))
+const completedEntrance = state.entranceStyles.value
+advance(now + 100)
+assert.equal(state.entranceStyles.value, completedEntrance, 'finished entrance must not publish new frame objects')
 state.clock.seek(heldTime, now)
 state.visibleObserver.callback([{ isIntersecting: false }])
+assert.equal(state.glintRunning.value, false)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
 assert.equal(state.targetX, 0)
 assert.equal(scheduled.size, 0)
 now = 20500
 state.visibleObserver.callback([{ isIntersecting: true }])
+assert.equal(state.glintRunning.value, true)
 close(lastPaint.opacity, 1)
 advance(24200)
 assert.equal(lastPaint.phase, 'raw')
@@ -503,5 +517,43 @@ assert.equal(disposeCalls, 5)
 assert.equal(scheduled.size, 0)
 delete global.CSS
 delete document.getCSSCanvasContext
+
+// 首屏文案使用实际高度预算，含橡皮外延；仅极矮屏缩小字区，所有尺寸下不撞底部控件。
+const entryState = componentModule.exports.default.setup({}, { expose() {} })
+entryState.root.value = { clientWidth: 320, clientHeight: 504 }
+entryState.heroCopy.value = { offsetHeight: 134 }
+entryState.canvas.value = { style: {} }
+mountedHook()
+for (const [viewportWidth, viewportHeight] of [[320, 568], [375, 667], [768, 1024], [1440, 900], [1440, 500], [1440, 320], [320, 360]]) {
+  const available = viewportHeight - 64
+  entryState.root.value.clientWidth = viewportWidth
+  entryState.root.value.clientHeight = available
+  const copyHeight = viewportHeight <= 500 ? (viewportWidth <= 640 ? 113 : 87) : (viewportWidth <= 640 ? 134 : 111)
+  entryState.heroCopy.value.offsetHeight = copyHeight
+  entryState.resize()
+  const planeHeight = parseFloat(entryState.planeStyle.value.height)
+  const center = parseFloat(entryState.planeStyle.value.top)
+  const copyTop = parseFloat(entryState.copyStyle.value.top)
+  const edge = Math.max(16, Math.min(24, viewportWidth * 0.02))
+  assert.ok(planeHeight > 0)
+  assert.ok(center - planeHeight * 0.68 >= 18 - 1e-8)
+  assert.ok(copyTop >= center + planeHeight * 0.68)
+  assert.ok(copyTop + copyHeight <= available - edge - (viewportWidth <= 640 ? 60 : 0) + 1e-8)
+}
+const entryStart = now
+advance(entryStart + 100)
+entryState.togglePlayback()
+advance(entryStart + 600)
+assert.equal(entryState.paused.value, true)
+assert.ok(Number(entryState.entranceStyles.value[2].opacity) > 0)
+advance(entryStart + 1100)
+assert.ok(entryState.entranceStyles.value.every(style => style.opacity === '1' && style.transform === 'none'), 'early manual pause must not freeze copy entrance')
+const stableEntrance = entryState.entranceStyles.value
+entryState.resize()
+assert.equal(entryState.entranceStyles.value, stableEntrance, 'resize must not replay entrance')
+unmountedHook()
+assert.equal(entryState.glintRunning.value, false)
+assert.equal(scheduled.size, 0)
+assert.equal(window.count() + document.count() + document.documentElement.count(), 0)
 
 console.log('PASS: compiled Vue lifecycle: opening, visibility, panel keyboard/outside close, deferred settings, material/art pause, theme/resize, parallax, system-motion independence and teardown')

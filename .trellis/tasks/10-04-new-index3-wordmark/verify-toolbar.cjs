@@ -46,7 +46,12 @@ cssTree.walkDecls(/^transition/, declaration => {
 })
 assert.ok(transitions.some(declaration => declaration.parent.selector === '.nh3-style-panel' && declaration.value.includes('visibility 0s 300ms')))
 assert.ok(transitions.some(declaration => declaration.parent.selector === '.nh3-style-panel.is-open' && declaration.prop === 'transition-delay' && declaration.value === '0s'))
-assert.equal(transitions.filter(declaration => declaration.prop === 'transition-duration' && declaration.value === '120ms').length, 3)
+assert.equal(transitions.filter(declaration => declaration.prop === 'transition-duration' && declaration.value === '120ms').length, 4)
+// 微弱高光仍受本页显隐管理，不能被主题的全局 reduced-motion !important 改成一次闪动。
+cssTree.walkDecls(/^animation/, declaration => {
+  assert.equal(declaration.important, true)
+  assert.ok(declaration.parent.selector.startsWith('.nh3-'))
+})
 
 // 与原生 SVG 比较内容，保证网站没有重新绘制或丢失路径，只替换主题占位色。
 const icons = load('toolIcons').toolIcons
@@ -57,20 +62,24 @@ for (const [tool, name] of Object.entries(names)) {
   assert.equal(icons[tool], inner)
 }
 
+// 内容宽度不再额外分配空隙；分割线左右均为10px，矩形揭示不裁掉超椭圆边框。
+assert.match(css.code, /\.nh3-style-panel\s*\{[^}]*width: max-content;/)
+assert.match(css.code, /\.nh3-style-content\s*\{[^}]*justify-content: flex-start; gap: 10px;/)
+assert.ok(css.code.includes('clip-path: inset(0 0 0 100%);'))
+assert.ok(css.code.includes('clip-path: inset(0 0 0 0);'))
+assert.ok(!css.code.includes('round 16px'))
+
 // 数值核查布局约束，不代替浏览器字体和视觉验收。
+const pens = 14 * 12 + 6 * (18 + 5 + 16 + 2) + 5 * 4
+const colors = 8 * 28 + 7 * 2
+const sizes = 3 * 32 + 2 * 3
+const desktopPanelWidth = pens + colors + sizes + 2 * 11 + 2 * 10 + 20 + 2
 for (const viewport of [320, 375, 768, 1099, 1100, 1440, 1920]) {
   const gap = Math.max(16, Math.min(24, viewport * 0.02))
-  const panelWidth = viewport < 1100 ? Math.min(480, viewport - 2 * gap) : 868
+  const panelWidth = viewport < 1100 ? Math.min(480, viewport - 2 * gap) : desktopPanelWidth
   const right = viewport - gap - (viewport < 1100 ? 0 : 120)
   assert.ok(right - panelWidth >= 16, `left margin at ${viewport}`)
   assert.ok(viewport - right >= 16, `right margin at ${viewport}`)
-  if (viewport >= 1100) {
-    // 汉字按一个 em 估算：六笔按钮、颜色、粗细及分组留白皆有余量。
-    const pens = 13 * 12 + 6 * (18 + 5 + 16 + 2) + 5 * 4
-    const colors = 8 * 28 + 7 * 2
-    const sizes = 3 * 32 + 2 * 3
-    assert.ok(pens + colors + sizes + 2 * 11 + 2 * 10 + 20 <= panelWidth - 2)
-  }
 }
 console.log('PASS: Vue template/CSS compile, toolbar geometry 320–1920, six native SVG identities, inert/keyboard markup, luminance mask and native cursor constants')
 
@@ -98,11 +107,13 @@ async function verifyRenderedParallax() {
     insertStaticContent(content, parent, anchor) { const el = node('#static', content); el.parent = parent; const index = anchor ? parent.children.indexOf(anchor) : -1; parent.children.splice(index < 0 ? parent.children.length : index, 0, el); return [el, el] },
   })
   const refs = {
+    glintRunning: vue.ref(true),
+    entranceStyles: vue.shallowRef([0, 1, 2].map(() => ({ opacity: '1', transform: 'none' }))), copyStyle: vue.ref({ top: '650px' }),
     planeStyle: vue.ref({ width: '900px', height: '406px' }), tiltStyle: vue.ref({ transform: 'translate3d(0px, 0px, 0) rotateX(0deg) rotateY(0deg)' }),
     artFrame: vue.ref({ view: 'ink', state: { opacity: 1 }, previousColor: 'rainbow', artColor: 'rainbow', colorMix: 1, shimmer: -1, eraseOpacity: 1 }),
     eraserFrame: vue.ref(undefined), cssCanvasMask: vue.ref(false), panelOpen: vue.ref(false), selectedPens: vue.ref(['hard']), selectedEraser: vue.ref(false), selectedColor: vue.ref('rainbow'), selectedSize: vue.ref('medium'), paused: vue.ref(false), iconPath: vue.ref(''),
   }
-  const state = { ...refs, width: 900, height: 406, cssMaskName: 'nh3-mask-test', toolChoices: ['hard', 'eraser'], penLabels: { hard: '硬笔', eraser: '橡皮' }, colorChoices: [], sizeChoices: [], toolIcons: load('toolIcons').toolIcons, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
+  const state = { ...refs, VPLink: (props, { slots }) => vue.h('a', { href: props.href }, slots.default?.()), width: 900, height: 406, cssMaskName: 'nh3-mask-test', toolChoices: ['hard', 'eraser'], penLabels: { hard: '硬笔', eraser: '橡皮' }, colorChoices: [], sizeChoices: [], toolIcons: load('toolIcons').toolIcons, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
   const host = node('root')
   const app = renderer.createApp({ setup() { return state }, render(...args) { return templateModule.exports.render(args[0], args[1], {}, vue.proxyRefs(state), {}, {}) } })
   app.mount(host)
@@ -112,7 +123,14 @@ async function verifyRenderedParallax() {
   }
   const outer = find('nh3-plane')
   const surface = find('nh3-surface')
+  const entrance = find('nh3-entrance')
+  const copy = find('nh3-copy')
+  const download = find('nh3-download')
   assert.ok(surface)
+  assert.equal(surface.parent, entrance)
+  assert.equal(entrance.parent, outer)
+  assert.equal(copy.parent, outer.parent, 'copy is outside the parallax plane')
+  assert.equal(download.props.href, '/download')
   assert.equal(find('nh3-tool').props['aria-pressed'], true)
   refs.selectedPens.value = []
   refs.panelOpen.value = true
@@ -133,6 +151,9 @@ async function verifyRenderedParallax() {
   refs.artFrame.value = { ...refs.artFrame.value, state: { opacity: 0.7 } }
   await vue.nextTick()
   assert.equal(surface.style.transform, transform)
+  assert.equal(entrance.style.transform, 'none', 'entrance never inherits tilt')
+  assert.equal(copy.style.transform, undefined)
+  assert.equal(download.style.transform, undefined)
   assert.equal(outer.style.transform, undefined, 'stable measurement wrapper is not tilted')
   assert.equal(find('nh3-mask-defs'), undefined, 'Canvas mode must not mount unused SVG mask')
   refs.artFrame.value = { ...refs.artFrame.value, view: 'art' }

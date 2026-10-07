@@ -46,3 +46,11 @@
 ## 当前性能/兼容增量分工
 
 视差已提交 b1a68a2。renderer 代理独占 softPen.ts 和材质/性能像素回归；UI 代理独占 NewHome3.vue 和生命周期/工具栏回归；research 代理只读核实 Safari 16.6.2 API/CSS/构建产物并写自己的研究。root 更新任务/规范、协调接口、无窗口浏览器检查和最终构建。先取得热点及失败证据再最小修改；不降 DPR/几何采样，不改变材质/时序，不添加依赖或全局配置。不将 Windows Edge 的 UA 模拟当作真实 WebKit 验证。系统 reduced-motion 不再关闭动画，暂停和离屏时钟仍有效。独立 trellis-check 后记录结果；本轮新改动不自动提交或推送。
+
+
+## 当前样式修订边界
+实施代理独占NewHome3.vue局部CSS和已有verify-toolbar.cjs相应布局断言；主会话记录需求/验收并执行最终现有构建。去掉固定868px+space-between额外分配空间，采用内容宽度与统一分组间距；揭示矩形裁切不得用普通圆角切掉corner-shape超椭圆的边框。其他播放/绘制模块不改，原编码换行保留。轻量模板/生命周期及无窗口布局、边框检查后独立trellis-check；不重复材料像素性能基准，不commit/push。
+
+
+## 当前首屏标语实施
+实施代理独占NewHome3.vue与必要既有lifecycle/toolbar测试；root记录要求，检查下载目标和独立视差边界，做headless真实布局/进场层次/控制位置及最终build，随后trellis-check独立复核。入口wrapper和copy/CTA不使用墨迹tilt的同一transform；使用一次性活跃时间并在终态停止入口属性更新，早暂停/主题/resize/离屏均不引入半显或重新出场。常规屏保留字形视觉中心约42%，矮屏按内容预算适应，不污染renderer/播放调度。

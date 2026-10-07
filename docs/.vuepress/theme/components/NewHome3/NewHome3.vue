@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
-import { useDarkMode } from 'vuepress-theme-plume/client'
+import { useDarkMode, VPLink } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
 import { createPlayback } from './playback'
@@ -15,6 +15,10 @@ const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
 const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspect) })
 const clock = createActiveClock()
+const heroCopy = ref<HTMLDivElement>()
+const copyStyle = ref<Record<string, string>>({})
+const entranceStyles = shallowRef([0, 0, 0].map(() => ({ opacity: '0', transform: 'translateY(24px)' })))
+const glintRunning = ref(false)
 const playback = createPlayback()
 const paused = ref(false)
 const isDark = useDarkMode()
@@ -66,6 +70,19 @@ let lastCanvasKey = ''
 let lastEraserKey = ''
 let warmedSize = ''
 let cancelWarmup: (() => void) | undefined
+let entranceComplete = false
+
+function updateEntrance(now: number) {
+  if (entranceComplete) return
+  const time = frozen ?? clock.read(now)
+  // 播放暂停只改变调度状态，不停止可见活跃时钟，因此早暂停也不会把文案卡在半显。
+  entranceStyles.value = [0, 0.18, 0.36].map(delay => {
+    const progress = Math.max(0, Math.min(1, (time - delay) / 0.7))
+    const eased = 1 - (1 - progress) ** 3
+    return { opacity: String(eased), transform: progress === 1 ? 'none' : `translateY(${24 * (1 - eased)}px)` }
+  })
+  entranceComplete = time >= 1.06
+}
 
 function iconPaths(progress: number) {
   const pause = [
@@ -125,6 +142,7 @@ function warmEraserAtRest() {
 }
 
 function paint(now: number) {
+  updateEntrance(now)
   const node = canvas.value
   if (!node || !painter) return
   const current = playback.read(frozen ?? clock.read(now))
@@ -262,11 +280,13 @@ function tick(now: number) {
   if (previousIcon !== iconProgress) iconPath.value = iconPaths(iconProgress)
   applyTilt()
   paint(now)
-  if ((playback.animating && frozen === undefined) || moving || iconMoving) requestFrame()
+  if (((playback.animating || !entranceComplete) && frozen === undefined) || moving || iconMoving) requestFrame()
 }
 
 function syncPlayback() {
   const now = performance.now()
+  // CSS 高光只切换运行状态，离屏/隐藏后保留相位，不在逐帧循环发布额外属性。
+  glintRunning.value = canAnimate() && frozen === undefined
   clock.setRunning(canAnimate() && frozen === undefined, now)
   if (!canAnimate()) {
     cancelEraserWarmup()
@@ -377,13 +397,23 @@ function resize() {
   if (!node) return
   cancelEraserWarmup()
   const layout = computeLayout(node.clientWidth, node.clientHeight, scene.aspect)
-  width = layout.width
-  height = layout.height
+  const copyHeight = heroCopy.value?.offsetHeight ?? (node.clientWidth <= 640 ? 134 : 108)
+  const gap = node.clientHeight < 420 ? 16 : 24
+  const edge = Math.max(16, Math.min(24, node.clientWidth * 0.02))
+  // 窄屏为右下控件另留一行；矮屏只收紧字区尺寸，不把标语或下载入口挤出首屏。
+  const bottom = node.clientWidth <= 640 ? edge + 48 + 12 : edge
+  const top = 18
+  const maxHeight = Math.max(0, (node.clientHeight - top - bottom - copyHeight - gap) / 1.36)
+  height = Math.min(layout.height, maxHeight)
+  width = height * scene.aspect
+  const centerY = Math.max(top + height * 0.68,
+    Math.min(layout.centerY, node.clientHeight - bottom - copyHeight - gap - height * 0.68))
   planeStyle.value = {
     width: `${width}px`,
     height: `${height}px`,
-    top: `${layout.centerY}px`,
+    top: `${centerY}px`,
   }
+  copyStyle.value = { top: `${centerY + height * 0.68 + gap}px` }
   resetPointer()
   paint(performance.now())
 }
@@ -414,6 +444,7 @@ onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(root.value)
+    if (heroCopy.value) resizeObserver.observe(heroCopy.value)
   }
   if ('IntersectionObserver' in window) {
     visibleObserver = new IntersectionObserver(entries => {
@@ -429,6 +460,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   mounted = false
+  glintRunning.value = false
   cancelEraserWarmup()
   painter?.dispose()
   if (cssMaskContext) {
@@ -450,8 +482,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="nh3-root">
+  <div ref="root" class="nh3-root" :class="{ 'is-active': glintRunning }">
     <div ref="plane" class="nh3-plane" :style="planeStyle">
+      <div class="nh3-entrance" :style="entranceStyles[0]">
       <div class="nh3-surface" :style="tiltStyle" role="img" aria-label="Inkeys">
       <canvas v-show="artFrame.view === 'ink'" ref="canvas" class="nh3-mark" aria-hidden="true" />
       <svg v-if="artFrame.view === 'art' && eraserFrame && !cssCanvasMask" class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
@@ -475,6 +508,13 @@ onBeforeUnmount(() => {
           <rect v-for="side in [-1, 1]" :key="side" :x="(side * 0.24 - 0.1) * eraserFrame.cursor.radius" :y="-0.48 * eraserFrame.cursor.radius" :width="0.2 * eraserFrame.cursor.radius" :height="0.96 * eraserFrame.cursor.radius" :rx="0.1 * eraserFrame.cursor.radius" fill="#cfcfcf" />
         </g>
       </svg>
+      </div>
+      </div>
+    </div>
+    <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
+      <p class="nh3-tagline" :style="entranceStyles[1]"><span>让屏幕上的书写行云流水，</span><span>让每一次操作都赏心悦目。</span></p>
+      <div class="nh3-download-entrance" :style="entranceStyles[2]">
+        <VPLink class="nh3-download" href="/download" no-icon>立即下载</VPLink>
       </div>
     </div>
     <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">
@@ -625,6 +665,137 @@ onBeforeUnmount(() => {
   will-change: auto;
 }
 
+.nh3-entrance {
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+}
+
+/* 文案和下载入口位于视差平面之外；入口外层与按钮交互各自拥有独立变换。 */
+.nh3-copy {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 65%;
+  text-align: center;
+}
+
+.nh3-tagline {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  font-size: clamp(17px, 1.45vw, 22px);
+  font-weight: 450;
+  line-height: 1.75;
+  letter-spacing: 0.025em;
+}
+
+.nh3-tagline span {
+  white-space: nowrap;
+}
+
+.nh3-download-entrance {
+  margin-top: 24px;
+}
+
+.nh3-download {
+  --nh3-download-text: #17515d;
+  --nh3-download-tint: rgba(121, 201, 205, 0.24);
+  --nh3-download-hover: rgba(111, 193, 201, 0.38);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 148px;
+  min-height: 48px;
+  padding: 0 28px;
+  box-sizing: border-box;
+  border: 1px solid rgba(77, 151, 162, 0.24);
+  border-radius: 26px;
+  corner-shape: squircle;
+  background-color: var(--nh3-download-tint);
+  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(236, 252, 253, 0.36) 48%, rgba(162, 219, 223, 0.28));
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(16px) saturate(135%);
+  color: var(--nh3-download-text);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), inset 0 -1px 0 rgba(63, 144, 155, 0.06), 0 6px 20px rgba(36, 99, 113, 0.1);
+  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35),
+    background-color 220ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms ease !important;
+}
+
+/* 双宽背景的中央高光随定位移动到按钮 22%/78% 处，固定外框裁切背景，避免反光越过圆角。 */
+.nh3-download::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  corner-shape: inherit;
+  background-image: linear-gradient(115deg, transparent 38.5%, rgba(255, 255, 255, 0.28) 50%, transparent 61.5%);
+  background-size: 200% 100%;
+  background-position: 78% 50%;
+  background-repeat: no-repeat;
+  opacity: 0.4;
+  pointer-events: none;
+  animation: nh3-download-glint 13s ease-in-out infinite alternate !important;
+  animation-play-state: paused !important;
+  transition: opacity 220ms ease !important;
+}
+
+.nh3-root.is-active .nh3-download::before {
+  animation-play-state: running !important;
+}
+
+@keyframes nh3-download-glint {
+  from { background-position: 78% 50%; }
+  to { background-position: 22% 50%; }
+}
+
+[data-theme='dark'] .nh3-download {
+  --nh3-download-text: #d9f5f4;
+  --nh3-download-tint: rgba(66, 127, 141, 0.26);
+  --nh3-download-hover: rgba(80, 151, 164, 0.38);
+  border-color: rgba(152, 220, 223, 0.27);
+  background-image: linear-gradient(160deg, rgba(177, 226, 231, 0.14), rgba(91, 153, 170, 0.09) 48%, rgba(28, 71, 88, 0.26));
+  box-shadow: inset 0 1px 0 rgba(200, 241, 241, 0.12), inset 0 -1px 0 rgba(4, 12, 21, 0.12), 0 6px 20px rgba(4, 12, 21, 0.18);
+}
+
+[data-theme='dark'] .nh3-download::before {
+  background-image: linear-gradient(115deg, transparent 38.5%, rgba(209, 245, 247, 0.12) 50%, transparent 61.5%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nh3-download:hover {
+    transform: scale(1.04);
+    color: var(--nh3-download-text);
+    background-color: var(--nh3-download-hover);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44), inset 0 -1px 0 rgba(63, 144, 155, 0.06), 0 9px 24px rgba(36, 99, 113, 0.14);
+  }
+
+  .nh3-download:hover::before {
+    opacity: 0.6;
+  }
+
+  [data-theme='dark'] .nh3-download:hover {
+    box-shadow: inset 0 1px 0 rgba(200, 241, 241, 0.16), inset 0 -1px 0 rgba(4, 12, 21, 0.12), 0 9px 24px rgba(4, 12, 21, 0.26);
+  }
+}
+
+.nh3-download:active {
+  transform: scale(0.96);
+  transition-duration: 120ms !important;
+}
+
+.nh3-copy .nh3-download:focus-visible {
+  border-radius: 26px;
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}
+
 .nh3-mark {
   display: block;
   width: 100%;
@@ -722,7 +893,7 @@ onBeforeUnmount(() => {
   position: absolute;
   right: calc(100% + 12px);
   bottom: 0;
-  width: 868px;
+  width: max-content;
   height: 48px;
   box-sizing: border-box;
   border: 1px solid var(--nh3-control-border);
@@ -734,7 +905,8 @@ onBeforeUnmount(() => {
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   color: var(--vp-c-text-1);
-  clip-path: inset(0 0 0 100% round 16px);
+  /* 揭示只做矩形裁切，圆角由超椭圆外壳绘制，避免切掉四角边框。 */
+  clip-path: inset(0 0 0 100%);
   opacity: 0;
   transform: translateX(8px);
   visibility: hidden;
@@ -744,7 +916,7 @@ onBeforeUnmount(() => {
 }
 
 .nh3-style-panel.is-open {
-  clip-path: inset(0 0 0 0 round 16px);
+  clip-path: inset(0 0 0 0);
   opacity: 1;
   transform: translateX(0);
   visibility: visible;
@@ -753,7 +925,7 @@ onBeforeUnmount(() => {
 }
 
 /* 只揭示容器，不缩放内容；改变展开方向也不会拉伸图标。 */
-.nh3-style-content { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 100%; padding: 5px 10px; box-sizing: border-box; }
+.nh3-style-content { display: flex; align-items: center; justify-content: flex-start; gap: 10px; height: 100%; padding: 5px 10px; box-sizing: border-box; }
 .nh3-options { min-width: 0; margin: 0; padding: 0; border: 0; }
 .nh3-options + .nh3-options { padding-left: 10px; border-left: 1px solid var(--nh3-control-border); }
 .nh3-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -827,9 +999,17 @@ onBeforeUnmount(() => {
 .nh3-art-shine { background-image: linear-gradient(110deg, transparent 42%, rgba(255, 255, 255, 0.65) 50%, transparent 58%); background-size: 200% 100%; }
 
 @media (max-width: 640px) {
+  .nh3-tagline span { display: block; }
+
   .nh3-plane {
     width: calc(100vw - 84px);
   }
+}
+
+@media (max-height: 500px) {
+  .nh3-tagline { font-size: 16px; line-height: 1.65; }
+  .nh3-download-entrance { margin-top: 16px; }
+  .nh3-download { min-height: 44px; }
 }
 
 </style>
