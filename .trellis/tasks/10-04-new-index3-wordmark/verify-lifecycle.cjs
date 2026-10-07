@@ -23,6 +23,8 @@ let mountedHook
 let unmountedHook
 let lastPaint
 let paintCalls = 0
+let disposeCalls = 0
+let nextId = 0
 let themeChanged
 const darkMode = { value: false }
 const scheduled = new Map()
@@ -32,7 +34,7 @@ class Observer {
   observe(target) { this.target = target }
   disconnect() { this.disconnected = true }
 }
-const motion = Object.assign(new Events(), { matches: false })
+const motion = Object.assign(new Events(), { matches: true })
 // 能力媒体查询为 false，但真实 mouse 事件仍有效（混合输入设备场景）。
 const pointer = Object.assign(new Events(), { matches: false })
 global.window = Object.assign(new Events(), {
@@ -51,7 +53,9 @@ global.cancelAnimationFrame = id => scheduled.delete(id)
 const softPen = load('softPen')
 const filename = path.join(sourceRoot, 'NewHome3.vue')
 const { descriptor } = parse(fs.readFileSync(filename, 'utf8'))
+global.__nh3IconCalls = 0
 const script = compileScript(descriptor, { id: 'lifecycle-test' }).content.replaceAll('import.meta.env.DEV', 'true')
+  .replace('function iconPaths(progress: number) {', 'function iconPaths(progress: number) { globalThis.__nh3IconCalls++')
 const compiled = ts.transpileModule(script, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText
 const componentModule = new Module(filename, module)
 componentModule.filename = filename
@@ -60,13 +64,14 @@ componentModule.require = name => {
     defineComponent: options => options,
     ref: value => ({ value }),
     shallowRef: value => ({ value }),
+    useId: () => `v-${nextId++}`,
     nextTick: callback => callback(),
     onMounted: callback => { mountedHook = callback },
     onBeforeUnmount: callback => { unmountedHook = callback },
     watch: (source, callback) => { assert.equal(source, darkMode); themeChanged = callback },
   }
   if (name === 'vuepress-theme-plume/client') return { useDarkMode: () => darkMode }
-  if (name === './softPen') return { ...softPen, createPainter: () => ({ render: (state, width, height, dpr, theme, style, eraseProgress) => { paintCalls++; lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
+  if (name === './softPen') return { ...softPen, createPainter: () => ({ dispose: () => disposeCalls++, render: (state, width, height, dpr, theme, style, eraseProgress) => { paintCalls++; lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
   if (name.startsWith('./')) return load(name.slice(2))
   return require(name)
 }
@@ -101,6 +106,17 @@ document.emit('visibilitychange')
 close(lastPaint.opacity, frozen)
 advance(10500)
 close(lastPaint.opacity, 1)
+const heldFrame = state.artFrame.value
+const heldTilt = state.tiltStyle.value
+const heldPaints = paintCalls
+const heldTime = state.clock.read(now)
+const heldIconCalls = global.__nh3IconCalls
+for (let i = 0; i < 30; i++) advance(now + 1000 / 60)
+assert.equal(state.artFrame.value, heldFrame)
+assert.equal(state.tiltStyle.value, heldTilt)
+assert.equal(paintCalls, heldPaints)
+assert.equal(global.__nh3IconCalls, heldIconCalls)
+state.clock.seek(heldTime, now)
 state.visibleObserver.callback([{ isIntersecting: false }])
 window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
 assert.equal(state.targetX, 0)
@@ -182,6 +198,8 @@ assert.equal(lastPaint.opacity, 1)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 2000, clientY: 900 })
 for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(Math.abs(state.tiltX) < 0.001)
+assert.equal(state.tiltStyle.value.transform, 'none')
+assert.equal(state.tiltStyle.value.willChange, 'auto')
 
 state.selectedPens.value = []
 state.updateSettings()
@@ -214,10 +232,13 @@ window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 }
 for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(state.tiltX > 0.9 && state.tiltX <= 1)
 assert.ok(state.tiltStyle.value.transform.includes('rotateX('))
+assert.equal(state.tiltStyle.value.willChange, 'transform')
 assert.equal(state.canvas.value.style.transform, undefined)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 2000, clientY: 900 })
 for (let i = 0; i < 90; i++) advance(now + 1000 / 60)
 assert.ok(Math.abs(state.tiltX) < 0.001)
+assert.equal(state.tiltStyle.value.transform, 'none')
+assert.equal(state.tiltStyle.value.willChange, 'auto')
 window.emit('pointermove', { pointerType: 'touch', clientX: 1120, clientY: 500 })
 assert.equal(state.targetX, 0)
 window.emit('pointermove', { pointerType: 'pen', clientX: 1120, clientY: 500 })
@@ -235,35 +256,24 @@ assert.equal(state.artFrame.value.view, 'art')
 advance(now + 1000)
 assert.equal(state.artFrame.value.view, 'ink')
 close(lastPaint.opacity, 1)
-motion.matches = true
-motion.emit('change')
+// 即使系统偏好减少动态效果，动画与视差仍运行，暂停按钮也仍可继续。
+assert.equal(motion.matches, true)
 window.emit('pointermove', { pointerType: 'mouse', clientX: 1120, clientY: 500 })
-assert.equal(state.targetX, 0)
-assert.equal(state.tiltX, 0)
+assert.equal(state.targetX, 1)
 state.togglePlayback()
-assert.equal(state.paused.value, true)
-assert.equal(lastPaint.opacity, 1)
+assert.equal(state.paused.value, false)
+advance(now + 1000)
+assert.equal(state.artFrame.value.view, 'art')
+assert.ok(state.artFrame.value.shimmer >= 0)
+const activeTime = state.clock.read(now)
 motion.matches = false
 motion.emit('change')
-state.togglePlayback()
-advance(now + 1000)
 motion.matches = true
 motion.emit('change')
-assert.equal(state.artFrame.value.view, 'art')
-assert.equal(state.artFrame.value.shimmer, -1)
-state.selectedPens.value = ['soft']
-state.selectedColor.value = 'purple'
-state.updateSettings()
-assert.equal(lastPaint.style.pen, 'soft')
-assert.equal(lastPaint.style.color, 'purple')
-assert.equal(lastPaint.inkTime, 4.2)
-assert.equal(lastPaint.opacity, 1)
 advance(now + 1000)
-assert.equal(scheduled.size, 0)
+close(state.clock.read(now), activeTime + 1)
 
 // 艺术字仅橡皮：共享几何、无扫光，暂停保留擦除进度，主题/缩放不重置。
-motion.matches = false
-motion.emit('change')
 state.selectedPens.value = []
 state.selectedEraser.value = true
 let maskAppends = 0
@@ -301,8 +311,8 @@ state.eraserFrame.value = savedEraserFrame
 state.syncArtMask()
 assert.equal(maskChildren.length, savedEraserFrame.paths.length)
 const previousMaskNode = state.artMaskPaths.value
-const remountedChildren = []
-state.artMaskPaths.value = { replaceChildren() { remountedChildren.length = 0 }, appendChild(path) { remountedChildren.push(path) } }
+const remountedChildren = [{ stale: true }]
+state.artMaskPaths.value = { get firstChild() { return remountedChildren[0] }, removeChild(child) { remountedChildren.splice(remountedChildren.indexOf(child), 1) }, appendChild(path) { remountedChildren.push(path) } }
 state.syncArtMask()
 assert.equal(remountedChildren.length, savedEraserFrame.paths.length)
 state.artMaskPaths.value = previousMaskNode
@@ -354,4 +364,144 @@ assert.ok(descriptor.template.content.includes(':aria-pressed="tool'))
 assert.ok(descriptor.template.content.includes(':inert="!panelOpen"'))
 assert.ok(descriptor.template.content.includes('type="radio"'))
 assert.ok(!descriptor.template.content.includes('title='))
-console.log('PASS: compiled Vue lifecycle: opening, visibility, panel keyboard/outside close, deferred settings, material/art pause, theme/resize, parallax, reduced motion and teardown')
+// 较旧引擎没有 ResizeObserver/matchMedia 时仍能初始化，并沿用 window.resize 更新尺寸。
+global.ResizeObserver = undefined
+window.matchMedia = undefined
+const legacyState = componentModule.exports.default.setup({}, { expose() {} })
+legacyState.root.value = { clientWidth: 375, clientHeight: 700 }
+legacyState.canvas.value = { style: {} }
+mountedHook()
+assert.equal(legacyState.resizeObserver, undefined)
+assert.ok(parseFloat(legacyState.planeStyle.value.width) > 0)
+const legacyWidth = legacyState.planeStyle.value.width
+legacyState.root.value.clientWidth = 768
+window.emit('resize')
+assert.notEqual(legacyState.planeStyle.value.width, legacyWidth)
+// 预热只消费闲时，不改变帧/时钟；隐藏、取消选择和卸载都撤销尚未运行的任务。
+const idleJobs = new Map()
+let nextIdle = 1
+window.requestIdleCallback = callback => { const id = nextIdle++; idleJobs.set(id, callback); return id }
+window.cancelIdleCallback = id => idleJobs.delete(id)
+legacyState.selectedEraser.value = true
+advance(now + 500)
+assert.equal(idleJobs.size, 1)
+const warmFrame = legacyState.artFrame.value
+const warmTime = legacyState.clock.read(now)
+const [idleId, idleJob] = [...idleJobs.entries()][0]
+idleJobs.delete(idleId)
+idleJob()
+assert.equal(legacyState.artFrame.value, warmFrame)
+assert.equal(legacyState.clock.read(now), warmTime)
+legacyState.root.value.clientWidth = 1024
+window.emit('resize')
+assert.equal(idleJobs.size, 1)
+document.hidden = true
+document.emit('visibilitychange')
+assert.equal(idleJobs.size, 0)
+document.hidden = false
+document.emit('visibilitychange')
+assert.equal(idleJobs.size, 1)
+legacyState.selectedEraser.value = false
+legacyState.updateSettings()
+assert.equal(idleJobs.size, 0)
+delete window.requestIdleCallback
+delete window.cancelIdleCallback
+const nativeSetTimeout = global.setTimeout
+const nativeClearTimeout = global.clearTimeout
+const delayedJobs = new Map()
+global.setTimeout = (callback, delay) => { assert.equal(delay, 48); delayedJobs.set(1, callback); return 1 }
+global.clearTimeout = id => delayedJobs.delete(id)
+legacyState.selectedEraser.value = true
+legacyState.warmEraserAtRest()
+assert.equal(delayedJobs.size, 1)
+unmountedHook()
+assert.equal(delayedJobs.size, 0)
+global.setTimeout = nativeSetTimeout
+global.clearTimeout = nativeClearTimeout
+assert.equal(scheduled.size, 0)
+assert.equal(window.count() + document.count() + document.documentElement.count(), 0)
+
+// WebKit named CSS Canvas 使用真实 alpha 像素验证：只追加新块，暂停/主题不重放，缩放/回退重建。
+const { createCanvas, Path2D } = require('./harness.cjs').canvasRuntime()
+global.Path2D = Path2D
+const namedBuffers = new Map()
+let cssMaskFills = 0
+let cssMaskGets = 0
+document.getCSSCanvasContext = (kind, name, width, height) => {
+  assert.equal(kind, '2d')
+  cssMaskGets++
+  let context = namedBuffers.get(name)
+  if (!context) {
+    context = createCanvas(width, height).getContext('2d')
+    const fill = context.fill.bind(context)
+    context.fill = (...args) => { cssMaskFills++; fill(...args) }
+    namedBuffers.set(name, context)
+  }
+  if (context.canvas.width !== width) context.canvas.width = width
+  if (context.canvas.height !== height) context.canvas.height = height
+  return context
+}
+global.CSS = {}
+const unsupportedState = componentModule.exports.default.setup({}, { expose() {} })
+unsupportedState.root.value = { clientWidth: 768, clientHeight: 700 }
+unsupportedState.canvas.value = { style: {} }
+mountedHook()
+assert.equal(unsupportedState.cssCanvasMask.value, false, 'a missing CSS.supports method must fall back safely')
+unmountedHook()
+CSS.supports = () => false
+const rejectedState = componentModule.exports.default.setup({}, { expose() {} })
+rejectedState.root.value = { clientWidth: 768, clientHeight: 700 }
+rejectedState.canvas.value = { style: {} }
+mountedHook()
+assert.equal(rejectedState.cssCanvasMask.value, false, 'API alone does not prove CSS syntax support')
+unmountedHook()
+CSS.supports = (property, value) => property === '-webkit-mask-image' && /^-webkit-canvas\(nh3-mask-/.test(value)
+window.devicePixelRatio = 2
+const cssState = componentModule.exports.default.setup({}, { expose() {} })
+cssState.root.value = { clientWidth: 768, clientHeight: 700 }
+cssState.canvas.value = { style: {} }
+mountedHook()
+assert.equal(cssState.cssCanvasMask.value, true)
+assert.notEqual(cssState.cssMaskName, unsupportedState.cssMaskName)
+const maskWidth = parseFloat(cssState.planeStyle.value.width)
+const maskHeight = parseFloat(cssState.planeStyle.value.height)
+const left = `M0 0H${maskWidth / 2}V${maskHeight}H0Z`
+const right = `M${maskWidth / 2} 0H${maskWidth}V${maskHeight}H${maskWidth / 2}Z`
+cssState.artFrame.value = { ...cssState.artFrame.value, view: 'art' }
+cssState.eraserFrame.value = { paths: [left] }
+cssState.syncArtMask()
+const cssContext = namedBuffers.get(cssState.cssMaskName)
+const alpha = (x, y) => cssContext.getImageData(Math.floor(x), Math.floor(y), 1, 1).data[3]
+assert.equal(alpha(cssContext.canvas.width * 0.25, 20), 0)
+assert.equal(alpha(cssContext.canvas.width * 0.75, 20), 255)
+const firstFills = cssMaskFills
+const firstGets = cssMaskGets
+cssState.artFrame.value = { ...cssState.artFrame.value, state: { opacity: 0.5 } }
+darkMode.value = !darkMode.value
+cssState.syncArtMask()
+assert.equal(cssMaskFills, firstFills)
+assert.equal(cssMaskGets, firstGets)
+cssState.eraserFrame.value = { paths: [left, right] }
+cssState.syncArtMask()
+assert.equal(cssMaskFills, firstFills + 1)
+assert.equal(alpha(cssContext.canvas.width * 0.75, 20), 0)
+cssState.eraserFrame.value = { paths: [left] }
+cssState.syncArtMask()
+assert.equal(cssMaskGets, firstGets + 1)
+assert.equal(alpha(cssContext.canvas.width * 0.75, 20), 255)
+cssState.root.value.clientWidth = 375
+window.emit('resize')
+cssState.artFrame.value = { ...cssState.artFrame.value, view: 'art' }
+cssState.eraserFrame.value = { paths: [] }
+cssState.syncArtMask()
+assert.equal(cssContext.canvas.width, Math.ceil(parseFloat(cssState.planeStyle.value.width) * 2))
+assert.equal(alpha(20, 20), 255)
+unmountedHook()
+assert.equal(cssContext.canvas.width, 1)
+assert.equal(cssContext.canvas.height, 1)
+assert.equal(disposeCalls, 5)
+assert.equal(scheduled.size, 0)
+delete global.CSS
+delete document.getCSSCanvasContext
+
+console.log('PASS: compiled Vue lifecycle: opening, visibility, panel keyboard/outside close, deferred settings, material/art pause, theme/resize, parallax, system-motion independence and teardown')

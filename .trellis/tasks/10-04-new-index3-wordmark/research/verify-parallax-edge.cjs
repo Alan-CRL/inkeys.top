@@ -65,9 +65,10 @@ const server = http.createServer((req, res) => {
     assert.ok(returned, '离开作用范围应回正')
     await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.mouse.move(box.x + box.width * .93, box.y + box.height * .82)
-    await page.waitForTimeout(300)
-    assert.ok(await page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('.nh3-surface')).transform).isIdentity), '减少动态效果禁止视差')
-    console.log('PASS mouse/touch/return/reduced-motion')
+    await page.waitForTimeout(1600)
+    assert.ok(await page.evaluate(() => !new DOMMatrix(getComputedStyle(document.querySelector('.nh3-surface')).transform).isIdentity), '系统减少动态效果不再阻止网页鼠标视差')
+    assert.ok(await page.getByRole('button', { name: '暂停动画' }).isEnabled(), '系统减少动态效果不禁用用户暂停按钮')
+    console.log('PASS mouse/touch/return/system-motion-independent')
     console.log('errors', JSON.stringify(errors))
   } finally {
     if (browser) await Promise.race([browser.close({ reason: 'parallax verification complete' }), new Promise(resolve => setTimeout(resolve, 10000))])

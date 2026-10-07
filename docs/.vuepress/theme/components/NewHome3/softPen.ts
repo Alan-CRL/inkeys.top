@@ -299,6 +299,7 @@ function ribbon(points: RimPoint[], start: number, end: number, roundStart: bool
 
 export interface Painter {
   render: (state: AnimationState, cssWidth: number, cssHeight: number, dpr?: number, theme?: PainterTheme, style?: RenderStyle, eraseProgress?: number) => void
+  dispose: () => void
 }
 
 function styledInk(points: InkPoint[], stroke: Stroke, style: RenderStyle) {
@@ -439,6 +440,7 @@ function createLaserLayer(stroke: Stroke, diameter: number, color: string, k: nu
   }
 
   return {
+    dispose() { canvas.width = canvas.height = 1 },
     render(time: number): LaserLayer {
       if (time === lastTime) return { canvas, x, y }
       let dirty = lastPartial
@@ -513,17 +515,33 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
   const inkCtx = inkCanvas.getContext('2d')!
   const eraserCanvas = document.createElement('canvas')
   const eraserCtx = eraserCanvas.getContext('2d')!
+  const prefixCanvas = document.createElement('canvas')
+  const prefixCtx = prefixCanvas.getContext('2d')!
   let lastKey = ''
   let lastInkKey = ''
   let laserCacheKey = ''
   let eraserSizeKey = ''
   let eraserMaskKey = ''
   let erasedCount = 0
+  let prefixKey = ''
+  let prefixCount = 0
+  let prefixPrevious: Array<[InkPoint, InkPoint]> = []
+  let disposed = false
   const eraserPaths: Path2D[] = []
   const laserCache = new Map<Stroke, ReturnType<typeof createLaserLayer>>()
   return {
+    dispose() {
+      if (disposed) return
+      disposed = true
+      // 卸载主动释放像素缓冲，避免弱机/Safari等待GC期间保留多份整屏画布。
+      for (const layer of laserCache.values()) layer.dispose()
+      laserCache.clear()
+      eraserPaths.length = 0
+      prefixPrevious = []
+      for (const buffer of [canvas, inkCanvas, prefixCanvas, eraserCanvas]) buffer.width = buffer.height = 1
+    },
     render(state, cssWidth, cssHeight, pixelRatio = 1, theme = 'light', style = DEFAULT_STYLE, eraseProgress = -1) {
-      if (cssWidth < 1 || cssHeight < 1) return
+      if (disposed || cssWidth < 1 || cssHeight < 1) return
       const dpr = clamp(pixelRatio, 1, 2)
       const pixelWidth = Math.round(cssWidth * dpr)
       const pixelHeight = Math.round(cssHeight * dpr)
@@ -544,13 +562,27 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
       const k = dpr * scale
       const tx = (cssWidth - (maxX + minX) * scale) * dpr / 2
       const ty = (cssHeight - (maxY + minY) * scale) * dpr / 2
+      // 激光已有按笔画裁切的覆盖率缓存，额外整屏前缀反而增加复制开销。
+      const usePrefix = style.pen !== 'laser'
+      const nextPrefixKey = [pixelWidth, pixelHeight, k, tx, ty, styleKey].join(':')
+      if (prefixKey !== nextPrefixKey || (prefixCount && state.inkTime < scene.strokes[prefixCount - 1].end)) {
+        if (usePrefix) {
+          prefixCanvas.width = pixelWidth
+          prefixCanvas.height = pixelHeight
+        }
+        prefixCount = 0
+        prefixPrevious = []
+        prefixKey = nextPrefixKey
+      }
       for (const context of [ctx, inkCtx]) {
         context.setTransform(1, 0, 0, 1, 0, 0)
         if (context === ctx || redrawInk) context.clearRect(0, 0, pixelWidth, pixelHeight)
+        if (context === inkCtx && redrawInk && prefixCount) context.drawImage(prefixCanvas, 0, 0)
         context.setTransform(k, 0, 0, k, tx, ty)
       }
       const nextLaserKey = [k, tx, ty, styleKey].join(':')
       if (laserCacheKey !== nextLaserKey) {
+        for (const layer of laserCache.values()) layer.dispose()
         laserCache.clear()
         laserCacheKey = nextLaserKey
       }
@@ -577,21 +609,22 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
         ctx.fill()
       }
 
-      const previous: Array<[InkPoint, InkPoint]> = []
+      const previous = redrawInk ? prefixPrevious.slice() : []
+      const completed = usePrefix && redrawInk ? scene.strokes.filter(stroke => stroke.end <= state.inkTime).length : 0
+      const rememberPrefix = () => {
+        prefixCtx.clearRect(0, 0, pixelWidth, pixelHeight)
+        prefixCtx.drawImage(inkCanvas, 0, 0)
+        prefixCount = completed
+        prefixPrevious = previous.slice()
+      }
       // 不支持彩虹的笔型由播放控制器选定本轮纯色；直接调用绘制器时也有稳定退路。
       const solid = resolveSolidColor(style.color === 'rainbow' ? 'cyan' : style.color, theme)
-      for (const stroke of redrawInk ? scene.strokes : []) {
-        const visible = styledInk(visibleInk(stroke.ink, state.inkTime), stroke, style)
-        if (!visible.length) continue
-        if (style.pen === 'highlighter' || style.pen === 'brush') {
-          inkCtx.save()
-          inkCtx.globalAlpha = style.pen === 'highlighter' ? 0.35 : 1
-          inkCtx.fillStyle = solid
-          inkCtx.fill(fixedNibPath(visible, BASE_WIDTH * 2 * SIZE_SCALE[style.size]))
-          inkCtx.restore()
-          continue
-        }
+      for (let index = prefixCount; redrawInk && index < scene.strokes.length; index++) {
+        // 完整前缀只在笔画结束时保存一次；活动笔画仍按原顺序绘制，保留透明度与局部交叉阴影。
+        if (index === completed && completed > prefixCount) rememberPrefix()
+        const stroke = scene.strokes[index]
         if (style.pen === 'laser') {
+          if (!stroke.ink.length || stroke.ink[0].t > state.inkTime) continue
           const time = Math.min(state.inkTime, stroke.end)
           let cached = laserCache.get(stroke)
           if (!cached) {
@@ -602,6 +635,16 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
           inkCtx.save()
           inkCtx.setTransform(1, 0, 0, 1, 0, 0)
           inkCtx.drawImage(layer.canvas, layer.x, layer.y)
+          inkCtx.restore()
+          continue
+        }
+        const visible = styledInk(visibleInk(stroke.ink, state.inkTime), stroke, style)
+        if (!visible.length) continue
+        if (style.pen === 'highlighter' || style.pen === 'brush') {
+          inkCtx.save()
+          inkCtx.globalAlpha = style.pen === 'highlighter' ? 0.35 : 1
+          inkCtx.fillStyle = solid
+          inkCtx.fill(fixedNibPath(visible, BASE_WIDTH * 2 * SIZE_SCALE[style.size]))
           inkCtx.restore()
           continue
         }
@@ -672,6 +715,7 @@ export function createPainter(scene: Scene, canvas: HTMLCanvasElement): Painter 
           }
         }
       }
+      if (redrawInk && completed === scene.strokes.length && completed > prefixCount) rememberPrefix()
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.drawImage(inkCanvas, 0, 0)
       ctx.globalAlpha = 1

@@ -110,3 +110,20 @@ Only NewHome3 product files modified. Registration/routes/dependencies unchanged
 - 艺术字模式不绘制隐藏Canvas；SVG遮罩仅需要时挂载、增量追加，回退/尺寸/节点重挂载重建，迟到nextTick卸载后不写节点。尚未测浏览器SVG蒙版栅格化开销，不声明艺术字60fps。review修复唯一无可访问名称回归：共同surface承载role=img/名称，Canvas aria-hidden，模板回归通过。
 - 严格六模块TypeScript、Vue生命周期/工具栏/模板回归、diff/原UTF8无BOM及LF检查通过。既有pnpm11.11.0 docs:build成功exit0，50页，19.07s；只有插件耗时提示，沿用已知esbuild沙箱限制的外部构建方式，无工具链/配置修改。所有native像素进程结束后串行构建。
 - 离屏最终路线与光标联系图已检查，未打开GUI/浏览器，视觉流畅度仍需用户实际页面反馈。
+
+
+## 2026-10-05 保持视觉的性能优化与 WebKit 兼容
+- 首先按本轮授权完成正常签名提交 b1a68a2（实际鼠标事件视差修复）；本节新增性能/兼容增量不自动commit/push。无依赖、路由、全局构建配置、字形、路线、DPR或几何采样精度变更。
+- 完整笔画前缀缓存保留交叉元数据，只重绘当前活动笔画；重启/回退/尺寸/DPR/主题/材料/粗细变化正确失效。激光保留原覆盖率缓存，跳过未起笔段和无用中间点数组。
+- 对提交b1a68a2逐帧原生像素对照1375例通过（五笔型/灰线时间边界/主题/颜色/粗细/缩放/回退/透明度/擦除），最后释放修订后追加275激光像素例通过。不改变原圆接头、软笔末端笔锋、荧光笔叠加或激光白芯。
+- 900px/DPR2原生CPU Canvas，逐帧交错前后版本，getImageData(1px)强制完成：硬笔median20.099→7.560ms、软笔19.054→8.785ms、荧光笔13.642→6.939ms、刷子12.265→6.986ms；激光12.516→12.885ms基本持平。p95与主机负载相关，这些数值不代表Safari GPU或所有弱机FPS。几何冷构建约35ms，在完整字停留时闲时预热并支持取消。
+- 稳态不重复发布DOM无关播放字段，不重复Canvas相同帧、图标path和工具栏VNode；实际视差仍±4°/6px，零姿态释放强制GPU层。隐藏/离屏取消RAF和预热，恢复接续时钟。用户暂停交互不变；系统reduce偏好不再阻止本页书写/扫光/视差/按钮过渡，局部!important只覆盖本组件原过渡声明。
+- Safari确证缺口是HTML引用SVGmask，foreignObject实验又发现旧WebKit动态资源重绘不稳定；最终恢复原HTML艺术字体与布局，双能力检测采用命名CSSCanvas增量alpha mask，其他引擎保留SVG。不逐帧编码PNG、不UA识别、主题/opacity不重放历史；回退/缩放/DPR重建、每实例独立命名、卸载释放。
+- 补充100vh、传统背景色、webkit backdrop-filter、ResizeObserver/replaceChildren/inert焦点及CSS.supports方法存在性回退；eraser四处Array.at改等价下标，删除该API后的三尺寸21进度与原路线逐项一致。
+- 所有画布在卸载主动1×1释放，激光缓存失效前也主动释放旧层；六生命周期84原生Canvas、幂等清理和迟到render均通过。独立审阅发现的激光失效遗漏已修复并重新复核。
+- 真实隔离无窗口引擎：WebKit16.4(revision1860)、26.5(revision2336)、系统Edge均通过默认字Canvas像素+实际合成截图、reduce=true控件computed过渡、原HTML艺术字部分擦除/opacity0.5/完整577块零残留/视差/缩放。两WebKit使用namedCSSCanvas，Edge使用SVG；无GUI，无用户浏览器数据访问。开发页外部图标请求被测试主动拦截时有插件图标错误，生产本地测试pageerror为空。
+- 最终生产产物WebKit16.4：320×568、768×1024、1440×900、1440×500（DPR2、reduce=true）文字实际可见且控制过渡有效，pageerror=[]。最终生产Edge实际鼠标在coarse查询false下仍matrix3d、触摸不改变目标、离开none、reduce=true仍正常视差与暂停可用，pageerror=[]。
+- CLI几何100循环/20布局、64工具集合/320后继变更、编译Vue生命周期/实际模板/工具栏320–1920、旧API与资源回归通过；局部六TS模块strict检查通过。项目无lint/全站typecheck命令，不声明这些检查。
+- pnpm11.11.0现有docs:build最终exit0，50页，10.00s，仅插件耗时提示。先停止本轮自行启动8099开发服务器，其他进程不动；沙箱外运行沿用已确认esbuild限制，不改工具链配置。
+- Windows WebKit测试不等于用户iPad Safari16.6.2实机。用户截图的默认硬笔全空白未在两个引擎或线上旧版复现，不能将艺术字mask修复或释放身份变换层说成已证明该根因。仍需用户实机按钮响应/控制台反馈与更新后复测。现有Vite全站语法基线Safari/iOS16.4，不承诺任意更旧浏览器。
+- git diff --check及源UTF8无BOM/LF检查通过；任务/规范保持原有换行。原有未跟踪草稿、NewHome2及缓存保持原状，本轮新修改未提交、未推送。

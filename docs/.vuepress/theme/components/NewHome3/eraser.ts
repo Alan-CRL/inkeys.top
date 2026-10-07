@@ -154,7 +154,7 @@ export function createEraserRoute(width: number, height: number) {
       const velocity = bezier(first, t)
       const acceleration = bezier(second, t)
       const curvature = Math.abs(velocity.x * acceleration.y - velocity.y * acceleration.x) / Math.max(1e-8, Math.hypot(velocity.x, velocity.y) ** 3)
-      const previous = guide.at(-1)
+      const previous = guide[guide.length - 1]
       guide.push({ ...p, curvature, speed: Math.max(0.12, 1 / Math.sqrt(1 + height * curvature * 5)), cost: 0,
         length: previous ? previous.length + Math.hypot(p.x - previous.x, p.y - previous.y) : 0 })
     }
@@ -164,7 +164,7 @@ export function createEraserRoute(width: number, height: number) {
   const acceleration = height * 9
   for (const p of guide) p.speed = Math.min(nominalSpeed, Math.sqrt(height * 5.5 / Math.max(p.curvature, 1e-8)))
   guide[0].speed = 0
-  guide.at(-1)!.speed = 0
+  guide[guide.length - 1].speed = 0
   for (const direction of [1, -1]) {
     const first = direction > 0 ? 1 : guide.length - 2
     const end = direction > 0 ? guide.length : -1
@@ -185,7 +185,7 @@ export function createEraserRoute(width: number, height: number) {
 
 function buildSweep(width: number, height: number) {
   const { guide } = createEraserRoute(width, height)
-  const total = guide.at(-1)!.cost
+  const total = guide[guide.length - 1].cost
   const cursors: Cursor[] = []
   const paths: string[] = []
   const dt = ERASE_SECONDS / (STEPS * SUBSTEPS)
@@ -221,7 +221,7 @@ function buildSweep(width: number, height: number) {
     if (previous) {
       const measured = Math.hypot(x - previous.x, y - previous.y) / dt
       speed += (measured - speed) * (1 - Math.exp(-dt / 0.12))
-      const target = base * (1 + 0.35 * clamp((speed / (guide.at(-1)!.length / ERASE_SECONDS) - 0.45) / 0.95))
+      const target = base * (1 + 0.35 * clamp((speed / (guide[guide.length - 1].length / ERASE_SECONDS) - 0.45) / 0.95))
       decreaseTime = target < radius ? decreaseTime + dt : 0
       // 借鉴原生速度橡皮的增长/保持/慢回落：转弯短暂减速先保持，避免每次折返都迅速变细。
       if (target >= radius || decreaseTime > 0.3) {

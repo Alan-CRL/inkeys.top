@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useDarkMode } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
@@ -17,7 +17,6 @@ const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspec
 const clock = createActiveClock()
 const playback = createPlayback()
 const paused = ref(false)
-const reduced = ref(false)
 const isDark = useDarkMode()
 const iconPath = ref(iconPaths(0))
 const controls = ref<HTMLDivElement>()
@@ -28,10 +27,13 @@ const selectedPens = ref<PenKind[]>(['hard'])
 const selectedEraser = ref(false)
 const eraserFrame = shallowRef<ReturnType<typeof getEraserFrame>>()
 const artMaskPaths = ref<SVGGElement>()
+const cssCanvasMask = ref(false)
+const cssMaskName = `nh3-mask-${useId().replace(/[^a-zA-Z0-9_-]/g, '-')}`
+type CSSCanvasDocument = Document & { getCSSCanvasContext?: (kind: '2d', name: string, width: number, height: number) => CanvasRenderingContext2D | null }
 const toolChoices = [...PEN_ORDER, 'eraser'] as const
 const selectedColor = ref<ColorChoice>('rainbow')
 const selectedSize = ref<StrokeSize>('medium')
-const artFrame = ref(playback.read(0))
+const artFrame = shallowRef(playback.read(0))
 const tiltStyle = ref<Record<string, string>>({})
 const penLabels: Record<PenKind | 'eraser', string> = { eraser: '橡皮', hard: '硬笔', soft: '软笔', highlighter: '荧光笔', laser: '激光笔', brush: '刷子' }
 const colorChoices: ColorChoice[] = ['rainbow', 'neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
@@ -50,7 +52,6 @@ let width = 0
 let height = 0
 let resizeObserver: ResizeObserver | undefined
 let visibleObserver: IntersectionObserver | undefined
-let motionPreference: MediaQueryList | undefined
 let targetX = 0
 let targetY = 0
 let tiltX = 0
@@ -60,6 +61,11 @@ let iconVelocity = 0
 let maskNode: SVGGElement | undefined
 let maskPaths: readonly string[] = []
 let maskSize = ''
+let cssMaskContext: CanvasRenderingContext2D | undefined
+let lastCanvasKey = ''
+let lastEraserKey = ''
+let warmedSize = ''
+let cancelWarmup: (() => void) | undefined
 
 function iconPaths(progress: number) {
   const pause = [
@@ -93,35 +99,110 @@ function canAnimate() {
   return mounted && !document.hidden && inViewport
 }
 
+function cancelEraserWarmup() {
+  cancelWarmup?.()
+  cancelWarmup = undefined
+}
+
+function warmEraserAtRest() {
+  const size = `${width}:${height}`
+  if (cancelWarmup || warmedSize === size || !selectedEraser.value || !canAnimate() || width <= 0 || height <= 0) return
+  const warm = () => {
+    cancelWarmup = undefined
+    if (!canAnimate() || !selectedEraser.value || size !== `${width}:${height}`) return
+    // 只在完整字停留时预建相同尺寸的几何，不改变播放时钟或发布擦除帧。
+    getEraserFrame(0, width, height)
+    warmedSize = size
+  }
+  if (typeof window.requestIdleCallback === 'function' && typeof window.cancelIdleCallback === 'function') {
+    const id = window.requestIdleCallback(warm, { timeout: 250 })
+    cancelWarmup = () => window.cancelIdleCallback(id)
+  }
+  else {
+    const id = setTimeout(warm, 48)
+    cancelWarmup = () => clearTimeout(id)
+  }
+}
+
 function paint(now: number) {
   const node = canvas.value
   if (!node || !painter) return
-  const current = playback.read(frozen ?? clock.read(now), reduced.value)
-  artFrame.value = current
-  eraserFrame.value = current.eraseProgress >= 0 && width > 0 && height > 0
-    ? getEraserFrame(current.eraseProgress, width, height) : undefined
-  if (current.view === 'ink') {
-    painter.render(current.state, width, height, window.devicePixelRatio,
-      isDark.value ? 'dark' : 'light', current.style, current.eraseProgress)
+  const current = playback.read(frozen ?? clock.read(now))
+  const previous = artFrame.value
+  // Canvas 的书写时间独立推进；模板只发布实际可见字段变化，保持期不反复触发整棵控件更新。
+  if (current.view !== previous.view || current.state.opacity !== previous.state.opacity
+    || current.artColor !== previous.artColor || current.previousColor !== previous.previousColor
+    || current.colorMix !== previous.colorMix || current.shimmer !== previous.shimmer
+    || current.eraseProgress !== previous.eraseProgress || current.eraseOpacity !== previous.eraseOpacity) {
+    artFrame.value = current
   }
-  if (maskNode && (current.view !== 'art' || !eraserFrame.value)) {
+  const eraserKey = `${current.eraseProgress}:${width}:${height}:${window.devicePixelRatio}`
+  const eraserChanged = eraserKey !== lastEraserKey
+  if (eraserChanged) {
+    eraserFrame.value = current.eraseProgress >= 0 && width > 0 && height > 0
+      ? getEraserFrame(current.eraseProgress, width, height) : undefined
+    lastEraserKey = eraserKey
+    if (eraserFrame.value) warmedSize = `${width}:${height}`
+  }
+  if (current.view === 'ink') {
+    const { rawTime, inkTime, opacity } = current.state
+    const { pen, color, size } = current.style
+    const key = [rawTime, inkTime, opacity, current.eraseProgress, width, height,
+      window.devicePixelRatio, isDark.value, pen, color, size].join(':')
+    if (key !== lastCanvasKey) {
+      painter.render(current.state, width, height, window.devicePixelRatio,
+        isDark.value ? 'dark' : 'light', current.style, current.eraseProgress)
+      lastCanvasKey = key
+    }
+  }
+  if (current.eraseProgress < 0 && current.state.inkTime === 4.2
+    && current.state.rawTime < 0 && current.state.opacity === 1) warmEraserAtRest()
+  if ((maskNode || cssMaskContext) && (current.view !== 'art' || !eraserFrame.value)) {
     maskNode = undefined
     maskPaths = []
     maskSize = ''
   }
   // 艺术字使用 DOM 字体；隐藏 Canvas 时不再绘制不可见墨迹或重复回放擦除。
-  if (current.view === 'art' && eraserFrame.value) void nextTick(syncArtMask)
+  if (current.view === 'art' && eraserFrame.value
+    && (eraserChanged || (cssCanvasMask.value ? !cssMaskContext : !maskNode))) void nextTick(syncArtMask)
 }
 
 function syncArtMask() {
   const node = artMaskPaths.value
   const paths = eraserFrame.value?.paths
-  if (!mounted || artFrame.value.view !== 'art' || !node || !paths) return
+  if (!mounted || artFrame.value.view !== 'art' || !paths) return
+  if (cssCanvasMask.value) {
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1))
+    const pixelWidth = Math.ceil(width * dpr)
+    const pixelHeight = Math.ceil(height * dpr)
+    const size = `${width}:${height}:${pixelWidth}:${pixelHeight}`
+    const reset = !cssMaskContext || size !== maskSize || paths.length < maskPaths.length
+      || (maskPaths.length && paths[maskPaths.length - 1] !== maskPaths[maskPaths.length - 1])
+    if (reset) {
+      // WebKit 的命名 Canvas 会主动通知 CSS 遮罩客户端；不编码 PNG，也不转换 DOM 字体。
+      cssMaskContext = (document as CSSCanvasDocument).getCSSCanvasContext?.('2d', cssMaskName, pixelWidth, pixelHeight) ?? undefined
+      if (!cssMaskContext) return
+      cssMaskContext.setTransform(1, 0, 0, 1, 0, 0)
+      cssMaskContext.clearRect(0, 0, pixelWidth, pixelHeight)
+      cssMaskContext.globalCompositeOperation = 'source-over'
+      cssMaskContext.fillStyle = '#fff'
+      cssMaskContext.fillRect(0, 0, pixelWidth, pixelHeight)
+      cssMaskContext.setTransform(pixelWidth / width, 0, 0, pixelHeight / height, 0, 0)
+      cssMaskContext.globalCompositeOperation = 'destination-out'
+      maskPaths = []
+    }
+    for (let index = maskPaths.length; index < paths.length; index++) cssMaskContext!.fill(new Path2D(paths[index]))
+    maskPaths = paths
+    maskSize = size
+    return
+  }
+  if (!node) return
   const size = `${width}:${height}`
   // 仅追加不可变的新片段；回退、缩放或重新挂载时才重建，不逐帧 patch 整段历史 SVG。
   if (node !== maskNode || size !== maskSize || paths.length < maskPaths.length
     || (maskPaths.length && paths[maskPaths.length - 1] !== maskPaths[maskPaths.length - 1])) {
-    node.replaceChildren()
+    if (node.replaceChildren) node.replaceChildren()
+    else while (node.firstChild) node.removeChild(node.firstChild)
     maskPaths = []
   }
   for (let index = maskPaths.length; index < paths.length; index++) {
@@ -134,14 +215,18 @@ function syncArtMask() {
   maskPaths = paths
 }
 
-// 主题切换只重绘当前帧；手动暂停、减少动态效果和离屏状态都不重置时间轴。
+// 主题切换只重绘当前帧；手动暂停和离屏状态都不重置时间轴。
 watch(isDark, () => {
   if (mounted) paint(performance.now())
 }, { flush: 'post' })
 
 function applyTilt() {
   // 文字、艺术字和光标由同一内层承担变换；外框保持不动，用于稳定测距。
-  tiltStyle.value = { transform: `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)` }
+  const tilted = tiltX !== 0 || tiltY !== 0
+  const transform = tilted
+    ? `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)` : 'none'
+  // 触屏及鼠标离开后释放强制 3D 合成提示，零姿态不需要常驻 GPU 变换层。
+  if (tiltStyle.value.transform !== transform) tiltStyle.value = { transform, willChange: tilted ? 'transform' : 'auto' }
 }
 
 function requestFrame() {
@@ -161,6 +246,7 @@ function tick(now: number) {
     tiltX = targetX
     tiltY = targetY
   }
+  const previousIcon = iconProgress
   const iconTarget = paused.value ? 1 : 0
   const steps = Math.ceil(dt / 0.008)
   for (let i = 0; i < steps; i++) {
@@ -169,21 +255,21 @@ function tick(now: number) {
     iconProgress += iconVelocity * step
   }
   const iconMoving = Math.abs(iconTarget - iconProgress) + Math.abs(iconVelocity) > 0.001
-  if (!iconMoving || reduced.value) {
+  if (!iconMoving) {
     iconProgress = iconTarget
     iconVelocity = 0
   }
-  iconPath.value = iconPaths(iconProgress)
+  if (previousIcon !== iconProgress) iconPath.value = iconPaths(iconProgress)
   applyTilt()
   paint(now)
-  if ((!reduced.value && playback.animating && frozen === undefined)
-    || moving || (!reduced.value && iconMoving)) requestFrame()
+  if ((playback.animating && frozen === undefined) || moving || iconMoving) requestFrame()
 }
 
 function syncPlayback() {
   const now = performance.now()
-  clock.setRunning(canAnimate() && !reduced.value && frozen === undefined, now)
+  clock.setRunning(canAnimate() && frozen === undefined, now)
   if (!canAnimate()) {
+    cancelEraserWarmup()
     if (frame) cancelAnimationFrame(frame)
     frame = 0
     previousFrame = 0
@@ -194,7 +280,6 @@ function syncPlayback() {
 }
 
 function togglePlayback() {
-  if (reduced.value) return
   const now = performance.now()
   previousFrame = now
   if (frozen !== undefined) {
@@ -207,8 +292,9 @@ function togglePlayback() {
 }
 
 function updateSettings() {
+  if (!selectedEraser.value) cancelEraserWarmup()
   playback.configure({ pens: selectedPens.value, eraser: selectedEraser.value, color: selectedColor.value, size: selectedSize.value },
-    frozen ?? clock.read(performance.now()), reduced.value)
+    frozen ?? clock.read(performance.now()))
   syncPlayback()
 }
 
@@ -265,7 +351,7 @@ function resetPointer() {
 
 function onPointerMove(event: PointerEvent) {
   // 以实际输入事件为准；混合设备的 hover/pointer 媒体能力可能与当前鼠标不一致。
-  if (reduced.value || event.pointerType !== 'mouse' || !canAnimate()) return
+  if (event.pointerType !== 'mouse' || !canAnimate()) return
   const box = plane.value?.getBoundingClientRect()
   if (!box || !box.width || !box.height) return
   // 从未变换的外层测量，避免旋转后的边界反过来改变指针目标而抖动。
@@ -281,21 +367,6 @@ function onPointerMove(event: PointerEvent) {
   requestFrame()
 }
 
-function onPreferencesChange() {
-  reduced.value = motionPreference?.matches ?? false
-  if (reduced.value) {
-    playback.settleReduced(frozen ?? clock.read(performance.now()))
-    iconProgress = paused.value ? 1 : 0
-    iconVelocity = 0
-    iconPath.value = iconPaths(iconProgress)
-  }
-  if (reduced.value) {
-    targetX = targetY = tiltX = tiltY = 0
-    applyTilt()
-  }
-  syncPlayback()
-}
-
 function onVisibilityChange() {
   resetPointer()
   syncPlayback()
@@ -304,6 +375,7 @@ function onVisibilityChange() {
 function resize() {
   const node = root.value
   if (!node) return
+  cancelEraserWarmup()
   const layout = computeLayout(node.clientWidth, node.clientHeight, scene.aspect)
   width = layout.width
   height = layout.height
@@ -321,17 +393,16 @@ onMounted(() => {
   if (!node || !root.value) return
   mounted = true
   painter = createPainter(scene, node)
-  motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)')
-  reduced.value = motionPreference.matches
+  // 能力检测而非 UA：旧 WebKit 不可靠地刷新 HTML 引用的 SVG 遮罩。
+  cssCanvasMask.value = typeof (document as CSSCanvasDocument).getCSSCanvasContext === 'function'
+    && typeof CSS !== 'undefined' && typeof CSS.supports === 'function'
+    && CSS.supports('-webkit-mask-image', `-webkit-canvas(${cssMaskName})`)
 
   // 仅开发环境冻结完整时间轴，例如 ?t=10 可检查默认循环的硬笔书写。
   if (import.meta.env.DEV) {
     const query = new URLSearchParams(window.location.search).get('t')
     if (query !== null && query.trim() && Number.isFinite(Number(query))) frozen = Math.max(0, Number(query))
   }
-  if (reduced.value) playback.settleReduced(frozen ?? clock.read(performance.now()))
-
-  motionPreference.addEventListener('change', onPreferencesChange)
   document.addEventListener('visibilitychange', onVisibilityChange)
   document.documentElement.addEventListener('pointerleave', resetPointer)
   window.addEventListener('pointermove', onPointerMove, { passive: true })
@@ -340,8 +411,10 @@ onMounted(() => {
   document.addEventListener('pointerdown', onOutsidePointer)
   document.addEventListener('keydown', onPanelKeydown)
 
-  resizeObserver = new ResizeObserver(resize)
-  resizeObserver.observe(root.value)
+  if (typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver(resize)
+    resizeObserver.observe(root.value)
+  }
   if ('IntersectionObserver' in window) {
     visibleObserver = new IntersectionObserver(entries => {
       inViewport = entries.some(entry => entry.isIntersecting)
@@ -356,11 +429,16 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   mounted = false
+  cancelEraserWarmup()
+  painter?.dispose()
+  if (cssMaskContext) {
+    cssMaskContext.canvas.width = cssMaskContext.canvas.height = 1
+    cssMaskContext = undefined
+  }
   clock.setRunning(false, performance.now())
   if (frame) cancelAnimationFrame(frame)
   resizeObserver?.disconnect()
   visibleObserver?.disconnect()
-  motionPreference?.removeEventListener('change', onPreferencesChange)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   document.documentElement.removeEventListener('pointerleave', resetPointer)
   window.removeEventListener('pointermove', onPointerMove)
@@ -376,7 +454,7 @@ onBeforeUnmount(() => {
     <div ref="plane" class="nh3-plane" :style="planeStyle">
       <div class="nh3-surface" :style="tiltStyle" role="img" aria-label="Inkeys">
       <canvas v-show="artFrame.view === 'ink'" ref="canvas" class="nh3-mark" aria-hidden="true" />
-      <svg v-if="artFrame.view === 'art' && eraserFrame" class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
+      <svg v-if="artFrame.view === 'art' && eraserFrame && !cssCanvasMask" class="nh3-mask-defs" aria-hidden="true" width="0" height="0">
         <defs>
           <mask id="nh3-art-erasure" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" :width="width" :height="height" x="0" y="0" style="mask-type: luminance">
             <rect :width="width" :height="height" fill="white" />
@@ -384,7 +462,7 @@ onBeforeUnmount(() => {
           </mask>
         </defs>
       </svg>
-      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px`, maskImage: eraserFrame ? 'url(#nh3-art-erasure)' : 'none' }" aria-hidden="true">
+      <div v-if="artFrame.view === 'art'" class="nh3-art" :style="{ opacity: artFrame.state.opacity, fontSize: `${width * 0.25}px`, ...(cssCanvasMask ? { WebkitMaskImage: eraserFrame ? `-webkit-canvas(${cssMaskName})` : 'none' } : { maskImage: eraserFrame ? 'url(#nh3-art-erasure)' : 'none' }) }" aria-hidden="true">
         <div class="nh3-art-lettering" :style="{ backgroundImage: colorBackground(artFrame.previousColor) }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay" :style="{ backgroundImage: colorBackground(artFrame.artColor), opacity: artFrame.colorMix }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
         <div class="nh3-art-lettering nh3-art-overlay nh3-art-shine" :style="{ opacity: artFrame.shimmer < 0 ? 0 : 1, backgroundPosition: `${135 - artFrame.shimmer * 170}% 50%` }"><span class="nh3-art-ink">Ink</span><span class="nh3-art-eys">eys</span></div>
@@ -399,13 +477,13 @@ onBeforeUnmount(() => {
       </svg>
       </div>
     </div>
-    <div ref="controls" class="nh3-controls">
+    <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">
       <div id="nh3-style-panel" ref="panel" class="nh3-style-panel" :class="{ 'is-open': panelOpen }" :inert="!panelOpen" :aria-hidden="!panelOpen" role="group" aria-label="书写样式">
         <div class="nh3-style-content">
           <fieldset class="nh3-options">
             <legend class="nh3-sr-only">笔类型</legend>
             <div class="nh3-pen-options">
-              <button v-for="tool in toolChoices" :key="tool" class="nh3-tool" type="button" :aria-pressed="tool === 'eraser' ? selectedEraser : selectedPens.includes(tool)" @click="toggleTool(tool)">
+              <button v-for="tool in toolChoices" :key="tool" class="nh3-tool" type="button" :tabindex="panelOpen ? 0 : -1" :aria-pressed="tool === 'eraser' ? selectedEraser : selectedPens.includes(tool)" @click="toggleTool(tool)">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" v-html="toolIcons[tool]" />
                 <span>{{ penLabels[tool] }}</span>
               </button>
@@ -415,7 +493,7 @@ onBeforeUnmount(() => {
             <legend class="nh3-sr-only">颜色</legend>
             <div class="nh3-color-options">
               <label v-for="color in colorChoices" :key="color" class="nh3-color-choice" :style="{ '--nh3-swatch': colorBackground(color) }">
-                <input v-model="selectedColor" type="radio" name="nh3-color" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
+                <input v-model="selectedColor" type="radio" name="nh3-color" :tabindex="panelOpen ? 0 : -1" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
                 <span aria-hidden="true" />
               </label>
             </div>
@@ -424,7 +502,7 @@ onBeforeUnmount(() => {
             <legend class="nh3-sr-only">粗细</legend>
             <div class="nh3-size-options">
               <label v-for="size in sizeChoices" :key="size">
-                <input v-model="selectedSize" type="radio" name="nh3-size" :value="size" :aria-label="sizeLabels[size]" @change="updateSettings">
+                <input v-model="selectedSize" type="radio" name="nh3-size" :tabindex="panelOpen ? 0 : -1" :value="size" :aria-label="sizeLabels[size]" @change="updateSettings">
                 <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18 18 6" :stroke-width="sizeWidths[size]" /></svg></span>
               </label>
             </div>
@@ -438,7 +516,6 @@ onBeforeUnmount(() => {
     <button
       class="nh3-playback"
       type="button"
-      :disabled="reduced"
       :aria-pressed="paused"
       :aria-label="paused ? '继续动画' : '暂停动画'"
       @click="togglePlayback"
@@ -476,6 +553,7 @@ onBeforeUnmount(() => {
     radial-gradient(ellipse at 12% 15%, var(--nh3-mint), transparent 60%),
     radial-gradient(ellipse at 88% 45%, var(--nh3-lavender), transparent 65%),
     radial-gradient(ellipse at 45% 95%, var(--nh3-pearl), transparent 60%);
+  background-size: 100% 100vh;
   background-size: 100% 100svh;
   background-repeat: no-repeat;
 }
@@ -523,6 +601,7 @@ onBeforeUnmount(() => {
 
 .nh3-root {
   --nh3-control-gap: clamp(16px, 2vw, 24px);
+  min-height: calc(100vh - var(--vp-nav-height, 64px));
   min-height: calc(100svh - var(--vp-nav-height, 64px));
   box-sizing: border-box;
   position: relative;
@@ -543,7 +622,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   transform-origin: center;
-  will-change: transform;
+  will-change: auto;
 }
 
 .nh3-mark {
@@ -577,7 +656,8 @@ onBeforeUnmount(() => {
   font-size: 14px;
   line-height: 1.5;
   cursor: pointer;
-  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35);
+  /* 本页按用户要求保留动效，覆盖 Plume reduced-motion 的全局 !important 重置。 */
+  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35) !important;
 }
 
 .nh3-playback-surface {
@@ -588,7 +668,7 @@ onBeforeUnmount(() => {
   fill: var(--nh3-control-bg);
   stroke: var(--nh3-control-border);
   stroke-width: 1px;
-  transition: fill 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: fill 220ms cubic-bezier(0.2, 0.7, 0.2, 1) !important;
   pointer-events: none;
 }
 
@@ -612,7 +692,7 @@ onBeforeUnmount(() => {
 
 .nh3-playback:active:not(:disabled) {
   transform: scale(0.94);
-  transition-duration: 120ms;
+  transition-duration: 120ms !important;
 }
 
 .nh3-playback:focus-visible {
@@ -648,8 +728,10 @@ onBeforeUnmount(() => {
   border: 1px solid var(--nh3-control-border);
   border-radius: 16px;
   corner-shape: squircle;
+  background: var(--nh3-bg);
   background: color-mix(in srgb, var(--nh3-bg) 86%, transparent);
   box-shadow: 0 8px 28px rgba(15, 32, 49, 0.08);
+  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   color: var(--vp-c-text-1);
   clip-path: inset(0 0 0 100% round 16px);
@@ -658,7 +740,7 @@ onBeforeUnmount(() => {
   visibility: hidden;
   pointer-events: none;
   transition: clip-path 300ms cubic-bezier(0.22, 0.8, 0.25, 1),
-    transform 300ms cubic-bezier(0.22, 0.8, 0.25, 1), opacity 220ms ease, visibility 0s 300ms;
+    transform 300ms cubic-bezier(0.22, 0.8, 0.25, 1), opacity 220ms ease, visibility 0s 300ms !important;
 }
 
 .nh3-style-panel.is-open {
@@ -667,7 +749,7 @@ onBeforeUnmount(() => {
   transform: translateX(0);
   visibility: visible;
   pointer-events: auto;
-  transition-delay: 0s;
+  transition-delay: 0s !important;
 }
 
 /* 只揭示容器，不缩放内容；改变展开方向也不会拉伸图标。 */
@@ -676,24 +758,24 @@ onBeforeUnmount(() => {
 .nh3-options + .nh3-options { padding-left: 10px; border-left: 1px solid var(--nh3-control-border); }
 .nh3-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .nh3-pen-options { display: flex; gap: 4px; }
-.nh3-tool { box-sizing: border-box; display: flex; align-items: center; gap: 5px; flex-shrink: 0; height: 36px; padding: 0 8px; border: 1px solid transparent; border-radius: 12px; corner-shape: squircle; background: transparent; color: var(--vp-c-text-2); font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease, color 220ms ease; }
+.nh3-tool { box-sizing: border-box; display: flex; align-items: center; gap: 5px; flex-shrink: 0; height: 36px; padding: 0 8px; border: 1px solid transparent; border-radius: 12px; corner-shape: squircle; background: transparent; color: var(--vp-c-text-2); font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease, color 220ms ease !important; }
 .nh3-tool svg { width: 18px; height: 18px; flex-shrink: 0; pointer-events: none; }
-.nh3-tool[aria-pressed='true'] { color: var(--vp-c-brand-1); background: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent); border-color: color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent); }
+.nh3-tool[aria-pressed='true'] { color: var(--vp-c-brand-1); background: var(--nh3-playback-hover); border-color: var(--nh3-control-border); background: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent); border-color: color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent); }
 .nh3-tool:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
-.nh3-tool:active { transform: scale(0.94); transition-duration: 120ms; }
+.nh3-tool:active { transform: scale(0.94); transition-duration: 120ms !important; }
 .nh3-color-options { display: flex; gap: 2px; }
 .nh3-color-choice { position: relative; display: grid; place-items: center; width: 28px; height: 34px; cursor: pointer; }
 .nh3-color-choice input, .nh3-size-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.nh3-color-choice span { width: 19px; height: 19px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35); }
+.nh3-color-choice span { width: 19px; height: 19px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35) !important; }
 .nh3-color-choice input:checked + span { outline: 2px solid var(--vp-c-text-2); outline-offset: 2px; }
 .nh3-color-choice input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
 .nh3-size-options { display: flex; gap: 3px; }
 .nh3-size-options label { position: relative; width: 32px; cursor: pointer; }
-.nh3-size-options span { display: grid; place-items: center; height: 34px; border: 1px solid transparent; border-radius: 10px; corner-shape: squircle; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease; }
+.nh3-size-options span { display: grid; place-items: center; height: 34px; border: 1px solid transparent; border-radius: 10px; corner-shape: squircle; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease !important; }
 .nh3-size-options svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-linecap: round; }
 .nh3-size-options input:checked + span { background: var(--nh3-playback-hover); border-color: var(--nh3-control-border); }
 .nh3-size-options input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
-.nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); transition-duration: 120ms; }
+.nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); transition-duration: 120ms !important; }
 
 @media (hover: hover) and (pointer: fine) {
   .nh3-tool:hover { transform: scale(1.04); background: var(--nh3-playback-hover); }
@@ -704,7 +786,7 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 1099px) {
-  .nh3-style-panel { right: 0; bottom: calc(100% + 12px); width: min(480px, calc(100vw - 2 * var(--nh3-control-gap))); height: auto; max-height: max(48px, calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); overflow-y: auto; overscroll-behavior: contain; }
+  .nh3-style-panel { right: 0; bottom: calc(100% + 12px); width: min(480px, calc(100vw - 2 * var(--nh3-control-gap))); height: auto; max-height: max(48px, calc(100vh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); max-height: max(48px, calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); overflow-y: auto; overscroll-behavior: contain; }
   .nh3-style-content { flex-direction: column; align-items: stretch; gap: 12px; padding: 12px; }
   .nh3-options + .nh3-options { border-left: 0; border-top: 1px solid var(--nh3-control-border); padding-left: 0; padding-top: 12px; }
   .nh3-pen-options { flex-wrap: wrap; gap: 6px; }
@@ -721,6 +803,8 @@ onBeforeUnmount(() => {
 .nh3-art {
   position: absolute;
   inset: 0;
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
   display: grid;
   place-items: center;
   pointer-events: none;
@@ -748,18 +832,4 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .nh3-playback,
-  .nh3-playback-surface,
-  .nh3-style-panel,
-  .nh3-tool,
-  .nh3-color-choice span,
-  .nh3-size-options span {
-    transition: none;
-  }
-
-  .nh3-surface {
-    will-change: auto;
-  }
-}
 </style>

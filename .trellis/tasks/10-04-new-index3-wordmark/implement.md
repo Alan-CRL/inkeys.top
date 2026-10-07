@@ -42,3 +42,7 @@
 ## 本轮执行分工与验证
 先读research/eraser-render-performance.md、eraser-motion-diagnosis.md。geometry代理独占eraser.ts+verify-eraser.cjs，performance代理独占softPen.ts+性能诊断/回归，UI代理独占NewHome3.vue/playback.ts+verify-playback/lifecycle/toolbar。三者共享getEraserFrame现有paths接口；扩展内部字段应先同步，避免冲突。root负责文档、协调和最终build，检查代理独立复核。
 验证渐进蒙版工作量不随历史长度增长，实际900px/DPR2晚段帧耗时与原94–224ms基线对比；保留回退/主题/缩放/暂停/最终零残留。路线检查整个折返内部曲率/速度、60–240Hz连续光标/方向和加速度，以及全尺寸视差留白；CLI离屏预览以图形判定无近尖点。UI检查真正模板更新对transform的覆盖、指针进入/离开和暂停仍可视差、艺术字和光标同步。最终串行pnpm docs:build、diff/编码检查；无GUI/原生仓库修改/commit/push。
+
+## 当前性能/兼容增量分工
+
+视差已提交 b1a68a2。renderer 代理独占 softPen.ts 和材质/性能像素回归；UI 代理独占 NewHome3.vue 和生命周期/工具栏回归；research 代理只读核实 Safari 16.6.2 API/CSS/构建产物并写自己的研究。root 更新任务/规范、协调接口、无窗口浏览器检查和最终构建。先取得热点及失败证据再最小修改；不降 DPR/几何采样，不改变材质/时序，不添加依赖或全局配置。不将 Windows Edge 的 UA 模拟当作真实 WebKit 验证。系统 reduced-motion 不再关闭动画，暂停和离屏时钟仍有效。独立 trellis-check 后记录结果；本轮新改动不自动提交或推送。

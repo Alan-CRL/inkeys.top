@@ -18,15 +18,35 @@ assert.ok(!descriptor.template.content.includes('nh3-panel-close'))
 assert.ok(descriptor.template.content.includes('maskUnits="userSpaceOnUse"'))
 assert.ok(descriptor.template.content.includes('maskContentUnits="userSpaceOnUse"'))
 assert.ok(descriptor.template.content.includes('mask-type: luminance'))
+assert.ok(!descriptor.template.content.includes('<foreignObject'))
+assert.ok(descriptor.template.content.includes('WebkitMaskImage:'))
 assert.ok(descriptor.template.content.includes('opacity: artFrame.state.opacity * artFrame.eraseOpacity'))
 assert.ok(!descriptor.template.content.includes('artFrame.state.opacity * 0.5'))
 assert.ok(descriptor.template.content.includes('v-for="side in [-1, 1]"'))
 assert.ok(descriptor.template.content.includes('eraserFrame.cursor.radius * 0.08'))
 assert.ok(descriptor.template.content.includes(':height="0.96 * eraserFrame.cursor.radius"'))
 assert.ok(css.code.includes('overflow: visible'))
+assert.match(css.code, /\.nh3-art\s*\{\s*position: absolute;/)
+assert.ok(css.code.includes('-webkit-mask-size: 100% 100%'))
+assert.ok(css.code.includes('-webkit-backdrop-filter: blur(24px)'))
+assert.ok(css.code.indexOf('min-height: calc(100vh') < css.code.indexOf('min-height: calc(100svh'))
+assert.equal((descriptor.template.content.match(/:tabindex="panelOpen \? 0 : -1"/g) || []).length, 3)
 assert.ok(css.code.includes('@media (max-width: 1099px)'))
 assert.ok(css.code.includes('clip-path 300ms cubic-bezier'))
-assert.ok(css.code.includes('prefers-reduced-motion'))
+assert.ok(!css.code.includes('prefers-reduced-motion'))
+assert.ok(!descriptor.scriptSetup.content.includes('matchMedia'))
+assert.ok(!descriptor.template.content.includes(':disabled="reduced"'))
+// Plume 的全局 reduced-motion 重置带 !important；本页的完整时序必须仍胜出。
+const cssTree = require('postcss').parse(css.code)
+const transitions = []
+cssTree.walkDecls(/^transition/, declaration => {
+  assert.equal(declaration.important, true)
+  assert.ok(declaration.parent.selector.split(',').every(selector => selector.trim().startsWith('.nh3-')))
+  transitions.push(declaration)
+})
+assert.ok(transitions.some(declaration => declaration.parent.selector === '.nh3-style-panel' && declaration.value.includes('visibility 0s 300ms')))
+assert.ok(transitions.some(declaration => declaration.parent.selector === '.nh3-style-panel.is-open' && declaration.prop === 'transition-delay' && declaration.value === '0s'))
+assert.equal(transitions.filter(declaration => declaration.prop === 'transition-duration' && declaration.value === '120ms').length, 3)
 
 // 与原生 SVG 比较内容，保证网站没有重新绘制或丢失路径，只替换主题占位色。
 const icons = load('toolIcons').toolIcons
@@ -80,9 +100,9 @@ async function verifyRenderedParallax() {
   const refs = {
     planeStyle: vue.ref({ width: '900px', height: '406px' }), tiltStyle: vue.ref({ transform: 'translate3d(0px, 0px, 0) rotateX(0deg) rotateY(0deg)' }),
     artFrame: vue.ref({ view: 'ink', state: { opacity: 1 }, previousColor: 'rainbow', artColor: 'rainbow', colorMix: 1, shimmer: -1, eraseOpacity: 1 }),
-    eraserFrame: vue.ref(undefined), panelOpen: vue.ref(false), selectedPens: vue.ref(['hard']), selectedEraser: vue.ref(false), selectedColor: vue.ref('rainbow'), selectedSize: vue.ref('medium'), paused: vue.ref(false), reduced: vue.ref(false), iconPath: vue.ref(''),
+    eraserFrame: vue.ref(undefined), cssCanvasMask: vue.ref(false), panelOpen: vue.ref(false), selectedPens: vue.ref(['hard']), selectedEraser: vue.ref(false), selectedColor: vue.ref('rainbow'), selectedSize: vue.ref('medium'), paused: vue.ref(false), iconPath: vue.ref(''),
   }
-  const state = { ...refs, width: 900, height: 406, toolChoices: [], colorChoices: [], sizeChoices: [], toolIcons: {}, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
+  const state = { ...refs, width: 900, height: 406, cssMaskName: 'nh3-mask-test', toolChoices: ['hard', 'eraser'], penLabels: { hard: '硬笔', eraser: '橡皮' }, colorChoices: [], sizeChoices: [], toolIcons: load('toolIcons').toolIcons, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
   const host = node('root')
   const app = renderer.createApp({ setup() { return state }, render(...args) { return templateModule.exports.render(args[0], args[1], {}, vue.proxyRefs(state), {}, {}) } })
   app.mount(host)
@@ -93,6 +113,17 @@ async function verifyRenderedParallax() {
   const outer = find('nh3-plane')
   const surface = find('nh3-surface')
   assert.ok(surface)
+  assert.equal(find('nh3-tool').props['aria-pressed'], true)
+  refs.selectedPens.value = []
+  refs.panelOpen.value = true
+  await vue.nextTick()
+  assert.equal(find('nh3-tool').props['aria-pressed'], false, 'control memo must invalidate selection')
+  assert.equal(find('nh3-palette').props['aria-expanded'], true)
+  assert.equal(find('nh3-tool').props.tabindex, 0)
+  refs.panelOpen.value = false
+  await vue.nextTick()
+  assert.equal(find('nh3-tool').props.tabindex, -1)
+
   assert.equal(surface.props.role, 'img')
   assert.equal(surface.props['aria-label'], 'Inkeys')
   assert.equal(find('nh3-mark').props['aria-hidden'], 'true')
@@ -108,10 +139,17 @@ async function verifyRenderedParallax() {
   refs.eraserFrame.value = { cursor: { x: 100, y: 100, radius: 40 }, paths: ['M0 0h1v1Z'] }
   await vue.nextTick()
   assert.equal(find('nh3-art').parent, surface)
+  assert.equal(find('nh3-art').style.maskImage, 'url(#nh3-art-erasure)')
   assert.equal(surface.props['aria-label'], 'Inkeys', 'art keeps its accessible name when Canvas is hidden')
   assert.equal(find('nh3-eraser-cursor').parent, surface)
   assert.equal(surface.style.transform, transform)
   assert.ok(find('nh3-mask-defs'))
+  refs.cssCanvasMask.value = true
+  await vue.nextTick()
+  assert.equal(find('nh3-mask-defs'), undefined)
+  assert.equal(find('nh3-art').style.WebkitMaskImage, '-webkit-canvas(nh3-mask-test)')
+  assert.equal(find('nh3-art').style.maskImage, undefined, 'prefixed and unprefixed aliases must not clear each other')
+  assert.equal(find('nh3-art').parent, surface)
   refs.paused.value = true
   refs.artFrame.value = { ...refs.artFrame.value, state: { opacity: 0.4 } }
   refs.tiltStyle.value = { transform: 'translate3d(-6px, 0px, 0) rotateX(0deg) rotateY(-4deg)' }
