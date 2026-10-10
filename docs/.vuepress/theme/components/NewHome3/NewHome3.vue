@@ -27,8 +27,8 @@ const controls = ref<HTMLDivElement>()
 const paletteButton = ref<HTMLButtonElement>()
 const panel = ref<HTMLDivElement>()
 const panelOpen = ref(false)
-const selectedPens = ref<PenKind[]>(['hard'])
-const selectedEraser = ref(false)
+const selectedPens = ref<PenKind[]>(['hard', 'laser'])
+const selectedEraser = ref(true)
 const eraserFrame = shallowRef<ReturnType<typeof getEraserFrame>>()
 const artMaskPaths = ref<SVGGElement>()
 const cssCanvasMask = ref(false)
@@ -514,7 +514,7 @@ onBeforeUnmount(() => {
     <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
       <p class="nh3-tagline" :style="entranceStyles[1]"><span>让屏幕上的书写行云流水，</span><span>让每一次操作都赏心悦目。</span></p>
       <div class="nh3-download-entrance" :style="entranceStyles[2]">
-        <VPLink class="nh3-download" href="/download" no-icon>立即下载</VPLink>
+        <VPLink class="nh3-download" href="https://www.123912.com/s/duk9-L8EAd" target="_blank" no-icon>立即下载</VPLink>
       </div>
     </div>
     <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">

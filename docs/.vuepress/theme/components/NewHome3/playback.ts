@@ -37,21 +37,24 @@ const inkFrame = (style: RenderStyle): PlaybackFrame => ({ view: 'ink', state: f
 
 /** 只消费可见页面的活跃时间；退场前锁定下一项，退场中的修改留给下一次边界。 */
 export function createPlayback(random: () => number = Math.random) {
-  let selected: PlaybackSettings = { pens: ['hard'], color: 'rainbow', size: 'medium' }
+  let selected: PlaybackSettings = { pens: ['hard', 'laser'], color: 'rainbow', size: 'medium', eraser: true }
   let active = normalize(selected)
   let stage: Stage = 'intro-in'
   let started = 0
   let style = { ...DEFAULT_STYLE }
+  let isFirstPen = true
   let paused = false
   let snapshot = inkFrame(DEFAULT_STYLE)
   let previousColor: ColorChoice = 'rainbow'
   let colorStarted = -1
-  let exitPlan: { settings: PlaybackSettings, pen?: PenKind } | null = null
+  let exitPlan: { settings: PlaybackSettings, pen?: PenKind, firstPen: boolean } | null = null
   const enter = (next: Stage, at: number) => { stage = next; started = at }
-  const hasRaw = () => active.pens.length === 1 && (active.pens[0] === 'hard' || active.pens[0] === 'soft')
+  // 原始折线只跟随本轮首笔；中途增删笔也不会将后续笔重新认作首笔。
+  const hasRaw = () => isFirstPen && (style.pen === 'hard' || style.pen === 'soft')
 
-  function begin(at: number, settings = selected, pen = settings.pens[0]) {
+  function begin(at: number, settings = selected, pen = settings.pens[0], firstPen = true) {
     active = normalize(settings)
+    isFirstPen = firstPen
     exitPlan = null
     if (!active.pens.length) {
       previousColor = active.color
@@ -75,14 +78,14 @@ export function createPlayback(random: () => number = Math.random) {
     // 当前笔即使已取消，也按它在固定笔顺中的位置往后找；橡皮只在本轮末尾执行。
     const later = current.view === 'ink'
       ? settings.pens.find(pen => PEN_ORDER.indexOf(pen) > PEN_ORDER.indexOf(style.pen)) : undefined
-    exitPlan = { settings, pen: later ?? settings.pens[0] }
+    exitPlan = { settings, pen: later ?? settings.pens[0], firstPen: !later }
     snapshot = { ...current, shimmer: -1 }
     enter(allowErase && settings.eraser && !later ? 'erase' : current.view === 'art' ? 'art-out' : 'fade', at)
   }
 
   function finishExit(at: number) {
     const plan = exitPlan!
-    begin(at, plan.settings, plan.pen)
+    begin(at, plan.settings, plan.pen, plan.firstPen)
   }
 
   function updatePersistentArt(at: number, current: PlaybackFrame) {
