@@ -514,7 +514,7 @@ onBeforeUnmount(() => {
     <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
       <p class="nh3-tagline" :style="entranceStyles[1]"><span>让屏幕上的书写行云流水，</span><span>让每一次操作都赏心悦目。</span></p>
       <div class="nh3-download-entrance" :style="entranceStyles[2]">
-        <VPLink class="nh3-download" href="https://www.123912.com/s/duk9-L8EAd" target="_blank" no-icon>立即下载</VPLink>
+        <VPLink class="nh3-download" href="https://1709404.share.123pan.cn/123pan/duk9-Gdr4d" target="_blank" no-icon>立即下载</VPLink>
       </div>
     </div>
     <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">
