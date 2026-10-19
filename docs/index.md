@@ -90,7 +90,7 @@ config:
 ---
 
 ::: tip
-迈向 Inkeys3，UI 设计和绘图库将得到极大进步，Coming Soon~
+Inkeys3 Canary `20261014a` 已经发布，带来全新的 UI3 界面与 Draw3 绘制引擎。[了解更多并下载体验](/inkeys3)。
 :::
 
 <SiteVisitCounter />

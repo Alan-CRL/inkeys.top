@@ -67,13 +67,14 @@ export interface SimpleFeature {
   desc: string
 }
 
+// Inkeys3 仍为 Canary，下载入口先展示版本状态、兼容性与反馈说明。
 export const heroCopy = {
-  badge: 'Inkeys3 · 即将到来',
+  badge: 'Inkeys3 Canary · 20261014a',
   titleLead: '落笔，',
   titleAccent: '即所想。',
   tagline: '智绘教 Inkeys3 带来全新 UI3 界面与 Draw3 画笔引擎。更跟手的笔迹，更安静的界面，更细腻的光影。',
-  primaryText: '下载',
-  primaryLink: '/download',
+  primaryText: '体验 Canary',
+  primaryLink: '/version/inkeys3',
   moreText: '了解更多',
   hint: '悬停主栏按钮，了解每一项功能',
 }
@@ -283,15 +284,15 @@ export const moreFeatures: SimpleFeature[] = [
   { title: '超级置顶', desc: '基于 UiAccess，在任务栏、开始菜单、屏幕键盘等界面之上保持置顶。' },
   { title: '全局多指', desc: '画笔、荧光笔、橡皮与形状均支持多指同时书写。' },
   { title: '智能绘图', desc: '抬笔拉直与停留拉直，随手一画也规整。' },
-  { title: '兼容性', desc: '支持 Windows 7 RTM 及以上系统。' },
+  { title: '兼容性', desc: '支持 Windows 7 SP1 及以上系统，Windows 7 需安装 KB2670838 更新。' },
   { title: '原生多架构', desc: '提供 x86、x64 与原生 Arm64 版本。' },
 ]
 
 export const ctaCopy = {
   title: '准备好落笔了吗？',
-  desc: '开源，免费，下载解压即用。',
-  primaryText: '下载智绘教',
-  primaryLink: '/download',
+  desc: 'Canary 20261014a 已发布，欢迎下载体验并反馈问题。',
+  primaryText: '下载 Canary',
+  primaryLink: '/version/inkeys3',
   secondaryText: '使用教程',
   secondaryLink: '/wiki/wiki',
   githubText: 'GitHub',

@@ -1,17 +1,21 @@
 ---
-title: Inkeys3 即将发布
+title: Inkeys3 Canary 已发布
 sticky: 2
 tags:
   - 介绍
 ---
 
-::: tip 您的版本是最新的
-Inkeys3 LTS 正式版尚未发布，目前最新版本为 Inkeys2 的 `20260214a`。  
+::: tip 版本状态
+Inkeys3 Canary `20261014a` 已经发布，现可下载体验。  
 
-新动态：Inkeys3 的早期版本已经在 Canary 通道发布！  
+Inkeys3 LTS 正式版尚未发布，目前最新的 LTS 正式版为 Inkeys2 的 [`20261019a`](changelog/20261019a)。  
 :::
 
-我们现在已经邀请我们的早期伙伴进行测试，新功能正在全力开发中，敬请期待~
+Inkeys3 带来全新的 UI3 界面与 Draw3 绘制引擎，新功能仍在持续开发和测试中。Canary 属于早期开发版本，不建议日常使用。  
+
+## 下载与反馈
+
+[下载 Inkeys3 Canary](https://1709404.share.123pan.cn/123pan/duk9-Gdr4d) · [详细说明与问题反馈](https://forum.smart-teach.cn/d/3203-inkeys3-shou-ge-canary-ban-ben-fa-bu-wen-ti-fan-kui-zhuan-lan)
 
 ---
 

@@ -8,13 +8,13 @@ export const downloadSidebar = [
             { text: 'English', link: '/tos/en-us' },
         ],
     },
-    { text: '新版本', link: '/version/inkeys3' },
+    { text: 'Inkeys3 Canary', link: '/version/inkeys3' },
 ]
 
 export const versionSidebar = [
     { text: '版本', link: '/version/' },
     {   
-        text: 'Inkeys3', 
+        text: 'Inkeys3 Canary', 
         link: '/version/inkeys3',
         badge: { text: '新', type: 'tip' },
         items: [
