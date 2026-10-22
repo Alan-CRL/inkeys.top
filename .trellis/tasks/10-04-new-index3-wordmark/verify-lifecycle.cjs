@@ -72,6 +72,7 @@ componentModule.require = name => {
   }
   if (name === 'vuepress-theme-plume/client') return { useDarkMode: () => darkMode }
   if (name === './softPen') return { ...softPen, createPainter: () => ({ dispose: () => disposeCalls++, render: (state, width, height, dpr, theme, style, eraseProgress) => { paintCalls++; lastPaint = { ...state, width, height, theme, style, eraseProgress } } }) }
+  if (name.endsWith('.vue')) return {}
   if (name.startsWith('./')) return load(name.slice(2))
   return require(name)
 }
@@ -172,6 +173,9 @@ state.togglePanel({ detail: 1 })
 assert.equal(state.panelOpen.value, false)
 assert.equal(paletteFocused, 3)
 document.activeElement = undefined
+// 默认轮播已启用橡皮；先验证开关，再为下方既有淡出时序明确关闭橡皮。
+state.toggleTool('eraser')
+assert.equal(state.selectedEraser.value, false)
 state.toggleTool('eraser')
 assert.equal(state.selectedEraser.value, true)
 state.toggleTool('eraser')

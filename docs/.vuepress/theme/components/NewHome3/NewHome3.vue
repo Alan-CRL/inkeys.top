@@ -5,11 +5,14 @@ import { computeLayout, createActiveClock, createPainter, createScene } from './
 import type { Painter } from './softPen'
 import { createPlayback } from './playback'
 import { getEraserFrame } from './eraser'
+import { pointerTarget } from './parallax'
+import ReleaseSection from './ReleaseSection.vue'
 import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
 
 const scene = createScene()
+const downloadHref = 'https://1709404.share.123pan.cn/123pan/duk9-Gdr4d'
 const root = ref<HTMLDivElement>()
 const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
@@ -374,16 +377,9 @@ function onPointerMove(event: PointerEvent) {
   if (event.pointerType !== 'mouse' || !canAnimate()) return
   const box = plane.value?.getBoundingClientRect()
   if (!box || !box.width || !box.height) return
-  // 从未变换的外层测量，避免旋转后的边界反过来改变指针目标而抖动。
-  const outsideX = Math.max(box.left - event.clientX, 0, event.clientX - box.right)
-  const outsideY = Math.max(box.top - event.clientY, 0, event.clientY - box.bottom)
-  const distance = Math.hypot(outsideX, outsideY)
-  const proximity = Math.max(0, 1 - distance / 120)
-  const strength = proximity * proximity * (3 - 2 * proximity)
-  const normalizedX = Math.max(-1, Math.min(1, (event.clientX - box.left - box.width / 2) / (box.width / 2)))
-  const normalizedY = Math.max(-1, Math.min(1, (event.clientY - box.top - box.height / 2) / (box.height / 2)))
-  targetX = normalizedX * strength
-  targetY = normalizedY * strength
+  const target = pointerTarget(box, event.clientX, event.clientY)
+  targetX = target.x
+  targetY = target.y
   requestFrame()
 }
 
@@ -514,7 +510,7 @@ onBeforeUnmount(() => {
     <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
       <p class="nh3-tagline" :style="entranceStyles[1]"><span>让屏幕上的书写行云流水，</span><span>让每一次操作都赏心悦目。</span></p>
       <div class="nh3-download-entrance" :style="entranceStyles[2]">
-        <VPLink class="nh3-download" href="/download" target="_blank" no-icon>立即下载</VPLink>
+        <VPLink class="nh3-download" :href="downloadHref" target="_blank" no-icon>立即下载</VPLink>
       </div>
     </div>
     <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">
@@ -569,6 +565,7 @@ onBeforeUnmount(() => {
     </button>
     </div>
   </div>
+  <ReleaseSection :download-href="downloadHref" />
 </template>
 
 <style>

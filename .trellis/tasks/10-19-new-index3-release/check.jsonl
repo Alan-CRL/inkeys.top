@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Check SSR mouse and theme contracts"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Supported CLI/build without new tooling"}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Resource lifetime and zero idle work"}
+{"file":".trellis/tasks/10-19-new-index3-release/research/native-ui3.md","reason":"Precise native Logo and toolbar constants"}

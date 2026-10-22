@@ -87,3 +87,69 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: new-index3 首个发布介绍板块
+<!-- trellis-session: v=2 fp=b248b498edf77437 -->
+
+**Date**: 2026-10-19
+**Task**: new-index3 首个发布介绍板块
+**Branch**: `main`
+
+### Summary
+
+完成深色原生UI3主栏、双彩虹墨迹与反光、单次入场和鼠标视差；补全无JS窄屏缩放。
+
+### Main Changes
+
+- 复用主栏发布变体，保留原生Logo和七个工具图标，下载与首屏同址。
+- 新增独立发布板块、预计算SVG场景和共享鼠标目标计算；保留原有草稿。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 三组CLI回归、最终docs:build、git diff --check均通过；UTF-8无BOM/LF检查通过。
+- [OK] 11组真实无窗口Edge页面检查通过并退出0；静止RAF为0；测试服务及隔离进程已关闭。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 保留活动任务用于用户视觉反馈，本轮不commit/push。
+
+
+## Session 6: new-index3 发布板块视觉简化
+<!-- trellis-session: v=2 fp=64c5a185e3fcc117 -->
+
+**Date**: 2026-10-19
+**Task**: new-index3 发布板块视觉简化
+**Branch**: `main`
+
+### Summary
+
+按用户反馈移除双彩虹墨迹及关联反光，柔化深色标题；保留原生主栏、视差、响应式和单次内容入场。
+
+### Main Changes
+
+- 移除无用途的几何/颜色采样与淡出阶段，入场在1.25s结束；同步当前需求和组件规范。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 独立复查、三组CLI回归、docs:build、4组实际无窗口页面检查及diff/格式检查通过；静止新增RAF为0。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 保留现有活动任务供视觉反馈，未commit/push，原有草稿保留。

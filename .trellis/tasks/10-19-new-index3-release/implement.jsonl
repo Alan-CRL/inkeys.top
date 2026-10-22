@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Vue/SSR/theme, actual mouse and reduced-motion contracts"}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"Lifecycle observers and cleanup"}
+{"file":".trellis/spec/frontend/type-safety.md","reason":"Local typed Vue boundaries and formatting"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"Existing build and CLI compatibility checks"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Reuse toolbar and parallax math"}
+{"file":".trellis/tasks/10-19-new-index3-release/research/native-ui3.md","reason":"Researched native visuals and integration boundaries"}

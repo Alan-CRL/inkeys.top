@@ -8,36 +8,42 @@ interface Props {
   progress?: boolean
   paused?: boolean
   controls?: string
+  variant?: 'default' | 'release'
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   active: false,
   progress: false,
   paused: false,
+  variant: 'default',
 })
 
 const emit = defineEmits<{
   activate: [id: BarButtonItem['id']]
   complete: []
 }>()
+
+function activate() {
+  if (props.variant !== 'release') emit('activate', props.item.id)
+}
 </script>
 
 <template>
   <button
     type="button"
     class="nh-bb"
-    :class="[`is-${item.size}`, { 'is-selected': item.selected, 'is-active': active }]"
+    :class="[`is-${item.size}`, { 'is-release': variant === 'release', 'is-suspended': variant === 'release' && paused, 'is-selected': variant !== 'release' && item.selected, 'is-active': variant !== 'release' && active }]"
     :aria-label="item.label"
-    :aria-pressed="item.selected ? 'true' : undefined"
+    :aria-pressed="variant !== 'release' && item.selected ? 'true' : undefined"
     :aria-controls="controls"
-    @pointerenter="emit('activate', item.id)"
-    @focus="emit('activate', item.id)"
-    @click="emit('activate', item.id)"
+    @pointerenter="activate"
+    @focus="activate"
+    @click="activate"
   >
     <span class="nh-bb-icon nh-icon" aria-hidden="true" v-html="barIcons[item.icon]" />
     <span class="nh-bb-label">{{ item.label }}</span>
     <span
-      v-if="active && progress"
+      v-if="variant !== 'release' && active && progress"
       class="nh-bb-progress"
       :class="{ 'is-paused': paused }"
       aria-hidden="true"
@@ -165,5 +171,36 @@ const emit = defineEmits<{
   to {
     transform: scaleX(1);
   }
+}
+
+.nh-bb.is-release {
+  color: #fff;
+  transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
+}
+
+.nh-bb.is-release:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transition-duration: 0.4s, 0.24s !important;
+}
+
+.nh-bb.is-release:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.95);
+}
+
+.nh-bb.is-release:focus-visible {
+  outline: 2px solid #58ffec !important;
+  outline-offset: 1px;
+  border-radius: 4px !important;
+}
+
+.nh-bb.is-release.is-suspended {
+  transition: none !important;
+}
+
+.is-release .nh-bb-icon :deep(svg) {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 </style>

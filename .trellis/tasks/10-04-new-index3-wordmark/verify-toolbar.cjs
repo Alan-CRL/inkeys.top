@@ -113,7 +113,7 @@ async function verifyRenderedParallax() {
     artFrame: vue.ref({ view: 'ink', state: { opacity: 1 }, previousColor: 'rainbow', artColor: 'rainbow', colorMix: 1, shimmer: -1, eraseOpacity: 1 }),
     eraserFrame: vue.ref(undefined), cssCanvasMask: vue.ref(false), panelOpen: vue.ref(false), selectedPens: vue.ref(['hard']), selectedEraser: vue.ref(false), selectedColor: vue.ref('rainbow'), selectedSize: vue.ref('medium'), paused: vue.ref(false), iconPath: vue.ref(''),
   }
-  const state = { ...refs, VPLink: (props, { slots }) => vue.h('a', { href: props.href }, slots.default?.()), width: 900, height: 406, cssMaskName: 'nh3-mask-test', toolChoices: ['hard', 'eraser'], penLabels: { hard: '硬笔', eraser: '橡皮' }, colorChoices: [], sizeChoices: [], toolIcons: load('toolIcons').toolIcons, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
+  const state = { ...refs, VPLink: (props, { slots }) => vue.h('a', { href: props.href }, slots.default?.()), ReleaseSection: () => vue.h('section'), downloadHref: 'https://1709404.share.123pan.cn/123pan/duk9-Gdr4d', width: 900, height: 406, cssMaskName: 'nh3-mask-test', toolChoices: ['hard', 'eraser'], penLabels: { hard: '硬笔', eraser: '橡皮' }, colorChoices: [], sizeChoices: [], toolIcons: load('toolIcons').toolIcons, colorBackground: () => 'linear-gradient(red, blue)', togglePanel() {}, togglePlayback() {}, updateSettings() {}, toggleTool() {} }
   const host = node('root')
   const app = renderer.createApp({ setup() { return state }, render(...args) { return templateModule.exports.render(args[0], args[1], {}, vue.proxyRefs(state), {}, {}) } })
   app.mount(host)
@@ -130,7 +130,7 @@ async function verifyRenderedParallax() {
   assert.equal(surface.parent, entrance)
   assert.equal(entrance.parent, outer)
   assert.equal(copy.parent, outer.parent, 'copy is outside the parallax plane')
-  assert.equal(download.props.href, '/download')
+  assert.equal(download.props.href, state.downloadHref)
   assert.equal(find('nh3-tool').props['aria-pressed'], true)
   refs.selectedPens.value = []
   refs.panelOpen.value = true

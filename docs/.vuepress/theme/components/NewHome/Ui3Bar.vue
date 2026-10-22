@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { BarButtonId, BarButtonItem } from './newHome.data'
-import { onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import Ui3BarButton from './Ui3BarButton.vue'
+import nativeLogo from './icons/logoDark.svg'
 
 interface Props {
   groups: BarButtonItem[][]
@@ -9,11 +10,14 @@ interface Props {
   progress?: boolean
   paused?: boolean
   controls?: string
+  variant?: 'default' | 'release'
+  downloadHref?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   progress: false,
   paused: false,
+  variant: 'default',
 })
 
 const emit = defineEmits<{
@@ -22,7 +26,7 @@ const emit = defineEmits<{
   interact: [active: boolean]
 }>()
 
-// UI3 MainButton：80x80，超椭圆 n = 3，边框 1 DIP（描边居中，因此内缩 0.5）
+// 展开主栏采用原生 n = 10；默认演示仍保留原先 n = 3 的收起外形。
 function superellipsePath(size: number, inset: number, n: number, steps = 96) {
   const r = size / 2 - inset
   const c = size / 2
@@ -39,8 +43,23 @@ function superellipsePath(size: number, inset: number, n: number, steps = 96) {
   return `M${points.join('L')}Z`
 }
 
-const mainShape = superellipsePath(80, 0.5, 3)
-const mainClip = `path('${superellipsePath(80, 0, 3)}')`
+const mainShape = computed(() => superellipsePath(80, 0.5, props.variant === 'release' ? 10 : 3))
+const mainClip = computed(() => `path('${superellipsePath(80, 0, props.variant === 'release' ? 10 : 3)}')`)
+const mainReleasing = ref(false)
+
+function activate(id: BarButtonId) {
+  if (props.variant !== 'release') emit('activate', id)
+}
+
+function pressMain(event: PointerEvent | KeyboardEvent) {
+  if (props.variant !== 'release') return
+  mainReleasing.value = false
+  if ('pointerId' in event) (event.currentTarget as HTMLElement)?.setPointerCapture?.(event.pointerId)
+}
+
+function releaseMain() {
+  if (props.variant === 'release') mainReleasing.value = true
+}
 
 const bar = ref<HTMLElement | null>(null)
 let frame = 0
@@ -63,6 +82,8 @@ function applyLight() {
 }
 
 function onPointerMove(event: PointerEvent) {
+  // 发布变体保留中性表面，不叠加第一版的鼠标光斑。
+  if (props.variant === 'release') return
   if (event.pointerType !== 'mouse' && event.pointerType !== 'pen')
     return
   pointer = { x: event.clientX, y: event.clientY }
@@ -71,6 +92,7 @@ function onPointerMove(event: PointerEvent) {
 }
 
 function onPointerEnter(event: PointerEvent) {
+  if (props.variant === 'release') return
   hovering = true
   bar.value?.classList.add('is-lit')
   onPointerMove(event)
@@ -78,6 +100,7 @@ function onPointerEnter(event: PointerEvent) {
 }
 
 function onPointerLeave() {
+  if (props.variant === 'release') return
   hovering = false
   bar.value?.classList.remove('is-lit')
   syncInteract()
@@ -105,6 +128,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="nh-bar"
+    :class="{ 'is-release': variant === 'release', 'is-suspended': variant === 'release' && paused }"
     role="toolbar"
     aria-label="Inkeys3 主栏"
     @pointerenter="onPointerEnter"
@@ -116,19 +140,28 @@ onBeforeUnmount(() => {
     <button
       type="button"
       class="nh-main-btn"
-      :class="{ 'is-active': activeId === 'main' }"
+      :class="{ 'is-active': variant !== 'release' && activeId === 'main', 'is-releasing': mainReleasing }"
       aria-label="Inkeys3 主按钮"
       :aria-controls="controls"
-      @pointerenter="emit('activate', 'main')"
-      @focus="emit('activate', 'main')"
-      @click="emit('activate', 'main')"
+      @pointerenter="activate('main')"
+      @focus="activate('main')"
+      @click="activate('main')"
+      @pointerdown="pressMain"
+      @pointerup="releaseMain"
+      @pointercancel="mainReleasing = false"
+      @keydown.space="pressMain"
+      @keydown.enter="pressMain"
+      @keyup.space="releaseMain"
+      @keyup.enter="releaseMain"
+      @animationend="mainReleasing = false"
     >
       <span class="nh-main-shadow" aria-hidden="true" />
       <span class="nh-main-glass" :style="{ clipPath: mainClip }" aria-hidden="true" />
       <svg class="nh-main-shape" viewBox="0 0 80 80" aria-hidden="true">
         <path :d="mainShape" />
       </svg>
-      <svg class="nh-main-logo" viewBox="0 0 256 256" aria-hidden="true">
+      <img v-if="variant === 'release'" class="nh-main-logo" :src="nativeLogo" alt="" aria-hidden="true">
+      <svg v-else class="nh-main-logo" viewBox="0 0 256 256" aria-hidden="true">
         <path class="nh-logo-frame" d="M125.396 177.775H192C195.314 177.775 198 175.089 198 171.775V83.7752C198 80.4615 195.314 77.7752 192 77.7752H179.79L135.09 169.011L125.396 177.775Z" />
         <path class="nh-logo-frame" d="M134.765 81.0459L136.367 77.7752H65C61.6863 77.7752 59 80.4615 59 83.7752V171.775C59 175.089 61.6863 177.775 65 177.775H98.1147L100.073 151.854L134.765 81.0459Z" />
         <path class="nh-logo-pen" d="M142.794 78.5224L143.05 77.9998L150.214 63.3763L150.81 62.1478C151.558 60.6205 152.789 59.4872 154.228 58.8418C156.061 58.0201 158.231 57.9889 160.176 58.9416L171.844 64.6587C173.787 65.6106 175.093 67.3431 175.567 69.2929C175.941 70.8271 175.8 72.4958 175.051 74.0246L174.533 75.0817L173.103 77.9998L167.029 90.3966L142.794 78.5224Z" />
@@ -137,7 +170,7 @@ onBeforeUnmount(() => {
         <path class="nh-logo-pen" d="M96.9033 195.5681C96.1087 197.19 96.7794 199.1489 98.4013 199.9434C100.0231 200.7389 101.9821 200.0678 102.7767 198.4458L105.7098 192.4589L99.8369 189.5811L96.9033 195.5681Z" />
       </svg>
       <span
-        v-if="activeId === 'main' && progress"
+        v-if="variant !== 'release' && activeId === 'main' && progress"
         class="nh-main-progress"
         :class="{ 'is-paused': paused }"
         aria-hidden="true"
@@ -146,8 +179,8 @@ onBeforeUnmount(() => {
     </button>
 
     <div ref="bar" class="nh-main-bar">
-      <span class="nh-bar-spot" aria-hidden="true" />
-      <span class="nh-bar-edge" aria-hidden="true" />
+      <span v-if="variant !== 'release'" class="nh-bar-spot" aria-hidden="true" />
+      <span v-if="variant !== 'release'" class="nh-bar-edge" aria-hidden="true" />
       <template v-for="(group, index) in groups" :key="index">
         <span v-if="index > 0" class="nh-bar-divider" :class="`is-after-${index}`" aria-hidden="true" />
         <div class="nh-bar-group" :class="[`is-group-${index}`, { 'is-stacked': group[0]?.size === 'twoOne' }]">
@@ -155,14 +188,22 @@ onBeforeUnmount(() => {
             v-for="item in group"
             :key="item.id"
             :item="item"
-            :active="activeId === item.id"
-            :progress="progress"
+            :active="variant !== 'release' && activeId === item.id"
+            :progress="variant !== 'release' && progress"
             :paused="paused"
             :controls="controls"
-            @activate="emit('activate', $event)"
+            :variant="variant"
+            @activate="activate"
             @complete="emit('complete')"
           />
         </div>
+      </template>
+      <template v-if="variant === 'release' && downloadHref">
+        <span class="nh-bar-divider" aria-hidden="true" />
+        <a class="nh-release-download" :href="downloadHref" target="_blank" rel="noopener noreferrer" aria-label="立即下载 Inkeys3">
+          <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 3v15m-6-6 6 6 6-6M5 20v4h18v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span>立即下载</span>
+        </a>
       </template>
     </div>
   </div>
@@ -357,5 +398,127 @@ onBeforeUnmount(() => {
   .nh-bar-edge {
     display: none;
   }
+}
+
+/* 发布变体局部固定为原生深色，第一版的主题、分组断点与交互保持不变。 */
+.nh-bar.is-release {
+  --nh-bar-surface: rgba(24, 24, 24, 0.8);
+  --nh-bar-frame: rgba(255, 255, 255, 0.18);
+  --nh-bar-text: #fff;
+  --nh-ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --nh-ease-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.is-release .nh-main-btn {
+  border-radius: 9%;
+  transition: transform 0.4s var(--nh-ease-back) !important;
+}
+
+.is-release .nh-main-btn:active {
+  animation: none !important;
+}
+
+.is-release .nh-main-btn.is-releasing {
+  animation: nh-release-main-rebound 0.4s var(--nh-ease-out) both !important;
+}
+
+@keyframes nh-release-main-rebound {
+  0% { transform: scale(0.95); }
+  40% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.is-release .nh-main-shadow {
+  border-radius: 9%;
+}
+
+.is-release .nh-main-glass,
+.is-release .nh-main-btn:hover .nh-main-glass {
+  background-color: var(--nh-bar-surface);
+}
+
+.is-release .nh-main-glass::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background-color: transparent;
+  transition: background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
+}
+
+.is-release .nh-main-btn:hover .nh-main-glass::after {
+  background-color: rgba(255, 255, 255, 0.18);
+  transition-duration: 0.24s !important;
+}
+
+.is-release .nh-main-bar {
+  box-sizing: border-box;
+  padding: 4px;
+}
+
+.is-release .nh-main-glass,
+.is-release .nh-main-bar {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.nh-bar.is-release .nh-bar-group,
+.nh-bar.is-release .nh-bar-divider {
+  display: flex;
+}
+
+.nh-release-download {
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  height: 70px;
+  padding: 11px 0 0;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 25px;
+  transition: transform 0.4s var(--nh-ease-out), background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
+}
+
+.nh-release-download svg {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 3.5px;
+}
+
+.nh-release-download:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  text-decoration: none;
+  transition-duration: 0.4s, 0.24s !important;
+}
+
+.nh-release-download:active {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(0.95);
+}
+
+.is-release .nh-main-btn:focus-visible,
+.nh-release-download:focus-visible {
+  outline: 2px solid #58ffec !important;
+  outline-offset: 3px;
+  border-radius: 8px !important;
+}
+
+.is-release.is-suspended .nh-main-btn {
+  animation-play-state: paused !important;
+}
+
+.is-release.is-suspended .nh-main-btn,
+.is-release.is-suspended .nh-main-glass::after,
+.is-release.is-suspended .nh-release-download {
+  transition: none !important;
 }
 </style>
