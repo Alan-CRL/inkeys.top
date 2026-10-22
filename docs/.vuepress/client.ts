@@ -9,7 +9,15 @@ import NewHome3 from './theme/components/NewHome3/NewHome3.vue'
 import './theme/styles/custom.css'
 
 export default defineClientConfig({
-  enhance({ app }) {
+  enhance({ app, router }) {
+    const originalScrollBehavior = router.options.scrollBehavior
+    // 在路由真正提交滚动时覆盖保存位置，避免刷新后的恢复晚于组件 mounted。
+    router.options.scrollBehavior = (to, from, savedPosition) => {
+      if (/^\/new-index3(?:\.html|\/)?$/.test(to.path)) {
+        return { top: 0, left: 0, behavior: 'instant' }
+      }
+      return originalScrollBehavior?.(to, from, savedPosition)
+    }
     app.component('DownloadCard', DownloadCard)
     app.component('GitHubCard', GitHubCard)
     app.component('SiteVisitCounter', SiteVisitCounter)

@@ -175,7 +175,7 @@ function activate() {
 
 .nh-bb.is-release {
   color: #fff;
-  transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
+  transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.24s var(--nh-ease-out) !important;
 }
 
 .nh-bb.is-release:hover {

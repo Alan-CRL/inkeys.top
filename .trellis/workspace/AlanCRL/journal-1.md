@@ -153,3 +153,62 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Next Steps
 
 - 保留现有活动任务供视觉反馈，未commit/push，原有草稿保留。
+
+
+## Session 7: Inkeys3 发布区横向卡片
+<!-- trellis-session: v=2 fp=79d6a5f336dc5a96 -->
+
+**Date**: 2026-10-22
+**Task**: Inkeys3 发布区横向卡片
+**Branch**: `main`
+
+### Summary
+
+完成已批准的横向卡片、主栏突出裁切、移动端完整显示与轻视差。生产构建和回归通过，32个无窗口布局场景通过。按用户要求不提交。
+
+### Main Changes
+
+- 发布卡片及裁切焦点策略；同步规范。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] pnpm docs:build；verify-release.cjs；32场景无窗口Edge；git diff --check。
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 8: 完成滚动圆角外框与背景绘制
+<!-- trellis-session: v=2 fp=7a490a9d4ab9c290 -->
+
+**Date**: 2026-10-22
+**Task**: 完成滚动圆角外框与背景绘制
+**Branch**: `main`
+
+### Summary
+
+实现三阶段纯色外框、方向唤回导航、四类稀疏背景绘制及卡片透明度；遵循用户要求保留未提交状态。
+
+### Main Changes
+
+- 增加 ScrollFrame/scrollFrame 与 AmbientInk/ambientScene；保留首屏和真实主栏交互。
+- 补充外框实色、淡内轮廓与首屏下方细分界；更新规范并归档本轮任务。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 生产构建通过（51 pages）；frame/ambient/release/hero 回归和聚焦 TypeScript 检查通过。
+- [OK] Headless Edge：28 组主题/尺寸/JS 矩阵与 5 组背景动画通过；保存截图和实际录屏 GIF。
+- [OK] git diff --check 通过；无可见 GUI、无 commit/push；真实 Safari/触屏设备未测。
+
+### Status
+
+[OK] **Completed**

@@ -1,7 +1,7 @@
 import type { BarButtonItem } from '../NewHome/newHome.data'
 
 export const RELEASE_SECONDS = 1.25
-export const RELEASE_BAR_WIDTH = 682
+export const RELEASE_BAR_WIDTH = 551
 export const RELEASE_BAR_HEIGHT = 80
 
 export const releaseGroups: BarButtonItem[][] = [
@@ -10,10 +10,10 @@ export const releaseGroups: BarButtonItem[][] = [
     { id: 'draw', label: '绘制', icon: 'brush1', size: 'twoTwo' },
     { id: 'geometry', label: '图形', icon: 'geometry', size: 'twoTwo' },
     { id: 'eraser', label: '橡皮', icon: 'eraser', size: 'twoTwo' },
-    { id: 'recall', label: '撤回', icon: 'recall', size: 'twoTwo' },
+    { id: 'whiteboard', label: '白板', icon: 'whiteboard', size: 'twoTwo' },
   ],
   [
-    { id: 'whiteboard', label: '白板', icon: 'whiteboard', size: 'twoOne' },
+    { id: 'recall', label: '撤回', icon: 'recall', size: 'twoOne' },
     { id: 'freeze', label: '定格', icon: 'freeze', size: 'twoOne' },
   ],
 ]
@@ -30,13 +30,13 @@ export function releaseFrame(seconds: number) {
   return {
     complete: time >= RELEASE_SECONDS,
     title: entrance(0, 0.65),
-    toolbar: entrance(0.18, 0.7),
-    copy: entrance(0.55, 0.7),
+    toolbar: entrance(0.3, 0.95),
+    card: entrance(0, 0.65),
   }
 }
 
-export function fitReleaseBar(available: number, natural = RELEASE_BAR_WIDTH) {
-  // 预留两侧 32px，包含视差投影；整组一起缩小，不隐藏、换行或横滚工具。
-  const scale = Math.min(1, Math.max(0, available - 64) / natural)
+export function fitReleaseBar(available: number, natural = RELEASE_BAR_WIDTH, desktop = false) {
+  // 桌面只裁掉末组的 40px；移动端留出视差余量，完整等比展示所有工具。
+  const scale = Math.min(1, Math.max(0, available + (desktop ? 40 : -16)) / natural)
   return { scale, width: natural * scale, height: RELEASE_BAR_HEIGHT * scale }
 }

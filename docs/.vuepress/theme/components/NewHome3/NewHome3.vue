@@ -7,6 +7,8 @@ import { createPlayback } from './playback'
 import { getEraserFrame } from './eraser'
 import { pointerTarget } from './parallax'
 import ReleaseSection from './ReleaseSection.vue'
+import ScrollFrame from './ScrollFrame.vue'
+import AmbientInk from './AmbientInk.vue'
 import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
@@ -565,7 +567,11 @@ onBeforeUnmount(() => {
     </button>
     </div>
   </div>
-  <ReleaseSection :download-href="downloadHref" />
+  <ScrollFrame />
+  <div class="nh3-below-fold">
+    <AmbientInk />
+    <ReleaseSection />
+  </div>
 </template>
 
 <style>
@@ -586,12 +592,11 @@ onBeforeUnmount(() => {
   --vp-nav-bg-color: transparent;
   --vp-nav-screen-bg-color: #f4f8fa;
   background-color: var(--nh3-bg);
+  /* 固定首屏原有色心和椭圆尺度，整页绘制以免在 100svh 处截断渐变。 */
   background-image:
-    radial-gradient(ellipse at 12% 15%, var(--nh3-mint), transparent 60%),
-    radial-gradient(ellipse at 88% 45%, var(--nh3-lavender), transparent 65%),
-    radial-gradient(ellipse at 45% 95%, var(--nh3-pearl), transparent 60%);
-  background-size: 100% 100vh;
-  background-size: 100% 100svh;
+    radial-gradient(ellipse 124.45vw 120.21svh at 12% 15svh, var(--nh3-mint), transparent 60%),
+    radial-gradient(ellipse 124.45vw 77.78svh at 88% 45svh, var(--nh3-lavender), transparent 65%),
+    radial-gradient(ellipse 77.78vw 134.35svh at 45% 95svh, var(--nh3-pearl), transparent 60%);
   background-repeat: no-repeat;
 }
 
@@ -611,14 +616,49 @@ onBeforeUnmount(() => {
   --vp-nav-screen-bg-color: #151e29;
 }
 
-/* 保留原生导航和移动菜单，仅清除导航横条的填充与分隔线。 */
+/* 固定导航保留原生菜单；无 JS 时使用实色底，确保滚动后的内容不会穿透。 */
 .new-home3-page .vp-navbar .divider {
   display: none;
 }
 
 .theme-plume.new-home3-page .vp-nav .vp-navbar {
-  background: transparent;
+  background: var(--nh3-frame-color);
   border-bottom: 0;
+  /* 内阴影不占高度；无 JS 默认保留细分界，开屏随导航填充一起消退。 */
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--vp-c-text-1) calc(var(--nh3-nav-fill, 1) * 10%), transparent);
+  transform: translateY(calc((var(--nh3-nav-visible, 1) - 1) * 100%));
+  transition: transform 320ms ease, background-color 320ms ease, box-shadow 320ms ease !important;
+}
+
+.theme-plume.new-home3-page .vp-nav {
+  position: fixed;
+  opacity: var(--nh3-nav-visible, 1);
+  transition: opacity 320ms ease !important;
+}
+
+.theme-plume.new-home3-page[data-nh3-frame-ready] .vp-nav .vp-navbar {
+  background: color-mix(in srgb, var(--nh3-frame-color) calc(var(--nh3-nav-fill, 0) * 100%), transparent);
+}
+
+.theme-plume.new-home3-page .vp-navbar .content-body {
+  background: transparent;
+}
+
+.new-home3-page[data-nh3-nav-hidden] .vp-nav,
+.new-home3-page[data-nh3-nav-hidden] .vp-nav * {
+  pointer-events: none !important;
+}
+
+/* Plume 在桌面已为固定导航留位，手机仅补回原先 relative 导航的高度。 */
+@media (max-width: 959px) {
+  .new-home3-page .vp-content {
+    padding-top: var(--vp-nav-height, 64px);
+  }
+}
+
+.nh3-below-fold {
+  position: relative;
+  isolation: isolate;
 }
 
 .new-home3-page .vp-navbar-search .mini-search-button {

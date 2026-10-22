@@ -118,7 +118,7 @@ function timedGuide(points: Point[]) {
 }
 
 /** 彩虹轨迹直接来自设计曲线，压感只改变宽度，绝不以稀疏示意点修改字形。 */
-function createInk(points: Point[], times: number[], start: number, duration: number, offset: number) {
+export function createInk(points: Point[], times: number[], start: number, duration: number, offset: number) {
   const ink: InkPoint[] = []
   const weight = times[times.length - 1]
   let distance = offset

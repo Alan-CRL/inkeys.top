@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Vue/page/lifecycle and prior toolbar compatibility; approved plan overrides navbar and below-fold background policies"}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"cleanup/browser integration/SSR"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"canonical build and headless checks"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"reuse palette/clock/painter without hero regression"}

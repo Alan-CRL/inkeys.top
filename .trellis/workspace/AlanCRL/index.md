@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 6
-- **Last Active**: 2026-10-19
+- **Total Sessions**: 8
+- **Last Active**: 2026-10-22
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~155 | Active |
+| `journal-1.md` | ~214 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 8 | 2026-10-22 | 完成滚动圆角外框与背景绘制 | - | `main` |
+| 7 | 2026-10-22 | Inkeys3 发布区横向卡片 | - | `main` |
 | 6 | 2026-10-19 | new-index3 发布板块视觉简化 | - | `main` |
 | 5 | 2026-10-19 | new-index3 首个发布介绍板块 | - | `main` |
 | 4 | 2026-10-04 | new-index3 手写文字重做与圆接头修复 | - | `main` |

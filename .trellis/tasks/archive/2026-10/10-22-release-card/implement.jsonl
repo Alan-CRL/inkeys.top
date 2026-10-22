@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Vue styles, toolbar and lifecycle contracts; approved design supersedes old release visual contract"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"pnpm build and windowless validation policy"}
+{"file":".trellis/spec/frontend/hook-guidelines.md","reason":"lifecycle cleanup and SSR"}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"reuse shared toolbar with minimal scope"}

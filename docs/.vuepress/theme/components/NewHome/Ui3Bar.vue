@@ -12,12 +12,14 @@ interface Props {
   controls?: string
   variant?: 'default' | 'release'
   downloadHref?: string
+  cropLastGroup?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   progress: false,
   paused: false,
   variant: 'default',
+  cropLastGroup: false,
 })
 
 const emit = defineEmits<{
@@ -183,7 +185,7 @@ onBeforeUnmount(() => {
       <span v-if="variant !== 'release'" class="nh-bar-edge" aria-hidden="true" />
       <template v-for="(group, index) in groups" :key="index">
         <span v-if="index > 0" class="nh-bar-divider" :class="`is-after-${index}`" aria-hidden="true" />
-        <div class="nh-bar-group" :class="[`is-group-${index}`, { 'is-stacked': group[0]?.size === 'twoOne' }]">
+        <div class="nh-bar-group" :class="[`is-group-${index}`, { 'is-stacked': group[0]?.size === 'twoOne', 'is-crop-interactive': cropLastGroup && index === groups.length - 1 }]">
           <Ui3BarButton
             v-for="item in group"
             :key="item.id"
@@ -195,6 +197,16 @@ onBeforeUnmount(() => {
             :variant="variant"
             @activate="activate"
             @complete="emit('complete')"
+          />
+        </div>
+        <!-- 裁切副本始终不可交互；媒体查询切换原组，SSR 也不会留下不可见焦点。 -->
+        <div v-if="cropLastGroup && index === groups.length - 1" class="nh-bar-group is-cropped-preview" :class="{ 'is-stacked': group[0]?.size === 'twoOne' }" inert aria-hidden="true">
+          <Ui3BarButton
+            v-for="item in group"
+            :key="item.id"
+            :item="item"
+            :paused="paused"
+            :variant="variant"
           />
         </div>
       </template>
@@ -437,17 +449,10 @@ onBeforeUnmount(() => {
   background-color: var(--nh-bar-surface);
 }
 
-.is-release .nh-main-glass::after {
-  position: absolute;
-  inset: 0;
-  content: '';
-  background-color: transparent;
-  transition: background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
-}
-
-.is-release .nh-main-btn:hover .nh-main-glass::after {
-  background-color: rgba(255, 255, 255, 0.18);
-  transition-duration: 0.24s !important;
+/* 入场 transform 移除后玻璃会切换合成层；实体圆角兜底，避免仅靠 path 裁切变成直角。 */
+.is-release .nh-main-glass {
+  border-radius: 9%;
+  overflow: hidden;
 }
 
 .is-release .nh-main-bar {
@@ -464,6 +469,17 @@ onBeforeUnmount(() => {
 .nh-bar.is-release .nh-bar-group,
 .nh-bar.is-release .nh-bar-divider {
   display: flex;
+}
+
+/* 仅启用裁切的调用方切换末组，默认主栏不受影响。 */
+.nh-bar .nh-bar-group.is-cropped-preview {
+  display: none;
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .nh-bar .nh-bar-group.is-crop-interactive { display: none; }
+  .nh-bar .nh-bar-group.is-cropped-preview { display: flex; }
 }
 
 .nh-release-download {
@@ -483,7 +499,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
   font-weight: 400;
   line-height: 25px;
-  transition: transform 0.4s var(--nh-ease-out), background-color 5s cubic-bezier(0.47, 0, 0.745, 0.715) !important;
+  transition: transform 0.4s var(--nh-ease-out), background-color 0.24s var(--nh-ease-out) !important;
 }
 
 .nh-release-download svg {
@@ -517,7 +533,6 @@ onBeforeUnmount(() => {
 }
 
 .is-release.is-suspended .nh-main-btn,
-.is-release.is-suspended .nh-main-glass::after,
 .is-release.is-suspended .nh-release-download {
   transition: none !important;
 }

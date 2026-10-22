@@ -3,9 +3,8 @@ import { onBeforeUnmount, onMounted, ref, shallowRef, useId } from 'vue'
 import Ui3Bar from '../NewHome/Ui3Bar.vue'
 import { createActiveClock } from './softPen'
 import { pointerTarget } from './parallax'
+import { createWallpaperSchedule, initialWallpaper } from './wallpaper'
 import { fitReleaseBar, releaseFrame, releaseGroups, RELEASE_BAR_HEIGHT, RELEASE_BAR_WIDTH, RELEASE_SECONDS } from './releaseScene'
-
-defineProps<{ downloadHref: string }>()
 
 const root = ref<HTMLElement>()
 const stage = ref<HTMLDivElement>()
@@ -13,10 +12,30 @@ const plane = ref<HTMLDivElement>()
 const toolbar = ref<HTMLDivElement>()
 const sceneId = `nh3-release-${useId().replace(/[^a-zA-Z0-9_-]/g, '-')}`
 const clock = createActiveClock()
+const wallpaperClock = createActiveClock()
+const wallpaper = shallowRef(initialWallpaper())
+let wallpaperSchedule: ReturnType<typeof createWallpaperSchedule> | undefined
+let wallpaperTimer: ReturnType<typeof setTimeout> | undefined
+
+// 两层壁纸仅在配色边界更新；漂移和淡化由可暂停的 CSS 动画完成。
+function updateWallpaper() {
+  wallpaperTimer = undefined
+  if (!canAnimate() || !wallpaperSchedule) return
+  const now = wallpaperClock.read(performance.now())
+  wallpaper.value = wallpaperSchedule.advance(now)
+  wallpaperTimer = setTimeout(updateWallpaper, Math.max(16, wallpaperSchedule.remaining(now) * 1000))
+}
+
+function syncWallpaper(now: number) {
+  if (wallpaperTimer !== undefined) clearTimeout(wallpaperTimer)
+  wallpaperTimer = undefined
+  wallpaperClock.setRunning(active.value, now)
+  if (active.value) updateWallpaper()
+}
 // SSR 默认输出完整终态；只有具备观察器的客户端才在挂载后武装一次入场。
 const sceneFrame = shallowRef(releaseFrame(RELEASE_SECONDS))
 const active = ref(false)
-const fit = shallowRef({ ...fitReleaseBar(RELEASE_BAR_WIDTH + 64), natural: RELEASE_BAR_WIDTH })
+const fit = shallowRef({ ...fitReleaseBar(RELEASE_BAR_WIDTH + 16), natural: RELEASE_BAR_WIDTH })
 const hasMeasured = ref(false)
 const tiltStyle = shallowRef<Record<string, string>>({ transform: 'none', willChange: 'auto' })
 
@@ -40,7 +59,7 @@ function canAnimate() {
 function applyTilt() {
   const tilted = tiltX !== 0 || tiltY !== 0
   const transform = tilted
-    ? `translate3d(${tiltX * 6}px, ${tiltY * 6}px, 0) rotateX(${-tiltY * 4}deg) rotateY(${tiltX * 4}deg)` : 'none'
+    ? `translate3d(${tiltX * 3}px, ${tiltY * 3}px, 0) rotateX(${-tiltY * 2}deg) rotateY(${tiltX * 2}deg)` : 'none'
   if (tiltStyle.value.transform !== transform) tiltStyle.value = { transform, willChange: tilted ? 'transform' : 'auto' }
 }
 
@@ -99,6 +118,7 @@ function onPointerMove(event: PointerEvent) {
 function syncActivity() {
   const now = performance.now()
   active.value = canAnimate()
+  syncWallpaper(now)
   clock.setRunning(active.value && !entranceComplete, now)
   if (!active.value) {
     if (frame) cancelAnimationFrame(frame)
@@ -115,7 +135,7 @@ function resize() {
   const node = stage.value
   if (!node) return
   const natural = toolbar.value?.offsetWidth || RELEASE_BAR_WIDTH
-  fit.value = { ...fitReleaseBar(node.clientWidth, natural), natural }
+  fit.value = { ...fitReleaseBar(node.clientWidth, natural, window.innerWidth >= 900), natural }
   hasMeasured.value = true
   resetPointer()
 }
@@ -123,6 +143,7 @@ function resize() {
 onMounted(() => {
   if (!root.value) return
   mounted = true
+  wallpaperSchedule = createWallpaperSchedule()
   if (typeof IntersectionObserver !== 'undefined') {
     entranceComplete = false
     sceneFrame.value = releaseFrame(0)
@@ -139,8 +160,8 @@ onMounted(() => {
     if (toolbar.value) resizeObserver.observe(toolbar.value)
   }
   document.addEventListener('visibilitychange', syncActivity)
-  document.documentElement.addEventListener('pointerleave', resetPointer)
-  window.addEventListener('pointermove', onPointerMove, { passive: true })
+  plane.value?.addEventListener('pointerleave', resetPointer)
+  plane.value?.addEventListener('pointermove', onPointerMove, { passive: true })
   window.addEventListener('blur', resetPointer)
   window.addEventListener('scroll', resetPointer, { passive: true })
   window.addEventListener('resize', resize, { passive: true })
@@ -151,13 +172,14 @@ onMounted(() => {
 onBeforeUnmount(() => {
   mounted = false
   active.value = false
+  syncWallpaper(performance.now())
   clock.setRunning(false, performance.now())
   if (frame) cancelAnimationFrame(frame)
   visibleObserver?.disconnect()
   resizeObserver?.disconnect()
   document.removeEventListener('visibilitychange', syncActivity)
-  document.documentElement.removeEventListener('pointerleave', resetPointer)
-  window.removeEventListener('pointermove', onPointerMove)
+  plane.value?.removeEventListener('pointerleave', resetPointer)
+  plane.value?.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('blur', resetPointer)
   window.removeEventListener('scroll', resetPointer)
   window.removeEventListener('resize', resize)
@@ -166,71 +188,187 @@ onBeforeUnmount(() => {
 
 <template>
   <section ref="root" class="nh3-release" :aria-labelledby="`${sceneId}-title`">
-    <h2 :id="`${sceneId}-title`" class="nh3-release-title" :style="sceneFrame.title">Inkeys3 焕新发布</h2>
-    <div ref="stage" class="nh3-release-stage">
-      <div ref="plane" class="nh3-release-plane" :style="hasMeasured ? { width: `${fit.width}px`, height: `${fit.height}px` } : undefined">
-        <div class="nh3-release-entrance" :style="sceneFrame.toolbar">
-          <div class="nh3-release-scale" :style="hasMeasured ? { width: `${fit.natural}px`, height: `${RELEASE_BAR_HEIGHT}px`, transform: `scale(${fit.scale})` } : undefined">
-            <div class="nh3-release-surface" :style="tiltStyle">
-              <div ref="toolbar" class="nh3-release-toolbar">
-                <Ui3Bar :groups="releaseGroups" variant="release" :download-href="downloadHref" :paused="!active" />
+    <div class="nh3-release-card" :style="sceneFrame.card">
+      <div class="nh3-release-heading" :style="sceneFrame.title">
+        <h2 :id="`${sceneId}-title`" class="nh3-release-title">Inkeys3</h2>
+        <p class="nh3-release-subtitle">焕新发布</p>
+      </div>
+      <div ref="stage" class="nh3-release-stage">
+        <div class="nh3-release-desktop" aria-hidden="true" :style="{ '--wallpaper-play': active ? 'running' : 'paused' }">
+          <div v-for="(palette, index) in wallpaper.palettes" :key="index" class="nh3-release-wallpaper"
+            :class="[`palette-${palette}`, { 'is-current': index === wallpaper.current, 'is-entering': wallpaper.fading && index !== wallpaper.current }]">
+            <div class="nh3-release-wallpaper-colors" />
+          </div>
+        </div>
+        <!-- 左侧给主按钮探出留白，右侧圆角与桌面重合；裁切层不参与视差。 -->
+        <div ref="plane" class="nh3-release-plane">
+          <div class="nh3-release-position" :style="hasMeasured ? { width: `${fit.width}px`, height: `${fit.height}px` } : undefined">
+            <div class="nh3-release-entrance" :style="sceneFrame.toolbar">
+              <div class="nh3-release-scale" :style="hasMeasured ? { width: `${fit.natural}px`, height: `${RELEASE_BAR_HEIGHT}px`, transform: `scale(${fit.scale})` } : undefined">
+                <div class="nh3-release-surface" :style="tiltStyle">
+                  <div ref="toolbar" class="nh3-release-toolbar">
+                    <Ui3Bar :groups="releaseGroups" variant="release" crop-last-group :paused="!active" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="nh3-release-copy" :style="sceneFrame.copy">
-      <p>历经两年多的设计、开发与测试，Inkeys3 焕新而来。</p>
-      <p>相较于 Inkeys2，我们重构<strong>底层架构</strong>，带来全新的 <strong>UI3</strong> 界面与 <strong>Draw3</strong> 绘制引擎。从更自然的交互、更细腻的光影，到更流畅的屏幕书写，让熟悉的体验再进一步。</p>
-    </div>
   </section>
 </template>
 
 <style scoped>
+@font-face {
+  font-family: 'Archivo Black Release';
+  src: url('./fonts/archivo-black-release.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .nh3-release {
   position: relative;
+  z-index: 1;
   isolation: isolate;
   overflow: hidden;
-  padding: clamp(80px, 9vw, 128px) 0 clamp(100px, 12vw, 180px);
+  padding: 56px 24px 104px;
   color: var(--vp-c-text-1);
-  text-align: center;
+}
+
+.nh3-release-card {
+  container-type: inline-size;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 35% minmax(0, 65%);
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  height: clamp(360px, 45svh, 420px);
+  margin: 0 auto;
+  padding: 40px 48px;
+  border: 1px solid rgba(73, 99, 120, 0.12);
+  border-radius: 28px;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+[data-theme='dark'] .nh3-release-card {
+  border-color: rgba(177, 205, 220, 0.1);
+  background: linear-gradient(120deg, rgba(44, 58, 69, 0.28), rgba(27, 39, 50, 0.2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.nh3-release-heading {
+  position: relative;
+  z-index: 1;
 }
 
 .nh3-release-title {
-  position: relative;
-  z-index: 1;
   margin: 0;
-  padding: 0 24px;
+  padding: 0;
   border: 0;
-  color: #087f91;
-  font-size: clamp(32px, 4.8vw, 64px);
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.025em;
+  color: var(--vp-c-text-1);
+  font-family: 'Archivo Black Release', Arial, sans-serif;
+  font-size: min(clamp(72px, 7.2vw, 104px), 8.5cqw);
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
 }
 
-[data-theme='dark'] .nh3-release-title {
-  color: #8eb8b3;
+.nh3-release-subtitle {
+  margin: 16px 0 0;
+  color: var(--vp-c-text-2);
+  font-size: clamp(20px, 1.8vw, 24px);
+  line-height: 1.4;
+  letter-spacing: 0.08em;
 }
 
 .nh3-release-stage {
   position: relative;
-  display: grid;
-  place-items: center;
-  width: min(1200px, 100%);
-  height: clamp(210px, 28vw, 350px);
-  margin: 22px auto 12px;
+  justify-self: end;
+  width: 100%;
+  max-width: 511px;
+  height: clamp(240px, 22vw, 280px);
+}
+
+/* 外壳始终有不透明底色，交叉淡化不会透出卡片后方笔迹。 */
+.nh3-release-desktop {
+  position: absolute;
+  inset: 0 0 0 48px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid rgba(91, 123, 140, 0.12);
+  border-radius: 24px;
+  background: #c4dcd9;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+[data-theme='dark'] .nh3-release-desktop {
+  border-color: rgba(170, 201, 219, 0.13);
+  background: #28423f;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.nh3-release-wallpaper {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.nh3-release-wallpaper.is-current { opacity: 1; }
+.nh3-release-wallpaper.is-entering {
+  z-index: 1;
+  /* 与首屏一致，局部保留演示动画，不受主题全局 reduced-motion 重置影响。 */
+  animation: nh3-wallpaper-fade 6s ease-in-out both !important;
+  animation-play-state: var(--wallpaper-play, paused) !important;
+}
+
+.nh3-release-wallpaper-colors {
+  position: absolute;
+  inset: -15%;
+  background:
+    radial-gradient(ellipse at 15% 15%, var(--wallpaper-a), transparent 70%),
+    linear-gradient(135deg, var(--wallpaper-a), var(--wallpaper-b) 55%, var(--wallpaper-c));
+  animation: nh3-wallpaper-drift 24s ease-in-out infinite !important;
+  animation-play-state: var(--wallpaper-play, paused) !important;
+}
+
+.palette-0 { --wallpaper-a: #b4e2d4; --wallpaper-b: #b2c6dd; --wallpaper-c: #c2bcda; }
+.palette-1 { --wallpaper-a: #b8cedc; --wallpaper-b: #bbbfe0; --wallpaper-c: #dcc6ce; }
+.palette-2 { --wallpaper-a: #b9d5d2; --wallpaper-b: #c1cfbb; --wallpaper-c: #dfd5bf; }
+[data-theme='dark'] .palette-0 { --wallpaper-a: #284e46; --wallpaper-b: #304254; --wallpaper-c: #46435d; }
+[data-theme='dark'] .palette-1 { --wallpaper-a: #304957; --wallpaper-b: #414760; --wallpaper-c: #584550; }
+[data-theme='dark'] .palette-2 { --wallpaper-a: #304b48; --wallpaper-b: #424e40; --wallpaper-c: #595142; }
+
+@keyframes nh3-wallpaper-drift {
+  0%, 100% { transform: translate(-3%, -2%) rotate(-3deg); }
+  50% { transform: translate(3%, 2%) rotate(3deg); }
+}
+
+@keyframes nh3-wallpaper-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .nh3-release-plane {
   --nh3-release-fallback-scale: 1;
 
-  position: relative;
-  z-index: 1;
-  width: calc(682px * var(--nh3-release-fallback-scale));
+  position: absolute;
+  inset: 0 0 0 -12px;
+  overflow: hidden;
+  border-radius: 0 24px 24px 0;
+}
+
+.nh3-release-position {
+  position: absolute;
+  top: 57%;
+  left: 12px;
+  width: calc(551px * var(--nh3-release-fallback-scale));
   height: calc(80px * var(--nh3-release-fallback-scale));
-  max-width: calc(100% - 64px);
+  transform: translateY(-50%);
 }
 
 .nh3-release-entrance {
@@ -242,7 +380,7 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 682px;
+  width: 551px;
   height: 80px;
   perspective: 1200px;
   transform: scale(var(--nh3-release-fallback-scale));
@@ -261,62 +399,39 @@ onBeforeUnmount(() => {
   font-family: 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, sans-serif;
 }
 
-.nh3-release-copy {
-  position: relative;
-  z-index: 1;
-  max-width: 730px;
-  margin: 0 auto;
-  padding: 0 28px;
-  color: var(--vp-c-text-2);
-  font-size: clamp(16px, 1.35vw, 19px);
-  line-height: 1.95;
-  text-wrap: balance;
+/* 首次测量前按各档最窄宽度保守缩放，避免 SSR 的原尺寸主栏撑出页面。 */
+@media (min-width: 900px) and (max-width: 920px) {
+  .nh3-release-plane { --nh3-release-fallback-scale: 0.975; }
 }
 
-.nh3-release-copy p {
-  margin: 0;
-}
-
-.nh3-release-copy p + p {
-  margin-top: 18px;
-}
-
-.nh3-release-copy strong {
-  color: var(--vp-c-text-1);
-  font-weight: 650;
-}
-
-/* SSR 尚未测量时按各档最窄视口缩放整组；挂载后由精确行内尺寸接管。 */
-@media (max-width: 745px) {
-  .nh3-release-plane { --nh3-release-fallback-scale: 0.37536656; }
-}
-
-@media (min-width: 375px) and (max-width: 745px) {
-  .nh3-release-plane { --nh3-release-fallback-scale: 0.45601173; }
-}
-
-@media (min-width: 480px) and (max-width: 745px) {
-  .nh3-release-plane { --nh3-release-fallback-scale: 0.60997067; }
-}
-
-@media (min-width: 640px) and (max-width: 745px) {
-  .nh3-release-plane { --nh3-release-fallback-scale: 0.84457478; }
-}
-
-@media (max-width: 319px) {
-  .nh3-release-plane { --nh3-release-fallback-scale: 0.3; }
-}
-
-@media (max-width: 640px) {
-  .nh3-release-stage {
-    margin-top: 18px;
-    margin-bottom: 4px;
+@media (max-width: 899px) {
+  .nh3-release-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    height: auto;
+    padding: 32px 24px;
   }
 
-  .nh3-release-copy {
-    max-width: 520px;
-    font-size: 16px;
-    line-height: 1.9;
-  }
+  .nh3-release-title { font-size: min(clamp(52px, 8vw, 72px), 23cqw); }
+  .nh3-release-stage { justify-self: center; max-width: 567px; height: 240px; }
+  .nh3-release-desktop { left: 24px; }
+  .nh3-release-position { left: 8px; }
+  .nh3-release-plane { inset-inline-start: 0; --nh3-release-fallback-scale: 0.37; }
+}
+
+@media (min-width: 375px) and (max-width: 899px) {
+  .nh3-release-plane { --nh3-release-fallback-scale: 0.47; }
+}
+
+@media (min-width: 480px) and (max-width: 899px) {
+  .nh3-release-plane { --nh3-release-fallback-scale: 0.66; }
+}
+
+@media (min-width: 640px) and (max-width: 899px) {
+  .nh3-release-plane { --nh3-release-fallback-scale: 0.95; }
+}
+
+@media (min-width: 680px) and (max-width: 899px) {
+  .nh3-release-plane { --nh3-release-fallback-scale: 1; }
 }
 </style>
