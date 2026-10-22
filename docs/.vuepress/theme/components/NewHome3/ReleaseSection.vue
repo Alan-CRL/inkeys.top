@@ -233,7 +233,7 @@ onBeforeUnmount(() => {
   z-index: 1;
   isolation: isolate;
   overflow: hidden;
-  padding: 56px 24px 104px;
+  padding: 56px 24px 40px;
   color: var(--vp-c-text-1);
 }
 
@@ -250,13 +250,13 @@ onBeforeUnmount(() => {
   padding: 40px 48px;
   border: 1px solid rgba(73, 99, 120, 0.12);
   border-radius: 28px;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.14));
+  background: linear-gradient(120deg, #f8fafb, #eef2f5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 [data-theme='dark'] .nh3-release-card {
   border-color: rgba(177, 205, 220, 0.1);
-  background: linear-gradient(120deg, rgba(44, 58, 69, 0.28), rgba(27, 39, 50, 0.2));
+  background: linear-gradient(120deg, #202c36, #18232e);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 

@@ -7,8 +7,8 @@ import { createPlayback } from './playback'
 import { getEraserFrame } from './eraser'
 import { pointerTarget } from './parallax'
 import ReleaseSection from './ReleaseSection.vue'
+import FeatureSections from './FeatureSections.vue'
 import ScrollFrame from './ScrollFrame.vue'
-import AmbientInk from './AmbientInk.vue'
 import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
@@ -569,8 +569,9 @@ onBeforeUnmount(() => {
   </div>
   <ScrollFrame />
   <div class="nh3-below-fold">
-    <AmbientInk />
+    <!-- 暂停背景笔迹与识别演示，素材制作阶段不挂载其动画。 -->
     <ReleaseSection />
+    <FeatureSections />
   </div>
 </template>
 

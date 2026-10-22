@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 8
+- **Total Sessions**: 10
 - **Last Active**: 2026-10-22
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~214 | Active |
+| `journal-1.md` | ~280 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,8 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 10 | 2026-10-22 | 功能介绍卡片与随机入场动效 | - | `main` |
+| 9 | 2026-10-22 | Inkeys3 功能介绍框架 | - | `main` |
 | 8 | 2026-10-22 | 完成滚动圆角外框与背景绘制 | - | `main` |
 | 7 | 2026-10-22 | Inkeys3 发布区横向卡片 | - | `main` |
 | 6 | 2026-10-19 | new-index3 发布板块视觉简化 | - | `main` |

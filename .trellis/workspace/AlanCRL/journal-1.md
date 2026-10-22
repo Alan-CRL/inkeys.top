@@ -212,3 +212,69 @@ Researched the VuePress and Plume repository, replaced frontend spec placeholder
 ### Status
 
 [OK] **Completed**
+
+
+## Session 9: Inkeys3 功能介绍框架
+<!-- trellis-session: v=2 fp=01f52c8db692edbb -->
+
+**Date**: 2026-10-22
+**Task**: Inkeys3 功能介绍框架
+**Branch**: `main`
+
+### Summary
+
+完成三个纵向自动轮播与静态素材占位；用户要求不提交代码，真实动态素材后续处理。
+
+### Main Changes
+
+- 新增FeatureSections，NewHome3两行接入；无软件仓库改动。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] Vue组件生命周期与SSR回归通过；pnpm docs:build退出0，51页；独立审查通过；未做GUI验收。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 用户审阅框架后，专项制作真实离屏动态素材。
+
+
+## Session 10: 功能介绍卡片与随机入场动效
+<!-- trellis-session: v=2 fp=26cea35c26bae9f7 -->
+
+**Date**: 2026-10-22
+**Task**: 功能介绍卡片与随机入场动效
+**Branch**: `main`
+
+### Summary
+
+按批准方案完成三张完整卡片、扩大舞台、交替标题与随机单次入场，通过独立审阅。
+
+### Main Changes
+
+- FeatureSections 完整卡片与左右交替头部；featureMotion 随机无重复动效、活跃时钟及轮播门控。
+- ReleaseSection 仅收紧底部间距104到40px；同步组件spec。
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 任务CLI回归通过，含SFC/SSR、挂载随机、一次性入场、隐藏离屏暂停、焦点中断与资源清理。
+- [OK] pnpm docs:build通过：exit0、51页、19.01秒。未做GUI视觉验收。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实软件演示素材仍待后续专项制作与接入；本次没有commit/push。
