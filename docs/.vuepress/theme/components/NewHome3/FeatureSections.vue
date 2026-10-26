@@ -4,6 +4,7 @@ import { createActiveClock } from './softPen'
 import { FEATURE_ENTRANCE_SECONDS, featureEntrance, shuffleEntrances } from './featureMotion'
 
 interface FeatureSlide {
+  media: string
   label: string
   title: string
   description: string
@@ -21,26 +22,26 @@ const sections: FeatureSection[] = [
     id: 'screen', label: '屏幕批注',
     description: '在眼前的画面上圈画，随时切回操作或定格讲解。',
     slides: [
-      { label: '动态批注', title: '边播放，边讲清楚。', description: '在视频、网页与应用上直接圈画。视频与动画继续播放，重点就在眼前。' },
-      { label: '穿透操作', title: '批注留着，操作继续。', description: '保留屏幕上的圈画，点击和触摸仍能操作下方窗口。需要时，随时回来接着写。' },
-      { label: '定格讲解', title: '留住这一刻，慢慢讲。', description: '捕获并定格当前画面，圈出值得注意的细节，为复杂的瞬间留出讲解时间。' },
+      { media: 'screen-dynamic', label: '动态批注', title: '边播放，边讲清楚。', description: '在视频、网页与应用上直接圈画。视频与动画继续播放，重点就在眼前。' },
+      { media: 'screen-through', label: '穿透操作', title: '批注留着，操作继续。', description: '保留屏幕上的圈画，点击和触摸仍能操作下方窗口。需要时，随时回来接着写。' },
+      { media: 'screen-freeze', label: '定格讲解', title: '留住这一刻，慢慢讲。', description: '捕获并定格当前画面，圈出值得注意的细节，为复杂的瞬间留出讲解时间。' },
     ],
   },
   {
     id: 'slides', label: '课件联动',
     description: '跟随 PowerPoint 与 WPS，把批注留在对应的那一页。',
     slides: [
-      { label: '随页墨迹', title: '翻过一页，批注各归其位。', description: '每页圈画留在对应的幻灯片上。翻到新页继续讲，返回前页，接上刚才的思路。' },
-      { label: '动态绑定', title: '切到哪份，就跟到哪份。', description: '跟随当前使用的放映，在多份课件与 PowerPoint、WPS 之间自然切换，减少手动选择联动目标的操作。' },
-      { label: '开箱即用', title: '少一些配置，多一些开讲。', description: '针对部分 COM 注册异常、Office 与 WPS 混装环境提供兼容处理。下载解压即可开始，无需额外安装 Office 加载项。' },
+      { media: 'slides-ink', label: '随页墨迹', title: '翻过一页，批注各归其位。', description: '每页圈画留在对应的幻灯片上。翻到新页继续讲，返回前页，接上刚才的思路。' },
+      { media: 'slides-binding', label: '动态绑定', title: '切到哪份，就跟到哪份。', description: '跟随当前使用的放映，在多份课件与 PowerPoint、WPS 之间自然切换，减少手动选择联动目标的操作。' },
+      { media: 'slides-ready', label: '开箱即用', title: '少一些配置，多一些开讲。', description: '针对部分 COM 注册异常、Office 与 WPS 混装环境提供兼容处理。下载解压即可开始，无需额外安装 Office 加载项。' },
     ],
   },
   {
     id: 'board', label: '多页白板',
     description: '选一张合适的背景，把课件之外的思路接着写下去。',
     slides: [
-      { label: '多种背景', title: '空白、点阵、网格，各有所长。', description: '自由书写、整理结构或展开推导，为不同的讲解选择合适的底色与纹理。' },
-      { label: '多页书写', title: '写满一页，思路还有下一页。', description: '翻到新页继续展开，也能回到上一页查看。讲解告一段落，再回到课件。' },
+      { media: 'board-backgrounds', label: '多种背景', title: '空白、点阵、网格，各有所长。', description: '自由书写、整理结构或展开推导，为不同的讲解选择合适的底色与纹理。' },
+      { media: 'board-pages', label: '多页书写', title: '写满一页，思路还有下一页。', description: '翻到新页继续展开，也能回到上一页查看。讲解告一段落，再回到课件。' },
     ],
   },
 ]
@@ -235,7 +236,7 @@ onBeforeUnmount(() => {
           </button>
         </div>
         <!-- 只裁切底板，未来真实产品素材可以越过舞台边缘。 -->
-        <div class="feature-stage" :style="featureEntrance(entrances[index], presets[index], 2)" aria-hidden="true">
+        <div class="feature-stage has-image" :style="featureEntrance(entrances[index], presets[index], 2)">
           <div class="feature-backplate">
             <div v-if="section.id === 'board'" class="board-surfaces">
               <div class="board-surface board-blank" />
@@ -244,7 +245,11 @@ onBeforeUnmount(() => {
             </div>
           </div>
           <div class="feature-media">
-            <span class="feature-placeholder">演示素材待加入</span>
+            <!-- 暂用静态图片介绍功能；轮播独立计时，不挂载或加载视频。 -->
+            <picture :key="section.slides[selected[index]].media" class="feature-picture">
+              <source media="(max-width: 599px)" :srcset="`/feature-media/${section.slides[selected[index]].media}-mobile.webp`" />
+              <img :src="`/feature-media/${section.slides[selected[index]].media}.webp`" :alt="`${section.label}：${section.slides[selected[index]].label}`" loading="lazy" decoding="async" />
+            </picture>
           </div>
         </div>
         <div :id="`${uid}-${section.id}-content`" class="feature-caption" :style="featureEntrance(entrances[index], presets[index], 3)" aria-live="off">
@@ -290,9 +295,12 @@ onBeforeUnmount(() => {
 .heading-right .feature-card { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: 'controls heading' 'stage stage' 'caption caption'; }
 .heading-right .feature-heading { text-align: right; }
 .feature-stage { grid-area: stage; position: relative; isolation: isolate; height: clamp(360px, 33vw, 420px); margin-top: 24px; min-width: 0; }
+/* 按图片比例撑开舞台，手机使用独立方形构图，避免两侧留白。 */
+.feature-stage.has-image { height: auto; aspect-ratio: 9 / 4; }
 .feature-backplate { position: absolute; inset: 0; overflow: hidden; border-radius: 18px; background: #e5ebe9; box-shadow: inset 0 0 0 1px rgba(73, 99, 120, 0.06); }
 .feature-slides .feature-backplate { background: #e7e9ee; }
-.feature-media { position: absolute; inset: 0; }
+.feature-media, .feature-picture, .feature-picture img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.feature-picture img { display: block; object-fit: contain; border-radius: 18px; }
 .feature-placeholder { position: absolute; left: 20px; bottom: 16px; font-size: 11px; letter-spacing: 0.04em; color: #536a68; }
 .feature-caption { grid-area: caption; display: grid; padding-top: 20px; min-width: 0; }
 /* 所有文案共同决定高度，自动切换不会推动下方内容跳动。 */
@@ -332,11 +340,14 @@ onBeforeUnmount(() => {
   .feature-controls { justify-self: start; margin-top: 12px; max-width: 100%; }
   .feature-stage { height: clamp(280px, 44vw, 380px); margin-top: 16px; }
 }
+@media (max-width: 599px) {
+  .feature-stage.has-image { aspect-ratio: 1; }
+}
 @media (max-width: 479px) {
   .nh3-features { padding: 0 20px 72px; }
   .feature-card, .heading-right .feature-card { padding: 20px 16px; }
   .feature-stage { height: clamp(230px, 58vw, 280px); }
-  .feature-backplate { border-radius: 14px; }
+  .feature-backplate, .feature-picture img { border-radius: 14px; }
   .feature-placeholder { left: 14px; bottom: 12px; }
   .feature-caption { padding-top: 16px; }
   .feature-selectors { gap: 12px; }
