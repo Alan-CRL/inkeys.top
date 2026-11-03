@@ -23,10 +23,12 @@ function locked() {
 function publish() {
   if (!page || !nav) return
   const view = frameView(state, ranges, locked())
-  page.style.setProperty(properties[0], String(view.visible))
+  // 功能翻页区（含首屏）由 FeaturePager 标记，期间顶栏保持显示，不随滚动方向收起。
+  const visible = page.dataset.nh3Pager ? 1 : view.visible
+  page.style.setProperty(properties[0], String(visible))
   page.style.setProperty(properties[1], String(view.fill))
   page.dataset.nh3Frame = view.phase
-  const hidden = view.visible <= 0.001
+  const hidden = visible <= 0.001
   page.toggleAttribute('data-nh3-nav-hidden', hidden)
   // 收起时直接退出焦点顺序；恢复时先解除 inert，再由 CSS 平滑进入。
   nav.inert = hidden || originalInert
@@ -76,6 +78,7 @@ onMounted(() => {
   // 原生菜单的 class/aria 状态是唯一来源，不维护第二份菜单开关。
   observer = new MutationObserver(schedule)
   observer.observe(nav, { subtree: true, attributes: true, attributeFilter: ['class', 'aria-expanded'] })
+  observer.observe(page, { attributes: true, attributeFilter: ['data-nh3-pager'] })
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(measure)
     resizeObserver.observe(page)
@@ -111,9 +114,12 @@ onBeforeUnmount(() => {
 <style>
 .new-home3-page {
   --nh3-frame-color: #f6f8fa;
+  /* 与功能介绍区底色一致，供翻页时的沉浸顶栏使用。 */
+  --nh3-page-color: #fff;
 }
 
 [data-theme='dark'] .new-home3-page {
   --nh3-frame-color: #0b111a;
+  --nh3-page-color: #0a0a0a;
 }
 </style>

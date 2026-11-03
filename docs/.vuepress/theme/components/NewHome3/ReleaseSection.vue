@@ -4,6 +4,7 @@ import Ui3Bar from '../NewHome/Ui3Bar.vue'
 import { createActiveClock } from './softPen'
 import { pointerTarget } from './parallax'
 import { createWallpaperSchedule, initialWallpaper } from './wallpaper'
+import { downloadContent } from './featureContent'
 import { fitReleaseBar, releaseFrame, releaseGroups, RELEASE_BAR_HEIGHT, RELEASE_BAR_WIDTH, RELEASE_SECONDS } from './releaseScene'
 
 const root = ref<HTMLElement>()
@@ -190,8 +191,10 @@ onBeforeUnmount(() => {
   <section ref="root" class="nh3-release" :aria-labelledby="`${sceneId}-title`">
     <div class="nh3-release-card" :style="sceneFrame.card">
       <div class="nh3-release-heading" :style="sceneFrame.title">
-        <h2 :id="`${sceneId}-title`" class="nh3-release-title">Inkeys3</h2>
-        <p class="nh3-release-subtitle">焕新发布</p>
+        <!-- 与功能翻页的标题一致：斜体衬线品牌 + 强调色分隔点 + 衬线主题；读屏仍是完整标题。 -->
+        <h2 :id="`${sceneId}-title`" class="nh3-release-title">
+          <span class="release-brand">Inkeys3</span><span class="release-dot"> · </span><span class="release-theme">焕新发布</span>
+        </h2>
       </div>
       <div ref="stage" class="nh3-release-stage">
         <div class="nh3-release-desktop" aria-hidden="true" :style="{ '--wallpaper-play': active ? 'running' : 'paused' }">
@@ -215,80 +218,110 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
+      <div class="nh3-release-actions" :style="sceneFrame.toolbar">
+        <a class="nh3-release-download no-icon" :href="downloadContent.href" target="_blank" rel="noopener noreferrer">立即下载</a>
+      </div>
     </div>
   </section>
 </template>
 
 <style scoped>
-@font-face {
-  font-family: 'Archivo Black Release';
-  src: url('./fonts/archivo-black-release.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 .nh3-release {
+  --release-card: #dfe9e6;
+  --release-accent: #286a71;
+  --release-on-accent: #fff;
+  --release-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif;
+
   position: relative;
   z-index: 1;
   isolation: isolate;
   overflow: hidden;
-  padding: 56px 24px 40px;
+  padding: 24px 24px 48px;
   color: var(--vp-c-text-1);
 }
 
+[data-theme='dark'] .nh3-release {
+  --release-card: #1f2c2d;
+  --release-accent: #9acbc1;
+  --release-on-accent: #0f2623;
+}
+
+/* 与功能介绍配图同宽、同色、同圆角：纯色平整底板，不加边框与阴影。 */
 .nh3-release-card {
   container-type: inline-size;
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 35% minmax(0, 65%);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  height: clamp(360px, 45svh, 420px);
+  gap: clamp(22px, 3.4vh, 34px);
+  width: min(840px, 66vw);
   margin: 0 auto;
-  padding: 40px 48px;
-  border: 1px solid rgba(73, 99, 120, 0.12);
-  border-radius: 28px;
-  background: linear-gradient(120deg, #f8fafb, #eef2f5);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-}
-
-[data-theme='dark'] .nh3-release-card {
-  border-color: rgba(177, 205, 220, 0.1);
-  background: linear-gradient(120deg, #202c36, #18232e);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+  padding: 44px 48px 48px;
+  border-radius: clamp(16px, 2.2vw, 28px);
+  background: var(--release-card);
 }
 
 .nh3-release-heading {
   position: relative;
   z-index: 1;
+  max-width: 100%;
+  text-align: center;
 }
 
 .nh3-release-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
   margin: 0;
   padding: 0;
   border: 0;
   color: var(--vp-c-text-1);
-  font-family: 'Archivo Black Release', Arial, sans-serif;
-  font-size: min(clamp(72px, 7.2vw, 104px), 8.5cqw);
-  font-weight: 400;
-  font-synthesis: none;
-  line-height: 1.05;
-  letter-spacing: -0.045em;
+  font-family: var(--release-serif);
+  font-size: clamp(30px, min(3.4vw, 5.8vh), 54px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  overflow-wrap: anywhere;
 }
 
-.nh3-release-subtitle {
-  margin: 16px 0 0;
-  color: var(--vp-c-text-2);
-  font-size: clamp(20px, 1.8vw, 24px);
-  line-height: 1.4;
-  letter-spacing: 0.08em;
+.release-brand {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.01em;
 }
+
+.release-dot { margin: 0 0.08em; color: var(--release-accent); white-space: pre; }
+
+.nh3-release-actions { display: flex; justify-content: center; }
+
+.nh3-release-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 34px;
+  border-radius: 24px;
+  background: var(--release-accent);
+  color: var(--release-on-accent);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.nh3-release-download:hover {
+  background: color-mix(in srgb, var(--release-accent) 86%, var(--vp-c-text-1));
+  color: var(--release-on-accent);
+  text-decoration: none;
+}
+
+.nh3-release-download:focus-visible { outline: 2px solid var(--release-accent); outline-offset: 4px; }
 
 .nh3-release-stage {
   position: relative;
-  justify-self: end;
   width: 100%;
   max-width: 511px;
   height: clamp(240px, 22vw, 280px);
@@ -405,18 +438,17 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 899px) {
-  .nh3-release-card {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
-    height: auto;
-    padding: 32px 24px;
-  }
-
-  .nh3-release-title { font-size: min(clamp(52px, 8vw, 72px), 23cqw); }
-  .nh3-release-stage { justify-self: center; max-width: 567px; height: 240px; }
+  .nh3-release-card { padding: 36px 32px 40px; }
+  .nh3-release-stage { max-width: 567px; height: 240px; }
   .nh3-release-desktop { left: 24px; }
   .nh3-release-position { left: 8px; }
   .nh3-release-plane { inset-inline-start: 0; --nh3-release-fallback-scale: 0.37; }
+}
+
+@media (max-width: 767px) {
+  .nh3-release { padding: 16px 20px 40px; }
+  .nh3-release-card { width: 100%; padding: 32px 20px 36px; }
+  .nh3-release-title { font-size: clamp(24px, 7.2vw, 30px); letter-spacing: 0.03em; }
 }
 
 @media (min-width: 375px) and (max-width: 899px) {

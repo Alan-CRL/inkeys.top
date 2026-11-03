@@ -6,7 +6,6 @@ import type { Painter } from './softPen'
 import { createPlayback } from './playback'
 import { getEraserFrame } from './eraser'
 import { pointerTarget } from './parallax'
-import ReleaseSection from './ReleaseSection.vue'
 import FeatureSections from './FeatureSections.vue'
 import ScrollFrame from './ScrollFrame.vue'
 import { toolIcons } from './toolIcons'
@@ -569,8 +568,6 @@ onBeforeUnmount(() => {
   </div>
   <ScrollFrame />
   <div class="nh3-below-fold">
-    <!-- 暂停背景笔迹与识别演示，素材制作阶段不挂载其动画。 -->
-    <ReleaseSection />
     <FeatureSections />
   </div>
 </template>
@@ -639,6 +636,12 @@ onBeforeUnmount(() => {
 
 .theme-plume.new-home3-page[data-nh3-frame-ready] .vp-nav .vp-navbar {
   background: color-mix(in srgb, var(--nh3-frame-color) calc(var(--nh3-nav-fill, 0) * 100%), transparent);
+}
+
+/* 功能翻页期间顶栏融入页面底色并去掉分界线，沿用上方 320ms 过渡切换。 */
+.theme-plume.new-home3-page[data-nh3-frame-ready][data-nh3-pager='immersive'] .vp-nav .vp-navbar {
+  background: var(--nh3-page-color);
+  box-shadow: inset 0 -1px 0 transparent;
 }
 
 .theme-plume.new-home3-page .vp-navbar .content-body {

@@ -236,6 +236,11 @@ export default defineUserConfig({
     plugins: {
       // 图片选择器
       photoSwipe: {
+        // 保留 plume 默认的正文图片选择器，并加入 new-index3 功能介绍配图
+        selector: [
+          '.vp-doc :not(a) > img:not([no-view],.no-view,.ignore)',
+          '.feature-page-media',
+        ],
         scrollToClose: false, // 是否在滚动时关闭当前图片
       },
     },

@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "NewHome3 分区、ScrollFrame 与功能框架合同"}
+{"file": ".trellis/spec/frontend/hook-guidelines.md", "reason": "滚动/指针监听与资源清理"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "验证与构建要求"}
+{"file": ".trellis/tasks/10-29-new-index3-feature-paging/design.md", "reason": "翻页滚动模型与样式设计"}
