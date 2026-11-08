@@ -22,6 +22,9 @@ interface PrimaryFeature {
 interface FeatureMedia {
   src: string
   srcset: string
+  /** 深色主题下使用的同构图片。 */
+  darkSrc: string
+  darkSrcset: string
   width: number
   height: number
   alt: string
@@ -29,10 +32,15 @@ interface FeatureMedia {
 
 const mediaDir = '/feature-media/new-index3'
 
-/** 图片放在 public/feature-media/new-index3，以 <name>-1200.webp 与 <name>-2000.webp 成对存放。 */
+/** 图片放在 public/feature-media/new-index3，按主题以 <name>-<light|dark>-1200.webp 与 -2000.webp 成对存放。 */
 function featureMedia(name: string, width: number, height: number, alt: string): FeatureMedia {
-  const src = `${mediaDir}/${name}-2000.webp`
-  return { src, srcset: `${mediaDir}/${name}-1200.webp 1200w, ${src} 2000w`, width, height, alt }
+  const urls = (theme: 'light' | 'dark') => {
+    const src = `${mediaDir}/${name}-${theme}-2000.webp`
+    return { src, srcset: `${mediaDir}/${name}-${theme}-1200.webp 1200w, ${src} 2000w` }
+  }
+  const light = urls('light')
+  const dark = urls('dark')
+  return { ...light, darkSrc: dark.src, darkSrcset: dark.srcset, width, height, alt }
 }
 
 /** 「焕新发布」之后的细节功能与更多功能暂时隐藏；恢复时改回 true。 */

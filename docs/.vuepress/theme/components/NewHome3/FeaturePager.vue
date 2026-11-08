@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, shallowRef, useId } from 'vue'
 import { withBase } from 'vuepress/client'
+import { useDarkMode } from 'vuepress-theme-plume/client'
 import { primaryFeatures } from './featureContent'
 import {
   anchorOf, createWheelGesture, dockScale, easeInOut, entryTarget, feedWheel, fitPage, lockWheelGesture, pageAt, pagerHeight,
@@ -18,6 +19,9 @@ const layout = shallowRef<PagerLayout>(pagerLayout(0, 1, count))
 const fits = shallowRef(primaryFeatures.map(() => ({ zoom: 1, stageWidth: 0 })))
 const scales = shallowRef(primaryFeatures.map(() => 1))
 const dots = ref<HTMLElement>()
+const isDark = useDarkMode()
+// SSR 与水合阶段固定使用浅色图，避免属性与服务端输出不一致；挂载后再随站点主题切换。
+const themed = ref(false)
 
 let mounted = false
 let frame = 0
@@ -40,6 +44,12 @@ let touchEnded = -Infinity
 
 // 舞台最宽 840px 或 66vw；窄屏占满内容宽度。
 const MEDIA_SIZES = '(min-width: 768px) min(840px, 66vw), 100vw'
+
+/** 配图按当前站点主题取浅色或深色版本（点击放大读取 src，同样随之切换）。 */
+function mediaSource(media: NonNullable<(typeof primaryFeatures)[number]['media']>) {
+  const dark = themed.value && isDark.value
+  return { src: dark ? media.darkSrc : media.src, srcset: dark ? media.darkSrcset : media.srcset }
+}
 
 function mediaSrcset(srcset: string) {
   return srcset.split(', ').map((item) => {
@@ -337,6 +347,7 @@ function onDotsLeave() {
 
 onMounted(() => {
   mounted = true
+  themed.value = true
   host = root.value?.closest<HTMLElement>('.new-home3-page') ?? null
   paging.value = true
   requestAnimationFrame(() => {
@@ -409,7 +420,7 @@ onBeforeUnmount(() => {
           >
             <!-- 点击放大由 plume 的 photoSwipe 接管（见 config.ts 的 selector），放大时读取 src 原图。 -->
             <img
-              v-if="feature.media" class="feature-page-media" :src="withBase(feature.media.src)" :srcset="mediaSrcset(feature.media.srcset)"
+              v-if="feature.media" class="feature-page-media" :src="withBase(mediaSource(feature.media).src)" :srcset="mediaSrcset(mediaSource(feature.media).srcset)"
               :sizes="MEDIA_SIZES" :alt="feature.media.alt" :width="feature.media.width" :height="feature.media.height"
               decoding="async" :loading="index === 0 ? 'eager' : 'lazy'" :fetchpriority="index === 0 ? 'high' : undefined"
             >
