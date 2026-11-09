@@ -14,10 +14,7 @@ import { pendingScenes } from './showcaseContent'
         <p v-for="paragraph in scene.paragraphs" :key="paragraph">{{ paragraph }}</p>
       </div>
     </header>
-    <div class="pending-stage" aria-hidden="true">
-      <span class="pending-label">{{ scene.mediaLabel }}</span>
-      <span class="pending-note">图层素材待补充</span>
-    </div>
+    <div class="pending-stage" aria-hidden="true" />
   </section>
 </template>
 
@@ -29,26 +26,19 @@ import { pendingScenes } from './showcaseContent'
 /* 占位舞台与正式图层舞台同宽同比例，便于素材到位后直接替换而不改变节奏。 */
 .pending-stage {
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   width: calc(100% - 2 * var(--nh3-gutter));
   aspect-ratio: 16 / 9;
   max-height: calc(100svh - 160px);
   margin: 0 auto;
-  border: 1px dashed color-mix(in srgb, var(--vp-c-text-1) 22%, transparent);
   border-radius: 8px;
   background-image: radial-gradient(color-mix(in srgb, var(--vp-c-text-1) 16%, transparent) 1.2px, transparent 1.4px);
   background-size: 28px 28px;
-  color: var(--vp-c-text-3);
+  /* 点阵向四周淡出，避免出现生硬的占位边框。 */
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 35%, transparent 72%);
+  mask-image: radial-gradient(ellipse at center, #000 35%, transparent 72%);
 }
 
-.pending-label { color: var(--vp-c-text-2); font-size: 15px; }
-.pending-note { font-size: 13px; }
-
 @media (max-width: 767px) {
-  .pending-stage { width: 100%; border-right: 0; border-left: 0; border-radius: 0; }
+  .pending-stage { width: 100%; border-radius: 0; }
 }
 </style>

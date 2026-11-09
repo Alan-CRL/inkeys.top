@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { barIcons } from '../NewHome/icons'
 import type { ShowcaseScene } from './showcaseContent'
 import { planeTransform, poseTransform } from './stackProjection'
 import { useShowcaseStack } from './useShowcaseStack'
@@ -11,7 +12,7 @@ const viewport = ref<HTMLElement>()
 // 不透明底图：淡化时保留更多轮廓，拆解时加细边。
 const BASES = new Set(['desktop', 'slide', 'board', 'background'])
 const {
-  layers, flat, stage, active, pinned, keyLayers, pose, callout, levelLabels, hint,
+  layers, flat, stage, active, pinned, keyLayers, pose, callout,
   layerFrame, layerState, srcOf, srcsetOf, sizesOf, revealOf, onLayerLoad,
   onPointerMove, onPointerLeave, onPointerDown, focusLayer, togglePin, hoverLegend,
 } = useShowcaseStack(props.scene, track, viewport)
@@ -23,7 +24,7 @@ const {
       <!-- 含「 · 」的标题拆开品牌与主题，读屏仍是完整标题。 -->
       <h2 :id="`${uid}-title`" class="showcase-title">
         <template v-if="scene.title.includes(' · ')">
-          <span class="title-brand">{{ scene.title.split(' · ')[0] }}</span><span class="title-dot"> · </span><span>{{ scene.title.split(' · ')[1] }}</span>
+          <span class="title-brand">{{ scene.title.split(' · ')[0] }}</span><span class="title-dot"> · </span><span class="title-rest">{{ scene.title.split(' · ')[1] }}</span>
         </template>
         <template v-else>{{ scene.title }}</template>
       </h2>
@@ -61,15 +62,8 @@ const {
             </div>
           </div>
 
-          <!-- 层级标注与批注引线画在视口坐标系里，与 3D 投影共用同一套数学。 -->
+          <!-- 批注引线画在视口坐标系里，与 3D 投影共用同一套数学。 -->
           <div class="showcase-overlay" aria-hidden="true">
-            <div
-              v-for="label in levelLabels" :key="label.title" class="showcase-level"
-              :style="{ transform: `translate3d(${label.x}px, ${label.y}px, 0)`, opacity: label.opacity }"
-            >
-              <span class="level-title">{{ label.title }}</span>
-              <span class="level-detail">{{ label.detail }}</span>
-            </div>
             <svg v-if="callout && callout.anchor" class="showcase-leader" :viewBox="`${-stage.viewWidth / 2} ${-stage.viewHeight / 2} ${stage.viewWidth} ${stage.viewHeight}`">
               <path :key="callout.id" :d="`M${callout.anchor.x} ${callout.anchor.y} L${callout.edge.x} ${callout.edge.y}`" pathLength="1" />
               <circle :cx="callout.anchor.x" :cy="callout.anchor.y" r="4" />
@@ -82,7 +76,6 @@ const {
             >
               <strong>{{ callout.note.title }}</strong>
               <span class="card-body">{{ callout.note.body }}</span>
-              <span class="card-source">{{ callout.note.source }}</span>
             </div>
           </Transition>
         </div>
@@ -91,7 +84,6 @@ const {
         <div v-if="flat && callout" class="showcase-card is-docked" role="status">
           <strong>{{ callout.note.title }}</strong>
           <span class="card-body">{{ callout.note.body }}</span>
-          <span class="card-source">{{ callout.note.source }}</span>
         </div>
 
         <!-- 键盘逐层查看：聚焦时高亮对应图层并弹出同一张批注卡。 -->
@@ -103,19 +95,22 @@ const {
           </li>
         </ul>
 
-        <div v-if="scene.legend" class="showcase-legend" role="group" :aria-label="`${scene.title}的笔触图例`">
-          <button
-            v-for="item in scene.legend" :key="item.id" type="button" class="legend-item"
-            :class="{ 'is-written': revealOf(item.id) >= 1, 'is-active': active === item.id }"
-            :aria-pressed="pinned === item.id"
-            @mouseenter="hoverLegend(item.id)" @mouseleave="hoverLegend(null)"
-            @focus="focusLayer(item.id)" @blur="hoverLegend(null)" @click="togglePin(item.id)"
+        <!-- 笔触图标分立舞台两侧：只有原生工具栏图标，悬停或聚焦即抬起对应笔迹。 -->
+        <template v-if="scene.legend">
+          <div
+            v-for="side in (['left', 'right'] as const)" :key="side"
+            class="showcase-rail" :class="`is-${side}`" role="group" :aria-label="`${scene.title}的笔触`"
           >
-            <span class="legend-swatch" :style="{ background: item.swatch }" />
-            {{ scene.notes[item.id].title }}
-          </button>
-        </div>
-        <p class="showcase-hint" :class="{ 'is-shown': hint }">{{ hint }}</p>
+            <button
+              v-for="item in scene.legend.filter(entry => entry.side === side)" :key="item.id" type="button" class="rail-item"
+              :class="{ 'is-written': revealOf(item.id) >= 1, 'is-active': active === item.id }"
+              :aria-label="scene.notes[item.id].title" :aria-pressed="pinned === item.id"
+              @mouseenter="hoverLegend(item.id)" @mouseleave="hoverLegend(null)"
+              @focus="focusLayer(item.id)" @blur="hoverLegend(null)" @click="togglePin(item.id)"
+              v-html="barIcons[item.icon]"
+            />
+          </div>
+        </template>
       </div>
     </div>
   </section>

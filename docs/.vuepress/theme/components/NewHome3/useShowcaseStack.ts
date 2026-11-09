@@ -30,10 +30,11 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
   const progress = ref(1)
   const active = ref<string | null>(null)
   const pinned = ref<string | null>(null)
-  const coarse = ref(false)
 
   const levelOf = new Map<string, number>()
-  scene.levels?.forEach((level, index) => level.layers.forEach(id => levelOf.set(id, index)))
+  scene.levels?.forEach((level, index) => level.forEach(id => levelOf.set(id, index)))
+  // 分组后的查看键：同组图层共用一条批注，一起抬起。
+  const keyOf = (id: string) => scene.groups?.[id] ?? id
   const writeIndex = new Map((scene.writeOrder ?? []).map((id, index) => [id, index]))
   const legendIds = new Set(scene.legend?.map(item => item.id) ?? [])
   const keyLayers = layers.filter(layer => scene.notes[layer.id] && !legendIds.has(layer.id))
@@ -62,16 +63,14 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     const perspective = width * 2.4
     if (e <= 0) return { ax: 0, az: 0, s: 1, perspective, tx: 0, ty: 0 }
     const depths = Array.from({ length: scene.levels?.length ?? 1 }, (_, i) => i * width * GAP)
-    // 宽屏左侧留出层级标注的位置，整体向右让一些。
-    const labelRoom = viewWidth >= 1100 ? 240 : 0
     const end = fitExploded({ ax: 58 * Math.PI / 180, az: -9 * Math.PI / 180, perspective }, width, height, depths,
-      viewWidth - labelRoom - 48, viewHeight - 24)
+      viewWidth - 48, viewHeight - 24)
     return {
       ax: mix(0, end.ax, e),
       az: mix(0, end.az, e),
       s: mix(1, end.s, e),
       perspective,
-      tx: mix(0, end.tx + labelRoom / 2, e),
+      tx: mix(0, end.tx, e),
       ty: mix(0, end.ty, e),
     }
   })
@@ -94,9 +93,10 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
   function layerState(layer: ShowcaseLayer) {
     const current = active.value
     const reveal = revealOf(layer.id)
+    const lifted = current !== null && keyOf(layer.id) === current
     return {
-      lifted: current === layer.id,
-      dimmed: current !== null && current !== layer.id,
+      lifted,
+      dimmed: current !== null && !lifted,
       clip: reveal >= 1 ? undefined : `inset(-2% ${((1 - reveal) * 102).toFixed(2)}% -2% -2%)`,
       hidden: reveal <= 0,
     }
@@ -107,7 +107,7 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
   const sizesOf = (layer: ShowcaseLayer) => `${Math.ceil(stage.value.width * layer.box[2] / page.width)}px`
 
   function onLayerLoad(layer: ShowcaseLayer, event: Event) {
-    if (!scene.notes[layer.id]) return
+    if (!scene.notes[keyOf(layer.id)]) return
     const img = event.target as HTMLImageElement
     const w = Math.max(1, Math.ceil(layer.box[2] / ALPHA_STEP))
     const h = Math.max(1, Math.ceil(layer.box[3] / ALPHA_STEP))
@@ -134,9 +134,10 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     for (let i = layers.length - 1; i >= 0; i--) {
       const layer = layers[i]
       const reveal = revealOf(layer.id)
-      if (!scene.notes[layer.id] || reveal < 0.6) continue
+      const key = keyOf(layer.id)
+      if (!scene.notes[key] || reveal < 0.6) continue
       // 当前抬起的图层按抬升后的平面与绕中心的缩放判定，避免悬停时失焦或误选下层。
-      const lifted = layer.id === active.value
+      const lifted = key === active.value
       const point = unproject(pose.value, sx, sy, depthOf(layer.id) + (lifted ? LIFT : 0))
       if (!point) continue
       const factor = lifted ? LIFT_SCALE : 1
@@ -148,9 +149,9 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
       if (u < 0 || v < 0 || u >= layer.box[2] * Math.min(1, reveal) || v >= layer.box[3]) continue
       const map = alphaMaps.get(layer.id)
       // 尚未取到 alpha 时退回矩形判定，加载完成后自然变精确。
-      if (!map) return layer.id
+      if (!map) return key
       const a = map.data[Math.min(map.h - 1, Math.floor(v / ALPHA_STEP)) * map.w + Math.min(map.w - 1, Math.floor(u / ALPHA_STEP))]
-      if (a > 40) return layer.id
+      if (a > 40) return key
     }
     return null
   }
@@ -190,13 +191,15 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
   const callout = computed(() => {
     const id = active.value
     const note = id ? scene.notes[id] : undefined
-    const layer = id ? layers.find(item => item.id === id) : undefined
-    if (!note || !layer) return null
+    const group = id ? layers.filter(item => keyOf(item.id) === id) : []
+    if (!id || !note || !group.length) return null
     const { width, height, viewWidth, viewHeight } = stage.value
-    const z = depthOf(layer.id) + LIFT
-    const [x, y, w, h] = layer.box
-    const corners = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([u, v]) =>
-      project(pose.value, { x: u / page.width * width - width / 2, y: v / page.height * height - height / 2, z }))
+    const corners = group.flatMap((layer) => {
+      const z = depthOf(layer.id) + LIFT
+      const [x, y, w, h] = layer.box
+      return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]].map(([u, v]) =>
+        project(pose.value, { x: u / page.width * width - width / 2, y: v / page.height * height - height / 2, z }))
+    })
     const right = Math.max(...corners.map(p => p.x))
     const left = Math.min(...corners.map(p => p.x))
     const top = Math.min(...corners.map(p => p.y))
@@ -208,29 +211,11 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     let side: 'right' | 'left' | 'inside' = fitsRight ? 'right' : fitsLeft ? 'left' : 'inside'
     if (fitsRight && fitsLeft) side = half - right >= left + half ? 'right' : 'left'
     const cardX = side === 'right' ? right + 28 : side === 'left' ? left - 28 - card : Math.max(-half + 16, Math.min(right - card - 24, half - card - 16))
-    const cardY = Math.max(-viewHeight / 2 + 16, Math.min(top + 12, viewHeight / 2 - 170))
+    const cardY = Math.max(-viewHeight / 2 + 16, Math.min(top + 12, viewHeight / 2 - 120))
     const lineY = Math.max(top + 8, Math.min(bottom - 8, cardY + 26))
     const anchor = side === 'left' ? { x: left + 10, y: lineY } : side === 'right' ? { x: right - 10, y: lineY } : null
     const edge = { x: side === 'left' ? cardX + card : cardX, y: cardY + 26 }
-    return { id: layer.id, note, cardX, cardY, card, anchor, edge }
-  })
-
-  /** 拆解后每一层高度的左侧标注，位置为该平面左边缘中点的投影。 */
-  const levelLabels = computed(() => {
-    const e = explode.value
-    if (!scene.levels || e < 0.4 || stage.value.viewWidth < 1100) return []
-    const { width } = stage.value
-    const opacity = clamp01((e - 0.6) / 0.35)
-    return scene.levels.map((level, index) => {
-      const point = project(pose.value, { x: -width / 2, y: 0, z: index * width * GAP * e })
-      return { ...level, x: point.x, y: point.y, opacity }
-    })
-  })
-
-  const hint = computed(() => {
-    if (flat.value) return coarse.value ? '轻点任意一层，查看它是什么。' : '将指针移到任意一层上，查看它是什么。'
-    if (scene.mode === 'explode') return explode.value > 0.9 ? '将指针移到任意一层上，查看它是什么。' : ''
-    return progress.value > 0.8 ? '将指针移到笔迹或图例上，单独查看每一种笔触。' : ''
+    return { id, note, cardX, cardY, card, anchor, edge }
   })
 
   let mounted = false
@@ -240,7 +225,6 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
   let observer: IntersectionObserver | undefined
   let resizeObserver: ResizeObserver | undefined
   let motionQuery: MediaQueryList | undefined
-  let pointerQuery: MediaQueryList | undefined
 
   function measure() {
     const vw = document.documentElement.clientWidth
@@ -248,8 +232,10 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     const narrow = vw < 768
     flat.value = narrow || reduced
     const gutter = Math.max(20, vw * 0.04)
-    const reserve = scene.mode === 'write' ? 72 + 120 : 72 + 64
-    const viewWidth = vw - (narrow ? 0 : gutter * 2)
+    const reserve = 72 + 64
+    // 笔触图标立在舞台两侧，宽屏时为它们各留一列。
+    const rail = scene.legend && !narrow ? 72 : 0
+    const viewWidth = vw - (narrow ? 0 : gutter * 2 + rail * 2)
     const viewHeight = flat.value ? viewWidth * page.height / page.width : vh - reserve
     const width = Math.min(viewWidth, viewHeight * page.width / page.height)
     stage.value = { width, height: width * page.height / page.width, viewWidth, viewHeight: flat.value ? width * page.height / page.width : viewHeight }
@@ -277,19 +263,12 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     measure()
   }
 
-  function onPointerKind() {
-    coarse.value = !!pointerQuery?.matches
-  }
-
   onMounted(() => {
     mounted = true
     themed.value = true
     motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    pointerQuery = window.matchMedia('(hover: none)')
     reduced = motionQuery.matches
-    coarse.value = pointerQuery.matches
     motionQuery.addEventListener('change', onMotion)
-    pointerQuery.addEventListener('change', onPointerKind)
     observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
       schedule()
@@ -308,13 +287,12 @@ export function useShowcaseStack(scene: ShowcaseScene, track: Ref<HTMLElement | 
     observer?.disconnect()
     resizeObserver?.disconnect()
     motionQuery?.removeEventListener('change', onMotion)
-    pointerQuery?.removeEventListener('change', onPointerKind)
     window.removeEventListener('scroll', schedule)
     window.removeEventListener('resize', measure)
   })
 
   return {
-    layers, flat, stage, progress, active, pinned, keyLayers, pose, callout, levelLabels, hint,
+    layers, flat, stage, progress, active, pinned, keyLayers, pose, callout,
     layerFrame, layerState, srcOf, srcsetOf, sizesOf, revealOf, onLayerLoad,
     onPointerMove, onPointerLeave, onPointerDown, focusLayer, togglePin, hoverLegend,
   }

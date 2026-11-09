@@ -109,7 +109,6 @@ onBeforeUnmount(() => {
       <canvas ref="canvas" class="nh3-stroke-canvas" aria-hidden="true" />
       <div class="nh3-stroke-copy" :style="{ opacity: reveal, transform: `translate3d(0, ${(1 - reveal) * 24}px, 0)` }">
         <h2 id="nh3-stroke-title">落笔，即是表达。</h2>
-        <p>这一笔由网页软笔实时写出：越快越细，收笔自然出锋。</p>
       </div>
     </div>
   </section>
@@ -157,13 +156,6 @@ onBeforeUnmount(() => {
   line-height: 1.12;
   letter-spacing: 0.02em;
   white-space: nowrap;
-}
-
-.nh3-stroke-copy p {
-  margin: 0.9em 0 0;
-  color: var(--vp-c-text-2);
-  font-size: var(--nh3-body);
-  line-height: 1.8;
 }
 
 @media (max-width: 767px) {
