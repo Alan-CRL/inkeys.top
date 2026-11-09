@@ -1,19 +1,27 @@
 <script setup lang="ts">
 import { useId } from 'vue'
-import FeaturePager from './FeaturePager.vue'
-import ReleaseSection from './ReleaseSection.vue'
+import InkStroke from './InkStroke.vue'
+import PendingScenes from './PendingScenes.vue'
+import ReleaseFinale from './ReleaseFinale.vue'
+import ShowcaseStack from './ShowcaseStack.vue'
 import { detailFeatures, extraFeatures, showMoreFeatures } from './featureContent'
+import { overviewScene, toolsScene } from './showcaseContent'
 
 const uid = `nh3-feature-${useId()}`
 </script>
 
 <template>
   <div class="nh3-features">
-    <!-- 五个主功能整页翻页；焕新发布及以下保持普通滚动。 -->
-    <FeaturePager class="feature-pager-bleed" />
+    <!-- 首屏之后唯一的大型自动动画：随滚动写出的巨型软笔笔画。 -->
+    <InkStroke />
 
-    <!-- 焕新发布卡片内含「立即下载」；暂停背景笔迹与识别演示，素材制作阶段不挂载其动画。 -->
-    <ReleaseSection class="feature-release-bleed" />
+    <!-- 两张原生渲染合成图以图层形式呈现：概览可拆解，笔触逐层写上。 -->
+    <ShowcaseStack id="nh3-feature-overview" :scene="overviewScene" />
+    <ShowcaseStack id="nh3-feature-tools" class="feature-gap" :scene="toolsScene" />
+    <PendingScenes />
+
+    <!-- 收尾：放大的原生工具栏与同材质的下载、Star 按钮。 -->
+    <ReleaseFinale />
 
     <!-- 焕新发布之后的内容暂时隐藏，由 featureContent 的 showMoreFeatures 控制。 -->
     <div v-if="showMoreFeatures" id="nh3-more-features" class="feature-details">
@@ -59,30 +67,36 @@ const uid = `nh3-feature-${useId()}`
 
 <style scoped>
 .nh3-features {
-  --feature-background: #fff;
+  /* 首屏以下的统一 token：栏线、字号、衬线与交互色；板面沿用首屏底色以无缝衔接。 */
+  --nh3-gutter: max(24px, 8vw);
+  --nh3-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Source Han Serif CN', 'Songti SC', 'STSong', 'SimSun', serif;
+  --nh3-display: clamp(40px, 6.2vw, 104px);
+  --nh3-body: clamp(16px, 1.25vw, 19px);
+  --nh3-accent: #286a71;
+  --nh3-board: var(--nh3-bg, #f6f9fb);
+  --feature-background: var(--nh3-board);
   --feature-placeholder: rgba(91, 109, 120, 0.035);
   --feature-border: rgba(91, 109, 120, 0.15);
   --feature-accent: #286a71;
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  padding: 48px 24px 72px;
+  padding: 0;
   color: var(--vp-c-text-1);
   /* 仅介绍区域收为纯色，与上方发布板块自然衔接，不改变首屏背景。 */
   background: linear-gradient(to bottom, transparent, var(--feature-background) 160px);
 }
 
+.feature-gap { margin-top: clamp(120px, 20vh, 240px); }
 .feature-details, .feature-extras {
+  box-sizing: border-box;
+  padding: 0 24px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .feature-detail { margin-bottom: clamp(48px, 5vw, 72px); }
-/* 翻页区铺满视口宽度，抵消外层的上、左右内边距。 */
-/* 首屏下方先留一段由透明渐变到页底色的间距（与外层渐变同为 160px），再进入翻页区。 */
-.feature-pager-bleed { margin: 112px -24px clamp(48px, 5vw, 72px); }
-.feature-release-bleed { margin: 0 -24px clamp(48px, 5vw, 72px); }
 .placeholder-note { font-size: 11px; opacity: 0.7; }
 .feature-copy { min-width: 0; max-width: 50rem; }
 .feature-copy h2, .feature-copy h3 {
@@ -173,7 +187,8 @@ const uid = `nh3-feature-${useId()}`
 }
 
 [data-theme='dark'] .nh3-features {
-  --feature-background: #0a0a0a;
+  --nh3-accent: #9acbc1;
+  --feature-background: var(--nh3-board);
   --feature-placeholder: rgba(201, 211, 219, 0.025);
   --feature-border: rgba(201, 211, 219, 0.14);
   --feature-accent: #386e75;
@@ -183,10 +198,8 @@ const uid = `nh3-feature-${useId()}`
 [data-theme='dark'] .feature-status { color: #9acbc1; }
 
 @media (max-width: 767px) {
-  .nh3-features { padding: 32px 20px 48px; }
+  .nh3-features { --nh3-gutter: 20px; }
   .feature-detail { margin-bottom: 40px; }
-  .feature-pager-bleed { margin: 128px -20px 40px; }
-  .feature-release-bleed { margin: 0 -20px 40px; }
   .feature-copy h2, .feature-copy h3, .feature-extras-title { font-size: 19px; }
   .feature-copy p { font-size: 16px; }
   .feature-copy .feature-note { font-size: 13px; }

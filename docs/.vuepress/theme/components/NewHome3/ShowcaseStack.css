@@ -1,0 +1,263 @@
+.nh3-showcase {
+  position: relative;
+  --leader: var(--nh3-accent);
+}
+
+/* 标题与正文不对称分栏：标题占左侧大字，正文落在右栏并与标题底部对齐。 */
+.showcase-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 2rem 6vw;
+  padding: 0 var(--nh3-gutter) clamp(32px, 6vh, 72px);
+}
+
+.showcase-title {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--vp-c-text-1);
+  font-family: var(--nh3-serif);
+  font-size: var(--nh3-display);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+
+.title-brand {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.title-dot { color: var(--nh3-accent); white-space: pre; }
+
+.showcase-text { max-width: 30em; }
+.showcase-text p { margin: 0; color: var(--vp-c-text-2); font-size: var(--nh3-body); line-height: 1.9; text-wrap: pretty; }
+.showcase-text .showcase-closing {
+  margin-top: 1.2em;
+  color: var(--vp-c-text-1);
+  font-family: var(--nh3-serif);
+  font-weight: 500;
+}
+
+.showcase-track { position: relative; height: 330vh; height: 330svh; }
+.is-write .showcase-track { height: 250vh; height: 250svh; }
+.is-flat .showcase-track { height: auto; }
+
+.showcase-sticky {
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  height: 100svh;
+  padding: 72px 0 64px;
+  overflow: hidden;
+}
+.is-write .showcase-sticky { padding-bottom: 120px; }
+.is-flat .showcase-sticky { position: relative; height: auto; padding: 0; overflow: visible; }
+
+.showcase-viewport {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  touch-action: pan-y;
+}
+
+.showcase-anchor { position: relative; flex: none; }
+.showcase-perspective, .showcase-plane { position: absolute; inset: 0; }
+.showcase-perspective { perspective-origin: 50% 50%; }
+.showcase-plane { transform-style: preserve-3d; transform-origin: 50% 50%; }
+
+/* 透明度、裁切与阴影都放在 img 上：加在 preserve-3d 元素上会把 3D 层压平。 */
+.showcase-layer { position: absolute; transform-style: preserve-3d; pointer-events: none; }
+.showcase-lift {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.showcase-lift img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+.showcase-layer.is-lifted .showcase-lift { transform: translate3d(0, 0, 46px) scale(1.035); }
+.showcase-layer.is-lifted img { filter: drop-shadow(0 22px 30px rgba(16, 32, 44, 0.3)); }
+.showcase-layer.is-dimmed img { opacity: 0.14; }
+.showcase-layer.is-base.is-dimmed img { opacity: 0.28; }
+/* 拆解时底图带一圈细边，让每块平面的轮廓在空中可辨。 */
+.is-explode .showcase-layer.is-base img { outline: 1px solid color-mix(in srgb, var(--vp-c-text-1) 10%, transparent); }
+.is-flat .showcase-layer.is-lifted .showcase-lift { transform: none; }
+
+.showcase-overlay { position: absolute; inset: 0; pointer-events: none; }
+.showcase-level {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 220px;
+  margin: -1.5em 0 0 -236px;
+  padding-right: 34px;
+  background: linear-gradient(var(--vp-c-text-3), var(--vp-c-text-3)) right 0 top 0.8em / 24px 1px no-repeat;
+  text-align: right;
+  will-change: transform, opacity;
+}
+.level-title { color: var(--vp-c-text-1); font-family: var(--nh3-serif); font-size: 20px; font-weight: 600; line-height: 1.6; }
+.level-detail { color: var(--vp-c-text-3); font-size: 13px; line-height: 1.6; }
+
+.showcase-leader { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.showcase-leader path {
+  fill: none;
+  stroke: var(--leader);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: showcase-draw 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.showcase-leader circle { fill: var(--leader); stroke: var(--nh3-board); stroke-width: 2; }
+@keyframes showcase-draw { to { stroke-dashoffset: 0; } }
+
+/* 批注卡沿用 Inkeys 原生深色工具栏的材质：深色毛玻璃、1px 亮边、8px 圆角。 */
+.showcase-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(24, 24, 24, 0.84);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  text-align: left;
+  pointer-events: none;
+}
+.showcase-card.is-docked { position: relative; top: auto; left: auto; width: calc(100% - 2 * var(--nh3-gutter)); margin-top: 14px; }
+.showcase-card strong { font-size: 16px; font-weight: 650; line-height: 1.4; }
+.card-body { color: rgba(255, 255, 255, 0.82); font-size: 14px; line-height: 1.7; }
+.card-source {
+  padding-top: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.52);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+.showcase-card-enter-active { transition: opacity 0.22s ease 0.12s, margin-top 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.12s; }
+.showcase-card-leave-active { transition: opacity 0.12s ease; }
+.showcase-card-enter-from { opacity: 0; margin-top: 8px; }
+.showcase-card-leave-to { opacity: 0; }
+
+.showcase-keys {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  list-style: none;
+}
+/* 键盘进入图层列表时显形，聚焦项有清晰的焦点框；鼠标用户看不到这排按钮。 */
+.showcase-keys:focus-within {
+  left: var(--nh3-gutter);
+  right: var(--nh3-gutter);
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
+.showcase-keys button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid color-mix(in srgb, var(--vp-c-text-1) 14%, transparent);
+  border-radius: 8px;
+  background: var(--nh3-board);
+  color: var(--vp-c-text-2);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.showcase-keys button:focus-visible { outline: 2px solid var(--nh3-accent); outline-offset: 2px; color: var(--vp-c-text-1); }
+.is-flat .showcase-keys:focus-within { position: relative; left: auto; right: auto; bottom: auto; margin: 12px var(--nh3-gutter) 0; }
+
+.showcase-legend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 var(--nh3-gutter);
+}
+.is-flat .showcase-legend { position: static; margin-top: 20px; }
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--vp-c-text-1) 14%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--nh3-board) 70%, transparent);
+  color: var(--vp-c-text-2);
+  font: inherit;
+  font-size: 14px;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.3s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.legend-item.is-written { opacity: 1; }
+.legend-item.is-active, .legend-item[aria-pressed='true'] { border-color: var(--nh3-accent); color: var(--vp-c-text-1); }
+.legend-item:focus-visible { outline: 2px solid var(--nh3-accent); outline-offset: 2px; }
+.legend-swatch { width: 12px; height: 12px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2); }
+
+.showcase-hint {
+  position: absolute;
+  left: var(--nh3-gutter);
+  bottom: 18px;
+  margin: 0;
+  color: var(--vp-c-text-3);
+  font-size: 13px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.showcase-hint.is-shown { opacity: 1; }
+.is-write .showcase-hint { left: 0; right: 0; text-align: center; }
+.is-flat .showcase-hint { position: static; margin: 14px var(--nh3-gutter) 0; opacity: 1; }
+
+@media (max-width: 767px) {
+  .showcase-intro { grid-template-columns: minmax(0, 1fr); gap: 1.2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase-lift, .showcase-lift img { transition: none; }
+  .showcase-leader path { animation: none; stroke-dashoffset: 0; }
+}

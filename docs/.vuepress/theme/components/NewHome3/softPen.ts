@@ -237,7 +237,8 @@ const darkColors = [
 
 export type PainterTheme = 'light' | 'dark'
 
-function colorAt(fraction: number, theme: PainterTheme) {
+/** 彩虹配色沿弧长取色；首屏以下的巨型笔画也复用这一套配色。 */
+export function colorAt(fraction: number, theme: PainterTheme) {
   const palette = theme === 'dark' ? darkColors : colors
   const u = clamp(fraction)
   let i = 1
