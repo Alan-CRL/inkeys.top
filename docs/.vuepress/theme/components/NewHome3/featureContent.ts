@@ -102,7 +102,7 @@ export const primaryFeatures: PrimaryFeature[] = [
 
 /** 焕新发布卡片中「立即下载」的链接。 */
 export const downloadContent = {
-  href: 'https://1709404.share.123pan.cn/123pan/duk9-Gdr4d',
+  href: '/download',
 }
 
 // 内联 HTML 仅来自仓库内受控静态文案；不得接入用户输入或远程内容。

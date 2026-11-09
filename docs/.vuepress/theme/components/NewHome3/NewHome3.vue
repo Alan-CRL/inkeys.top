@@ -13,7 +13,7 @@ import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
 
 const scene = createScene()
-const downloadHref = 'https://1709404.share.123pan.cn/123pan/duk9-Gdr4d'
+const downloadHref = '/download'
 const root = ref<HTMLDivElement>()
 const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
