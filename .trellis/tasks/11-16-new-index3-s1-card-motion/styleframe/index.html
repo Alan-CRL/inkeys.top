@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>S1 屏幕批注卡片 · 静态样张</title>
+<style>
+  /* 令牌取自 docs/.vuepress/theme/components/NewHome3/home.css */
+  .light {
+    --bg: #ffffff; --surface: #f5f5f5; --text: #121212; --text2: #5c5c5c; --text3: #757575;
+    --screen: #ffffff; --screen-line: rgba(0, 0, 0, 0.06); --screen-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+    --bar: #e6e6e6; --canvas: #e9e9e9; --paper: #ffffff; --video: #141414;
+  }
+  .dark {
+    --bg: #0f0f0f; --surface: #1b1b1b; --text: #f2f2f2; --text2: #a6a6a6; --text3: #8a8a8a;
+    --screen: #262626; --screen-line: rgba(255, 255, 255, 0.07); --screen-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --bar: #3a3a3a; --canvas: #202020; --paper: #2c2c2c; --video: #0a0a0a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Segoe UI Variable Display', 'Segoe UI', 'Microsoft YaHei UI', sans-serif; }
+  section { padding: 44px 48px 40px; background: var(--bg); color: var(--text); }
+  .row { display: grid; grid-template-columns: repeat(3, 384px); gap: 24px; }
+  .note { margin: 14px 0 0; color: var(--text3); font-size: 13px; line-height: 1.6; }
+  .card { position: relative; width: 384px; height: 576px; overflow: hidden; border-radius: 24px; background: var(--surface); }
+  .copy { position: absolute; z-index: 5; top: 0; left: 0; right: 0; padding: 32px; }
+  .copy h3 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; }
+  .copy p { margin: 6px 0 0; color: var(--text2); font-size: 16px; line-height: 1.75; }
+  .copy p.en { line-height: 1.6; }
+
+  /* 假屏幕：向右、向下伸出卡片 */
+  .screen { position: absolute; left: 44px; top: 204px; width: 400px; height: 420px; overflow: hidden;
+    border-radius: 16px; background: var(--screen); box-shadow: 0 0 0 1px var(--screen-line), var(--screen-shadow); }
+  .ink { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+  .toolbar { position: absolute; z-index: 3; top: 272.5px; width: 628.3px; height: 93.5px; max-width: none; }
+
+  /* 第一拍：网页 */
+  .web { padding: 18px 22px; }
+  .web h4 { margin: 0; font-size: 30px; font-weight: 600; line-height: 38px; letter-spacing: -0.01em; white-space: nowrap; }
+  .web p { margin: 30px 0 0; width: 270px; color: var(--text2); font-size: 13px; line-height: 1.6; }
+  .web .pic { position: relative; margin-top: 18px; width: 400px; height: 220px; overflow: hidden; border-radius: 12px; background: var(--canvas); }
+  .web .pic i { position: absolute; left: 150px; top: 26px; width: 190px; height: 190px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #cfcfcf, #8e8e8e 58%, #5d5d5d); }
+  .dark .web .pic i { background: radial-gradient(circle at 34% 30%, #8c8c8c, #565656 58%, #333); }
+
+  /* 第二拍：PDF */
+  .pdf { height: 100%; padding: 20px 0 0 20px; background: var(--canvas); }
+  .pdf .page { width: 400px; height: 420px; padding: 26px 26px; background: var(--paper); font-family: Georgia, 'Times New Roman', serif; }
+  .pdf h4 { margin: 0 0 12px; font-size: 18px; font-weight: 700; line-height: 1.3; }
+  .pdf p { margin: 0; width: 290px; color: var(--text2); font-size: 14.5px; line-height: 26px; white-space: nowrap; }
+
+  /* 第三拍：视频 */
+  .video { position: relative; height: 100%; background: var(--video); }
+  .video svg { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<script>
+// ---------- 软笔：按软件的规则计算（速度决定粗细，最前端 55ms 收成笔锋） ----------
+const smooth = u => { u = Math.min(1, Math.max(0, u)); return u * u * (3 - 2 * u) }
+
+// samples: [{x,y,t}]（秒）；B 为基准直径；expected 为“预期速度”（px/s）。返回带半径的点。
+function softPen(samples, B, expected) {
+  const out = []
+  let width = B
+  for (let i = 0; i < samples.length; i++) {
+    const p = samples[i]
+    if (i > 0) {
+      const q = samples[i - 1]
+      const dt = p.t - q.t
+      const dist = Math.hypot(p.x - q.x, p.y - q.y)
+      const target = 1.4 * B + (0.8 * B - 1.4 * B) * smooth(dist / dt / expected)
+      const alpha = Math.min(0.35, Math.max(0.02, dt / 0.06))
+      let next = width + (target - width) * alpha
+      // 半径变化同时受时间和距离限制。
+      const limit = Math.min(1.5 * B * dt, 0.35 * dist) * 2
+      next = Math.min(width + limit, Math.max(width - limit, next))
+      width = next
+    }
+    out.push({ ...p, r: width / 2 })
+  }
+  // 实时笔锋：最近 55ms 走过的那一段沿弧长收细，尖端最低到 30%。
+  const end = out[out.length - 1]
+  let first = out.length - 1
+  while (first > 0 && end.t - out[first - 1].t <= 0.055) first--
+  let length = 0
+  const dist = [0]
+  for (let i = out.length - 1; i > first; i--) {
+    length += Math.hypot(out[i].x - out[i - 1].x, out[i].y - out[i - 1].y)
+    dist.unshift(length)
+  }
+  const tip = 1 - 0.7 * smooth(length / (4 * end.r))
+  for (let i = first; i < out.length; i++) out[i].r *= tip + (1 - tip) * smooth(dist[i - first] / length)
+  return out
+}
+
+function drawStroke(ctx, pts, color) {
+  ctx.fillStyle = color
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i]
+    const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 0.4))
+    for (let s = 0; s <= steps; s++) {
+      const k = s / steps
+      ctx.beginPath()
+      ctx.arc(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k, a.r + (b.r - a.r) * k, 0, Math.PI * 2)
+      ctx.fill()
+    }
+  }
+}
+
+// 手画的圈：从右上起笔逆时针一圈，收笔时越过起点向右上甩出去。
+function loop({ cx, cy, rx, ry, tilt, duration, tail }) {
+  const samples = []
+  const start = -0.42 * Math.PI, sweep = 2.12 * Math.PI
+  const cos = Math.cos(tilt), sin = Math.sin(tilt)
+  for (let t = 0; t <= duration + 1e-6; t += 0.004) {
+    const u = t / duration
+    // 起笔稍慢，中段快，收笔前略减速但不停。
+    const e = u < 0.5 ? 0.5 * Math.pow(2 * u, 1.7) : 1 - 0.5 * Math.pow(2 - 2 * u, 1.35)
+    const angle = start - sweep * e
+    const grow = 1 + 0.06 * e
+    let x = Math.cos(angle) * rx * grow, y = Math.sin(angle) * ry * grow
+    // 最后一段沿切线向外甩出。
+    const k = Math.max(0, (e - 0.9) / 0.1)
+    x += tail.x * k * k; y += tail.y * k * k
+    samples.push({ x: cx + x * cos - y * sin, y: cy + x * sin + y * cos, t })
+  }
+  return samples
+}
+
+const BEATS = [
+  { name: 'web', note: '第一拍 · 网页：软笔圈出标题，圈比屏幕大，收笔甩到屏幕外（约 0–3.4 秒）' },
+  { name: 'pdf', note: '第二拍 · PDF：荧光笔从屏幕外扫进来，盖过一句话（约 3.4–6.4 秒）' },
+  { name: 'video', note: '第三拍 · 视频：主栏滑到右端，按下 Freeze 画面停住，再圈出行星（约 6.4–10 秒）' },
+]
+const COPY = {
+  light: ['屏幕批注', '在任何画面上直接书写。', ''],
+  dark: ['Screen annotation', 'Write directly over anything on your screen.', 'en'],
+}
+
+const CONTENT = {
+  web: `<div class="web"><h4>The red planet</h4>
+    <p>Iron-rich dust covers the surface of Mars. Sunlight scattered by that dust gives the planet its rusty colour.</p>
+    <div class="pic"><i></i></div></div>`,
+  pdf: `<div class="pdf"><div class="page"><h4>2.3&ensp;Orbit and seasons</h4>
+    <p>Mars travels around the Sun once every</p><p>687 Earth days, almost twice as long as</p>
+    <p>our year. Its axis is tilted by about 25</p><p>degrees, so Mars has seasons like Earth.</p>
+    <p>&nbsp;</p><p>A day on Mars lasts 24 hours and 37</p><p>minutes, only a little longer than ours.</p></div></div>`,
+  video: `<div class="video"><svg viewBox="0 0 400 420">
+    <defs><radialGradient id="sun"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <radialGradient id="planet" cx=".34" cy=".3"><stop offset="0" stop-color="#e2e2e2"/><stop offset=".6" stop-color="#9a9a9a"/><stop offset="1" stop-color="#5a5a5a"/></radialGradient></defs>
+    <g transform="rotate(-16 170 150)">
+      <ellipse cx="170" cy="150" rx="178" ry="96" fill="none" stroke="#fff" stroke-opacity=".16"/>
+      <ellipse cx="170" cy="150" rx="104" ry="54" fill="none" stroke="#fff" stroke-opacity=".1"/>
+    </g>
+    <circle cx="170" cy="150" r="58" fill="url(#sun)"/>
+    <circle cx="94" cy="121" r="6" fill="url(#planet)"/>
+    <circle cx="262" cy="42" r="13" fill="url(#planet)"/></svg></div>`,
+}
+
+for (const theme of ['light', 'dark']) {
+  const section = document.createElement('section')
+  section.className = theme
+  const row = document.createElement('div')
+  row.className = 'row'
+  section.append(row)
+  for (const beat of BEATS) {
+    const cell = document.createElement('div')
+    const [title, text, lang] = COPY[theme]
+    const freeze = beat.name === 'video'
+    cell.innerHTML = `<div class="card">
+      <div class="copy"><h3>${title}</h3><p class="${lang}">${text}</p></div>
+      <div class="screen">${CONTENT[beat.name]}
+        <img class="toolbar" src="toolbar-${theme}${freeze ? '-freeze' : ''}.png" style="left:${freeze ? -286.25 : -1.5}px">
+      </div>
+      <canvas class="ink" width="1152" height="1728" style="width:384px;height:576px"></canvas>
+    </div><p class="note">${beat.note}</p>`
+    row.append(cell)
+    const ctx = cell.querySelector('canvas').getContext('2d')
+    ctx.scale(3, 3)
+    const B = 5.2, expected = 870
+    if (beat.name === 'web') {
+      drawStroke(ctx, softPen(loop({ cx: 170, cy: 240, rx: 134, ry: 44, tilt: -0.07, duration: 1.15, tail: { x: 30, y: -34 } }), B, expected), '#ff1000')
+    } else if (beat.name === 'pdf') {
+      // 荧光笔：竖直方头笔尖横扫，等宽，35% 不透明度。
+      ctx.fillStyle = 'rgba(255, 197, 16, 0.35)'
+      ctx.fillRect(22, 314, 180, 21)
+    } else {
+      drawStroke(ctx, softPen(loop({ cx: 306, cy: 246, rx: 40, ry: 36, tilt: -0.2, duration: 0.85, tail: { x: 22, y: -26 } }), B, expected), '#ff1000')
+    }
+  }
+  document.body.append(section)
+}
+</script>
+</body>
+</html>

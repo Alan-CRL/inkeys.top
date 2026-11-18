@@ -1,0 +1,6 @@
+node_modules
+.cache
+out
+build
+native/build
+native/out

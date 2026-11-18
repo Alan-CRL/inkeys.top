@@ -1,0 +1,23 @@
+{
+  "name": "nh3-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "new-index3 的 Remotion 视频工程（S1 卡片等）",
+  "scripts": {
+    "studio": "node scripts/run.mjs studio",
+    "still": "node scripts/run.mjs still",
+    "render": "node scripts/run.mjs render",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.542",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.542"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

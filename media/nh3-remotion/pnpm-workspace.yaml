@@ -1,0 +1,10 @@
+# 独立的制作依赖，不属于官网的 VuePress 安装。
+packages:
+  - '.'
+# 本机是 Windows ARM64，Remotion 的合成器只有 x64 版本：同时安装 x64 的可选依赖。
+supportedArchitectures:
+  cpu:
+    - current
+    - x64
+allowBuilds:
+  esbuild: true
