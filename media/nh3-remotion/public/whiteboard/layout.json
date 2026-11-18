@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "padding_pixels": 60,
+  "rectangle_formats": {
+    "body_rect": "pixel LTRB",
+    "buttons": "body-relative logical XYWH"
+  },
+  "states": {
+    "toolbar": {
+      "image_size": [
+        2206,
+        361
+      ],
+      "body_rect": [
+        60.5,
+        60.5,
+        2145.5,
+        300.5
+      ],
+      "pixels_per_logical_unit": 3,
+      "buttons": {
+        "MainButton": [
+          0,
+          0,
+          80,
+          80
+        ],
+        "Move": [
+          95,
+          5,
+          70,
+          70
+        ],
+        "Soft Pen": [
+          170,
+          5,
+          70,
+          70
+        ],
+        "Shapes": [
+          245,
+          5,
+          70,
+          70
+        ],
+        "Erase": [
+          320,
+          5,
+          70,
+          70
+        ],
+        "Undo": [
+          395,
+          5,
+          70,
+          70
+        ],
+        "Clear": [
+          470,
+          5,
+          70,
+          70
+        ],
+        "More": [
+          545,
+          5,
+          70,
+          70
+        ],
+        "Close": [
+          620,
+          5,
+          70,
+          70
+        ]
+      }
+    },
+    "pager-1of1": {
+      "image_size": [
+        1035,
+        360
+      ],
+      "body_rect": [
+        60,
+        60,
+        975,
+        300
+      ],
+      "pixels_per_logical_unit": 3,
+      "buttons": {
+        "Previous": [
+          5,
+          5,
+          70,
+          70
+        ],
+        "Page": [
+          80,
+          5,
+          70,
+          70
+        ],
+        "Add page": [
+          155,
+          5,
+          70,
+          70
+        ],
+        "More": [
+          230,
+          5,
+          70,
+          70
+        ]
+      }
+    },
+    "pager-2of2": {
+      "image_size": [
+        1035,
+        360
+      ],
+      "body_rect": [
+        60,
+        60,
+        975,
+        300
+      ],
+      "pixels_per_logical_unit": 3,
+      "buttons": {
+        "Previous": [
+          5,
+          5,
+          70,
+          70
+        ],
+        "Page": [
+          80,
+          5,
+          70,
+          70
+        ],
+        "Add page": [
+          155,
+          5,
+          70,
+          70
+        ],
+        "More": [
+          230,
+          5,
+          70,
+          70
+        ]
+      }
+    }
+  },
+  "captures": {
+    "light/toolbar": {
+      "source": "out/light/toolbar",
+      "crop_rect": [
+        2663,
+        286,
+        4869,
+        647
+      ],
+      "capture_manifest_sha256": "db4573cb85151c97639a562866e7f718ad561f190a3fa7ef7342991778933536",
+      "source_png_sha256": "324c1bf8ba11c73b829f7c14af7374be29aa68af8fae7f9ceb62d03614a48b4b",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "light/toolbar.png",
+      "output_sha256": "2b15cb9d5625a62f05ab0a0e8da1f6b48a46b4e4db5fa9a104791104ea2855f0"
+    },
+    "light/pager-1of1": {
+      "source": "out/light/pager-1of1",
+      "crop_rect": [
+        0,
+        0,
+        1035,
+        360
+      ],
+      "capture_manifest_sha256": "79483834326923d934dc6d319ad74ec5af2d2447305a10ea9af91f386e5a778f",
+      "source_png_sha256": "6d765052600d1097e5c000ef2789c022a72db5bae35a9ab77da1e652544d3c46",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "light/pager-1of1.png",
+      "output_sha256": "ab74dcef3f401abbf40088eb6ffe69a778d1dd7916d7c93e73b18efb9d7e8e7c"
+    },
+    "light/pager-2of2": {
+      "source": "out/light/pager-2of2",
+      "crop_rect": [
+        0,
+        0,
+        1035,
+        360
+      ],
+      "capture_manifest_sha256": "4fde5858f311a84ba01c1870ba419cea1b1ad5f8141c857ae4bd321f564aecc6",
+      "source_png_sha256": "eb2de6c086a730423dad92913130a4f25c24dee43ea8c9976252408690bffeab",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "light/pager-2of2.png",
+      "output_sha256": "2fb9bb8b5fbd23aee43e69e8d10ce7058d300fc967a15f3961d10d40b139c9e1"
+    },
+    "dark/toolbar": {
+      "source": "out/dark/toolbar",
+      "crop_rect": [
+        2663,
+        286,
+        4869,
+        647
+      ],
+      "capture_manifest_sha256": "7ce4b259d405961e6ff83a6bb725cb74100b6b5b5a1114611420623f124cf212",
+      "source_png_sha256": "e3fa2863a4ec8c186539415ac27ea0e7b5ab07ec9867888038ba4cd031592a74",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "dark/toolbar.png",
+      "output_sha256": "006415ac22aa53d698eeef8cc1f923f9b92b31ec5500c12dd0efba17d13fafe4"
+    },
+    "dark/pager-1of1": {
+      "source": "out/dark/pager-1of1",
+      "crop_rect": [
+        0,
+        0,
+        1035,
+        360
+      ],
+      "capture_manifest_sha256": "285b2705d68956508b78f7de6ff897d5955d1e04a08b2ece7b72dccaaf45468a",
+      "source_png_sha256": "ca42809bd12b788204876f62ef663d75b2aaaedabbac448795201584d7accb1e",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "dark/pager-1of1.png",
+      "output_sha256": "698fcecdbb6e7013dba020d8bb86982f38eb8154961b3f2c5691bb516b5f3268"
+    },
+    "dark/pager-2of2": {
+      "source": "out/dark/pager-2of2",
+      "crop_rect": [
+        0,
+        0,
+        1035,
+        360
+      ],
+      "capture_manifest_sha256": "2d690633fa4605f2add44f9ffc9c87ff1647ed579722094cff8da682e01ec134",
+      "source_png_sha256": "e921f13848201a7223c095d586e929513503a065c7194c362891019a449d8e69",
+      "executable_sha256": "5d3a6cdb4164dc92027139c44bed30346f1c341907247bedd7410e854c13ff7a",
+      "source_revision": "bcc11421f45b9aca24054f807ccbec9540465859",
+      "output": "dark/pager-2of2.png",
+      "output_sha256": "e2246db1ffe66f4f9fd8de3b414e4bcdf99a5638d6ad19b7c9399c34869c2802"
+    }
+  }
+}
