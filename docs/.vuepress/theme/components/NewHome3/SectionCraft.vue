@@ -10,6 +10,7 @@ const { locale, copy } = useCopy()
 const root = ref<HTMLElement>()
 const card = ref<HTMLElement>()
 const settings = ref<HTMLElement>()
+const bar = ref<HTMLElement>()
 const assets = withBase('/new-index3/craft/')
 // 让 data-theme 同时切换两层原生图与壁纸，浏览器只请求生效的背景。
 const nativeLayers = computed(() => ({
@@ -22,22 +23,33 @@ let resize: ResizeObserver | undefined
 
 function alignBlurredWallpaper() {
   const panel = card.value
-  const frame = settings.value
-  if (!panel || !frame || !frame.offsetWidth) return
-  // 回退图沿用整张卡片的 cover 裁切，再移到窗口下的同一坐标。
-  frame.style.setProperty('--card-width', `${panel.clientWidth}px`)
-  frame.style.setProperty('--card-height', `${panel.clientHeight}px`)
-  frame.style.setProperty('--wallpaper-x', `${-frame.offsetLeft}px`)
-  frame.style.setProperty('--wallpaper-y', `${-frame.offsetTop}px`)
+  if (!panel) return
+  // 回退图沿用整张卡片的 cover 裁切，再移到窗口与主栏两块底板下的同一坐标。
+  // 沿 offsetParent 累加布局位置，不受出场动画的 transform 影响。
+  const layers = [settings.value, ...(bar.value?.querySelectorAll<HTMLElement>('.nh3-craft-bar-glass') ?? [])]
+  for (const layer of layers) {
+    if (!layer || !layer.offsetWidth) continue
+    let x = 0
+    let y = 0
+    for (let node: HTMLElement | null = layer; node && node !== panel; node = node.offsetParent as HTMLElement | null) {
+      x += node.offsetLeft
+      y += node.offsetTop
+    }
+    layer.style.setProperty('--card-width', `${panel.clientWidth}px`)
+    layer.style.setProperty('--card-height', `${panel.clientHeight}px`)
+    layer.style.setProperty('--wallpaper-x', `${-x}px`)
+    layer.style.setProperty('--wallpaper-y', `${-y}px`)
+  }
 }
 
 onMounted(() => {
-  if (!card.value || !settings.value || CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)')) return
+  if (!card.value || !settings.value || !bar.value || CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)')) return
   alignBlurredWallpaper()
   if ('ResizeObserver' in window) {
     resize = new ResizeObserver(alignBlurredWallpaper)
     resize.observe(card.value)
     resize.observe(settings.value)
+    resize.observe(bar.value)
   }
   window.addEventListener('resize', alignBlurredWallpaper)
 })
@@ -65,10 +77,15 @@ useAppear(root)
           <p class="nh3-body" data-nh3-item>{{ copy.s5b.text }}</p>
         </div>
       </div>
-      <!-- 设置界面向右伸出板面，被板面的圆角裁掉；主栏在它下方，左边缘对齐。 -->
+      <!-- 设置界面向右伸出板面，被板面的圆角裁掉；主栏压在窗口下沿上方，向左错开。 -->
+      <!-- 窗口与主栏的透明度来自原生导出的直通 alpha；网页把两者最底层的底板统一调到 60%，卡片、文字和图标保持原生。 -->
+      <!-- 网页只在两者后面模糊壁纸，模拟 DWM 的 BlurBehind；主栏的模糊只放在两块底板下，不进入阴影与光影留边。 -->
       <div class="nh3-craft-ui">
         <div ref="settings" class="nh3-craft-window" data-nh3-item="right" role="img" :aria-label="copy.s5b.window" />
-        <div class="nh3-craft-bar" data-nh3-item="right" role="img" :aria-label="copy.s5b.bar" />
+        <div ref="bar" class="nh3-craft-bar" data-nh3-item="right" role="img" :aria-label="copy.s5b.bar">
+          <div class="nh3-craft-bar-glass" />
+          <div class="nh3-craft-bar-glass" />
+        </div>
       </div>
     </div>
   </section>
@@ -184,16 +201,16 @@ useAppear(root)
 .nh3-craft-ui {
   grid-area: layer;
   /* 宽屏上窗口达到尺寸上限后仍露出到卡片外。 */
-  margin-left: max(57%, calc(100% - 640px));
-  width: clamp(520px, 52%, 760px);
+  margin-left: max(56%, calc(100% - 620px));
+  width: clamp(520px, 50%, 720px);
 }
 
 .nh3-craft-window {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 16 / 10;
-  /* 原生窗口是 1040 × 650 DIP、8 DIP 圆角。 */
-  border-radius: 0.77% / 1.23%;
+  aspect-ratio: 960 / 700;
+  /* 原生窗口取产品默认的 960 × 700 DIP，8 DIP 圆角。 */
+  border-radius: 0.83% / 1.14%;
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
@@ -218,14 +235,58 @@ useAppear(root)
 }
 
 .nh3-craft-bar {
-  --bar-width: min(82%, 39vw);
-  /* 2431px 宽的导出图四边留出 60.5px 给原生光影，间距对齐实体边沿。 */
+  --bar-width: min(84%, 40vw);
+  /* 2431px 宽的导出图四边留出 60.5px 给原生光影，实体高 240px；位置都按实体边沿计算。 */
   --bar-inset: calc(var(--bar-width) * 60.5 / 2431);
+  --bar-solid: calc(var(--bar-width) * 240 / 2431);
+  /* 主栏压在窗口下沿之上、向左错出一段：压住四成实体高，正好盖住最后一行小字，版权与许可行仍完整。 */
+  --bar-overlap: calc(var(--bar-solid) * 0.4);
+  --bar-shift: 10%;
+  position: relative;
+  z-index: 1;
   width: var(--bar-width);
-  margin-top: calc(24px - var(--bar-inset));
-  margin-left: calc(0px - var(--bar-inset));
+  margin-top: calc(0px - var(--bar-overlap) - var(--bar-inset));
+  margin-left: calc(0px - var(--bar-shift) - var(--bar-inset));
   aspect-ratio: 2431 / 361;
+}
+
+/* 原生主栏图画在模糊层之上。 */
+.nh3-craft-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: var(--toolbar) center / contain no-repeat;
+}
+
+.nh3-craft-bar-glass {
+  /* 主按钮与主栏两块底板在 2431 × 361 导出图里的实体位置；Chromium 的背景模糊不受 mask 裁切，用圆角盒近似原生超椭圆。 */
+  position: absolute;
+  left: calc(61% * 100 / 2431);
+  top: calc(61% * 100 / 361);
+  width: calc(239% * 100 / 2431);
+  height: calc(239% * 100 / 361);
+  overflow: hidden;
+  border-radius: 12.5%;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+.nh3-craft-bar-glass + .nh3-craft-bar-glass {
+  left: calc(331% * 100 / 2431);
+  width: calc(2039% * 100 / 2431);
+  border-radius: 0.9% / 7.6%;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nh3-craft-bar-glass::before {
+    content: '';
+    position: absolute;
+    left: var(--wallpaper-x);
+    top: var(--wallpaper-y);
+    width: var(--card-width);
+    height: var(--card-height);
+    background: var(--wallpaper-blur) var(--wallpaper-position) / cover no-repeat;
+  }
 }
 
 @media (max-width: 880px) {

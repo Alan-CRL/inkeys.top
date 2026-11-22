@@ -1,0 +1,87 @@
+# Inkeys 3 settings window compositing
+
+**The settled settings window uses DWM `BlurBehind` with one 80%-opaque app tint.** The title bar, expanded navigation pane, and content area share that tint. Cards and controls add their own fills over it. The website PNG already contains those client-area layers. I checked the source and decoded the published PNGs read-only. I did not launch the app or measure the live DWM output. (`Setting.cpp:350–365`, `Setting.cpp:458–470`, `Setting.Controls.cpp:2526–2551`, `HomeCapture.inc:92–132`)
+
+## 1. Window composition setup
+
+| Component | What the settings path does | Evidence |
+|---|---|---|
+| Main HWND | Registers an `Inkeys.Setting` window spec and creates it with `CreateWindowExW`. Uses `WS_OVERLAPPEDWINDOW \| WS_CLIPCHILDREN` and `WS_EX_APPWINDOW`. The service strips `WS_EX_LAYERED` from the main HWND. The app draws its caption inside the client area. | `Inkeys/IdtMain.cpp:3872–3887`, `Window.cppm:42–44`, `Window.cpp:1638–1652`, `Window.cpp:1703–1713` |
+| Swap chain | `IDXGIFactory::CreateSwapChain` on the settings HWND, with two `R8G8B8A8_UNORM` buffers, one sample, windowed, and `DXGI_SWAP_EFFECT_DISCARD`. Presents with `Present(1, 0)`. | `Setting.Base.cppm:96–123`, `Setting.cpp:1560–1563` |
+| Accent policy | Dynamically resolves `user32!SetWindowCompositionAttribute` and submits `WCA_ACCENT_POLICY` (`19`). Enabled selects `ACCENT_ENABLE_BLURBEHIND` (`3`). Disabled selects `0`. Flags and animation ID are zero. The policy stays the same during move and resize. | `Setting.cpp:323–372`, `Setting.SessionState.h:150–161` |
+| DWM attributes | Sets `DWMWA_USE_IMMERSIVE_DARK_MODE`, `DWMWA_CAPTION_COLOR` from the theme’s AppBase RGB, `DWMWA_TEXT_COLOR`, and `DWMWA_BORDER_COLOR = DWMWA_COLOR_DEFAULT`. The disable path sets `DWMWA_REDIRECTIONBITMAP_ALPHA = FALSE`. An enable call for that attribute is **not found**. | `Setting.cpp:375–382`, `Setting.cpp:474–495` |
+| Frame extension and corners | `DwmExtendFrameIntoClientArea` extends the top by **1 physical pixel** on eligible restored windows to retain the DWM shadow. Other margins are zero. A `DWMWA_WINDOW_CORNER_PREFERENCE` setter is **not found**. The client draw rounds the root on restored Win11 and uses square corners on Win10 and when maximized. | `Setting.cpp:385–395`, `Setting.cpp:2642–2655`, `Window.cppm:52–60`, `Setting.Layout.h:24–25` |
+| Layered helper | A separate owned resize HWND uses `WS_EX_LAYERED` and constant alpha `1/255` to receive mouse input outside the window. It does not present the settings content. | `Setting.cpp:507–508`, `Setting.cpp:620–626` |
+
+There are **two active material modes**. Win11 and Win10 **1803 / RS4, build 17134 and later**, attempt `BlurBehind` by default. A successful call selects the render palette named `BackdropMode::Acrylic`. Older Windows, high contrast, unavailable composition, a missing API, or an accent call failure select opaque `Solid`. The OS test uses `RtlGetVersion`, and Win8+ is treated as having DWM composition enabled. (`Window.cppm:55–66`, `Window.cpp:4981–5017`, `Setting.cpp:398–412`, `Setting.SessionState.h:240–253`, `Setting.Theme.h:12–29`)
+
+Active Acrylic state `4`, Mica, `DWMWA_SYSTEMBACKDROP_TYPE`, Aero `DwmEnableBlurBehindWindow`, DirectComposition, and explicit `DXGI_ALPHA_MODE_*` configuration are **not found** in the settings presentation path. The enum retains `AcrylicBlurBehind = 4`, and the resolver selects only `3` or `0`. The repo has other presentation paths for the drawing canvas. (`Setting.SessionState.h:150–161`, `setting_session_state_tests.cpp:610–627`, `Setting.Base.cppm:96–123`, `Draw3.TransparentPresentation.cpp:1398–1416`, `Draw3.TransparentPresentation.cpp:1972`)
+
+## 2. What DWM does behind the client area
+
+The accent policy requests **live Windows compositor blur of the scene behind the HWND**. The app clears the translucent client target to `(0,0,0,0)` and draws its own tint over that backdrop. The repository records that the settled blur was verified on Win10 and Win11. The frame extension is for the shadow. (`Setting.cpp:350–365`, `Setting.cpp:387–395`, `Setting.cpp:5417–5423`, `.trellis/spec/native-desktop/rendering-and-ui.md:1638–1641`, `.trellis/workspace/codex/journal-2.md:1021`)
+
+| Theme | Submitted accent gradient, `0xAABBGGRR` | Decoded RGBA | AppBase tint actually drawn |
+|---|---|---|---|
+| Light | `0x10F7F7F7` | `(247,247,247,16)` | `(243,243,243,204)` |
+| Dark | `0x10202020` | `(32,32,32,16)` | `(32,32,32,204)` |
+
+The code documents the gradient as unused for coloring in `BlurBehind`. An additional Acrylic tint, luminosity, or noise layer is **not found** in the active path. The compositor’s exact blur kernel, radius, and any OS-internal color processing are **not found** in the repository. The earlier Acrylic implementation did use a `0xCC` tint. The project’s archived observation attributes the earlier near-opaque appearance to that tint stacking with AppBase. (`Setting.cpp:356–361`, `Setting.Controls.cpp:17–18`, `Setting.Controls.cpp:62–63`, `Setting.Controls.cpp:2532–2537`, `.trellis/tasks/archive/2026-11/11-01-setting-translucent-seams/prd.md:7–12`)
+
+## 3. Per-region colors and alpha
+
+These are the resolved **draw RGBA values** for the settled translucent Home page. The last column gives the effective client alpha in a fully covered pixel, before DWM composites the desktop. For a layer with byte alpha `a` over a pixel with byte alpha `b`, the result is approximately `a + b × (1 − a/255)`. Antialiasing and 8-bit rounding affect edge pixels. (`imgui_impl_dx11.cpp:976–988`)
+
+| Region | Light RGBA | Dark RGBA | Where it stacks and effective alpha |
+|---|---|---|---|
+| Root AppBase | `(243,243,243,204)` | `(32,32,32,204)` | Once over transparent clear. **204**. `Setting.Controls.cpp:17–18`, `:62–63`, `:2537`, `:2588`, `Setting.cpp:5417–5423` |
+| Title bar, expanded nav pane, content | No additional fill | No additional fill | Shared root, **204**. Title-bar entry mask is zero when settled. A narrow nav pane opened **over** the content uses opaque AppBase, **255**. `Setting.cpp:467–470`, `:2710–2717`, `:2878–2885`, `:5383–5389`, `Setting.Pages.cpp:461–464`, `Setting.Shell.cpp:204–214` |
+| Nav item selected or hovered | `(0,0,0,9)` | `(255,255,255,15)` | Over root, **≈206 / 207**. Held uses `(0,0,0,6)` / `(255,255,255,10)`, giving **≈205 / 206**. Idle unselected adds zero alpha. `Setting.Controls.cpp:2549–2551`, `:2580–2581`, `imfluent.cpp:996–1005`, `:5322–5335` |
+| Nav selection indicator | `(0,103,192,255)` | `(96,205,255,255)` | Opaque accent over the selected row. `Setting.Controls.cpp:26`, `:71`, `:2553–2554`, `imfluent.cpp:635–648`, `Setting.Shell.cpp:511–520` |
+| Hero/banner and “Open source and free” | Gradient using mint `(221,242,239,179)`, lavender `(238,232,249,179)`, base `(234,242,249,179)` | Mint `(29,59,62,179)`, lavender `(47,43,66,179)`, base `(29,44,58,179)` | One continuous fill over root, **≈240**. RGB varies across the mesh. The open-source copy and buttons are inside the same card. `Setting.Controls.cpp:38–43`, `:83–88`, `:2543–2545`, `Setting.Pages.cpp:100–120`, `:1942–1973` |
+| GitHub star button, rest / hover / held | White at **155 / 205 / 115** | White at **14 / 24 / 10** | Over hero, **≈249 / 252 / 247** light and **≈241 / 241 / 240** dark. `Setting.Pages.cpp:163–175`, `:1970–1973`, `imfluent.cpp:2518–2521` |
+| Sponsor button, rest / hover / held | `(0,103,192,A)` | `(96,205,255,A)` | `A = 255 / 230 / 204`, giving **≈255 / 254 / 252** over hero. Includes a white top highlight at alpha `32`. `Setting.Pages.cpp:174–192`, `Setting.Controls.cpp:26`, `:71`, `imfluent.cpp:635–648`, `:2524–2527` |
+| Explore and common-settings buttons, rest / hover / held | `(255,255,255,179)` / `(249,249,249,128)` / `(249,249,249,77)` | White at **15 / 21 / 8** | Button over root. Rest is **≈240 / 207**. The Explore cards add a colored illustration panel at alpha **179** over the button. `imfluent.cpp:417–419`, `:500–502`, `Setting.Pages.cpp:1998–2024`, `:2037–2053`, `Setting.Controls.cpp:2543–2546` |
+| Author card | `(255,255,255,179)` | `(255,255,255,13)` | Over root, **≈240 / 207**. Card stroke is black at **15 / 25**. `Setting.Pages.cpp:2065–2079`, `Setting.Controls.h:131–132`, `Setting.Controls.cpp:2065–2089`, `:2539–2542` |
+| Dividers | Nav `(0,0,0,15)`. Hero `(220,232,241,255)` | Nav `(255,255,255,21)`. Hero `(48,66,82,255)` | Nav over root, **≈207 / 208**. Hero rule and outline have opaque stroke colors, with antialiased edges. `Setting.Shell.cpp:195–200`, `imfluent.cpp:463`, `:545`, `Setting.Pages.cpp:120`, `:1963–1965`, `Setting.Controls.cpp:39`, `:84` |
+| Window border | `(117,117,117,102)` | `(117,117,117,102)` | Client stroke over the root where they overlap, **≈224**. The separate DWM frame uses the system default border color. A fixed DWM border RGBA is **not found**. `imfluent.cpp:461`, `:543`, `Setting.cpp:2642–2655`, `:493–495`, `imgui.cpp:7112–7118` |
+
+The most transparent **large surfaces** are the bare title bar, sidebar, and content at about **20% backdrop contribution**. The hero transmits about **6%**. Opaque glyph interiors, the selection indicator, the hero divider, and the resting Sponsor fill transmit **0%**. Primary and secondary text are `(32,32,32,255)` and `(97,97,97,255)` in light, `(242,242,242,255)` and `(190,190,190,255)` in dark. The native inactive caption dims its text and ordinary chrome glyphs to 55%. (`Setting.Controls.cpp:23–24`, `:68–69`, `:2537–2546`, `Setting.Pages.cpp:1963–1973`, `Setting.Shell.cpp:519`, `Setting.cpp:887–890`, `:2733–2739`)
+
+## 4. Does the export adapter match the product?
+
+**Yes, for the settled client colors on the successful BlurBehind path.** The adapter explicitly selects the same `BackdropMode::Acrylic` palette, zeros the same Fluent background alpha, draws one root, and calls the shared `RenderHome` and `RenderNavigationPane`. The native path also uses a transparent content child and clears the target to zero. An extra AppBase fill, an opaque adapter-only card, or a different Home palette is **not found**. The reported PNG alphas of **204** on the shell and **240** on the hero follow directly from the source-over blend. (`HomeCapture.inc:92–132`, `:150–155`, `Setting.cpp:458–470`, `:2878–2936`, `:5362–5363`, `:5417–5423`, `Setting.Controls.cpp:2537–2545`)
+
+The adapter has **no HWND or DWM pass**, forces rounded corners and a settled active caption, and holds the pointer away. The live app can show a square root, inactive chrome, hover states, and the opening mask. The website adds its own `blur(18px)` behind the PNG at a responsive display width. These are concrete differences. I found no code evidence of increased client-fill opacity in the export. I verified the recorded hashes for the adapter and the four settings implementation files, and checked the three published light PNGs against the manifest. (`setting_home_warp_tests.cpp:120–155`, `HomeCapture.inc:36–79`, `:85–106`, `:161–176`, `Setting.cpp:2645–2655`, `:2710–2724`, `:5383–5389`, `SectionCraft.vue:184–216`, `capture-manifest.json:12–19`, `:29–32`, `:41–44`, `:68–74`)
+
+## 5. Premultiplied alpha
+
+**The rendered pixels are premultiplied in both paths.** The DX11 backend weights source RGB by source alpha and accumulates alpha with source factor `ONE` and destination factor `INV_SRC_ALPHA`. Starting at transparent black produces premultiplied RGBA. WARP copies those bytes to a staging texture and reads them back row by row. The native settled path calls the same DX11 renderer. (`imgui_impl_dx11.cpp:976–988`, `setting_home_warp_tests.cpp:174–196`, `:199–224`, `Setting.HomeEntryCache.h:63–71`, `Setting.cpp:5417–5423`)
+
+**`export.py` uses the correct inverse** for nonzero alpha: `straightRGB = premulRGB × 255 / alpha`. It rounds, clamps, and guards against division by zero. The conversion cannot recover precision already lost in the 8-bit render target. The product’s legacy `DXGI_SWAP_CHAIN_DESC` has no `AlphaMode` field. An explicit `PREMULTIPLIED`, `STRAIGHT`, or `IGNORE` presentation declaration is **not found**. The premultiplication is a property of the rendered bytes. (`export.py:143–151`, `Setting.Base.cppm:102–113`, [Microsoft DXGI swap-chain descriptor documentation](https://learn.microsoft.com/en-us/windows/win32/api/dxgi1_2/ns-dxgi1_2-dxgi_swap_chain_desc1))
+
+## 6. Window size and Home page length
+
+The nominal **default client is 960 × 700 DIP** and the **minimum client is 720 × 520 DIP**. Startup scales the default by system DPI and caps it to the work area. `WM_GETMINMAXINFO` scales the minimum, adds the frame insets, and caps the resulting tracking size to the monitor work area. (`Setting.Layout.h:9–13`, `:123–131`, `Setting.cpp:452–455`, `:1855–1870`, `:1980–2002`)
+
+At **1040 DIP wide**, the expanded pane occupies **248 DIP**, leaving **744 DIP** for the page after two **24 DIP** gutters. The published captures are at 150% DPI. Positions below are client coordinates at scroll zero. (`Setting.Design.h:11–16`, `:271–287`, `Setting.cpp:2878–2912`, `HomeCapture.inc:9–10`, `:103–128`)
+
+| Order | Vertical layout |
+|---|---|
+| Title bar | `y = 0–32 DIP`. `Setting.Layout.h:13`, `Setting.Design.h:279–282` |
+| Home heading and welcome | Heading line box begins at `y = 60` after 28 DIP top padding. The title is 36 DIP high, then a 4 DIP gap, a 20 DIP welcome line, and 24 DIP to the banner including item spacing. `Setting.cpp:2884–2889`, `Setting.Controls.cpp:453–460`, `:822–828`, `Setting.Typography.h:13–16`, `imfluent.cpp:2171–2174`, `Setting.Pages.cpp:1915–1918` |
+| Hero, slogan, open-source section | Starts at **144 DIP** and ends at **about 636 DIP**, measured from the PNGs. Inside it are 56 DIP top padding, a 520 DIP-wide wordmark, 32 DIP to the slogan, a 24 DIP gap to the 1 DIP divider, then 20 DIP to the open-source heading. The heading has a 22 DIP line box, followed by 8 DIP to repository links, 16 DIP to the 36 DIP buttons, and 28 DIP bottom padding. `Setting.Pages.cpp:1918–1973`, `Setting.HomeBrand.h:232–248`, `capture-manifest.json:5–9`, `:16–45` |
+| Copyright, license, redistribution | Starts **16 DIP below the hero**, at about **652–653 DIP**. The copyright has a 20 DIP line box, then 4 DIP to the license and 2 DIP from the license to the redistribution copy. The latter two use 16 DIP caption lines and can wrap. `Setting.Pages.cpp:1975–1995`, `Setting.Typography.h:13–15` |
+| Explore | Follows the copyright block. Section spacing is 28 DIP, the heading is followed by an 8 DIP explicit gap, and the Appearance and Drawing tiles sit side by side with a 12 DIP gap and a minimum height of 164 DIP. `Setting.Controls.cpp:830–836`, `Setting.Design.h:16`, `Setting.Pages.cpp:1995–2027` |
+| Common settings and author | Starts 24 DIP after the Explore layout cursor. At 744 DIP page width the two sections sit side by side with a 20 DIP gap. Common settings contains four rows, at least 60 DIP each. The author card grows with its contents. `Setting.Pages.cpp:2027–2124` |
+| Actual page footer | Starts 20 DIP below the taller of those two sections. It has Terms of Use, Website, GitHub, and Bilibili links, followed by the final caption. Copyright is higher up, directly after the hero. `Setting.Pages.cpp:2123–2142` |
+
+**Use a 675 DIP client height to include the complete copyright line box at 1040 DIP width.** The box ends at about **673 DIP** from the measured banner edge plus the 16 DIP gap and 20 DIP line height. Allowing for the ImGui border clip gives a practical threshold of about **674 DIP**. The exact first height that shows every glyph pixel is **not found**. All three inspected 650 DIP captures end before the copyright starts. (`Setting.Pages.cpp:1975–1990`, `Setting.Typography.h:13–15`, `imgui.cpp:7884`, `:7915–7919`, `capture-manifest.json:5–9`, `:16–45`)
+
+**The C++ adapter supports a taller target by changing `CaptureHeight`.** It passes that height to the WARP target, display size, shell geometry, and content clip. `ConfigureHomeEntryViewport` stores the supplied bounds, and the page child auto-resizes vertically inside the scroll child. For an end-to-end PNG export, also update **`export.py`’s `DIMENSIONS`** because it reshapes the raw image to a fixed size. If published, update the website’s window aspect ratio to match. (`HomeCapture.inc:9–10`, `:85–87`, `:107–128`, `:139–145`, `Setting.Pages.cpp:270–275`, `setting_home_warp_tests.cpp:144–151`, `export.py:17`, `:143`, `SectionCraft.vue:191–205`)
+
+## Recommendation for the website
+
+Use **one wallpaper blur clipped to the window silhouette, with the existing straight-alpha PNG over it**. The PNG already supplies the `#F3F3F3` or `#202020` tint at **80%**, the hero at **179/255 over that tint**, and the region-specific controls and strokes. Adding another tint or making the entire PNG translucent would change those relative opacities. (`Setting.Controls.cpp:2532–2551`, `HomeCapture.inc:92–132`, `export.py:143–151`)
+
+The native blur radius is **not found**. Treat `18px` as the site’s current approximation and calibrate it against a settled native screenshot over the same wallpaper at the same displayed size. For the `Solid` fallback, use the opaque palette with zero backdrop blur. (`Setting.cpp:350–365`, `:398–412`, `Setting.Controls.cpp:2526–2537`, `SectionCraft.vue:184–205`)

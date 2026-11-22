@@ -12,20 +12,30 @@ const mobileOnly = process.argv.includes('--mobile')
 
 async function checkGlass(card, result) {
   // 只切换窗后的黑白底，真实像素的差值就是该处透过的背景量。
+  // 主栏的模糊会把上方窗口的像素晕进来，测底板透出量时暂时关掉主栏模糊。
+  await card.evaluate(el => el.querySelectorAll('.nh3-craft-bar-glass').forEach(glass => glass.style.setProperty('backdrop-filter', 'none')))
   const frames = []
   for (const color of ['black', 'white']) {
     await card.evaluate((el, color) => el.style.setProperty('--wallpaper', `linear-gradient(${color}, ${color})`), color)
     frames.push(PNG.sync.read(await card.screenshot({ animations: 'disabled' })))
   }
   await card.evaluate(el => el.style.removeProperty('--wallpaper'))
+  await card.evaluate(el => el.querySelectorAll('.nh3-craft-bar-glass').forEach(glass => glass.style.removeProperty('backdrop-filter')))
   const samples = {}
-  for (const [name, x, y] of [['sidebar', .21, .52], ['banner', .3, .5], ['wordmark', .41, .4]]) {
+  for (const [name, x, y] of [['sidebar', .21, .52], ['banner', .3, .5], ['wordmark', .405, .4]]) {
     const col = Math.round(result.window.x - result.card.x + x * result.window.width)
     const row = Math.round(result.window.y - result.card.y + y * result.window.height)
     const offset = 4 * (row * frames[0].width + col)
     samples[name] = (frames[1].data[offset] - frames[0].data[offset]) / 255
   }
-  assert.ok(Math.abs(samples.sidebar - 51 / 255) < .015 && Math.abs(samples.banner - 15 / 255) < .015, 'restored native window and banner transmit their original amount of background')
+  // 主栏底板上图标之间、位于窗口下沿以下的一点。
+  const barCol = Math.round(result.bar.x - result.card.x + .8754 * result.bar.width)
+  const barRow = Math.round(result.bar.y - result.card.y + .69 * result.bar.height)
+  const barOffset = 4 * (barRow * frames[0].width + barCol)
+  samples.bar = (frames[1].data[barOffset] - frames[0].data[barOffset]) / 255
+  // 窗底与主栏底板统一为 60% 不透明（透出 102/255），横幅卡片保持原生的 15/255。
+  assert.ok(Math.abs(samples.sidebar - 102 / 255) < .015 && Math.abs(samples.bar - 102 / 255) < .015, `window and bar surfaces share the lighter web backdrop ${JSON.stringify(samples)}`)
+  assert.ok(Math.abs(samples.banner - 15 / 255) < .015, 'the banner card keeps its native transmission')
   assert.ok(Math.abs(samples.wordmark) < .02, 'the same background change preserves opaque Inkeys lettering')
   return samples
 }
@@ -58,7 +68,7 @@ async function verify(page, locale, theme, width, fallback = false) {
   await card.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }))
   await page.waitForFunction(({ locale, theme }) =>
     document.documentElement.dataset.theme === theme &&
-    getComputedStyle(document.querySelector('.nh3-craft-bar')).backgroundImage.includes(`toolbar-${locale}-${theme}.png`), { locale, theme })
+    getComputedStyle(document.querySelector('.nh3-craft-bar'), '::after').backgroundImage.includes(`toolbar-${locale}-${theme}.png`), { locale, theme })
   const result = await card.evaluate(async (panel, { locale, theme, width }) => {
     const geometry = el => {
       const r = el.getBoundingClientRect()
@@ -67,7 +77,7 @@ async function verify(page, locale, theme, width, fallback = false) {
     const settings = panel.querySelector('.nh3-craft-window')
     const bar = panel.querySelector('.nh3-craft-bar')
     const native = getComputedStyle(settings, '::after').backgroundImage
-    const toolbar = getComputedStyle(bar).backgroundImage
+    const toolbar = getComputedStyle(bar, '::after').backgroundImage
     const wall = getComputedStyle(panel).backgroundImage
     const layers = [toolbar, wall]
     if (width > 560) layers.push(native)
@@ -99,10 +109,13 @@ async function verify(page, locale, theme, width, fallback = false) {
     } else assert.equal(result.blur, 'blur(18px)')
     assert.ok(result.window.right > result.card.right && result.window.y >= result.card.y)
     const nativeMargin = result.bar.width * 60.5 / 2431
-    assert.ok(Math.abs(result.bar.y + nativeMargin - result.window.bottom - 24) < 1)
-    assert.ok(Math.abs(result.window.width / result.window.height - 1.6) < .01)
+    // 主栏实体压住窗口下沿四成实体高，并位于窗口之上。
+    const overlap = .4 * result.bar.width * 240 / 2431
+    assert.ok(Math.abs(result.bar.y + nativeMargin - (result.window.bottom - overlap)) < 1)
+    assert.ok(Math.abs(result.window.width / result.window.height - 960 / 700) < .01)
     if (width > 880) {
-      assert.ok(result.text.right <= result.window.x && Math.abs(result.bar.x + nativeMargin - result.window.x) < 1)
+      // 主栏向左错出窗口宽度的 10%，仍在文字栏右侧。
+      assert.ok(result.text.right <= result.bar.x + nativeMargin && Math.abs(result.bar.x + nativeMargin - (result.window.x - .1 * result.window.width)) < 1)
     } else {
       assert.ok(result.window.y > result.text.bottom)
     }

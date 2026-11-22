@@ -3,16 +3,24 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import sys
 from tempfile import TemporaryDirectory
 
+import numpy as np
+from scipy import ndimage
 from PIL import Image
 
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from glass import WEB_BACKDROP_OPACITY, solid_regions, thin_backdrop  # noqa: E402
+
 SITE = HERE.parents[2]
 PROMO = SITE / 'media/inkeys3-theme-promo'
 BUILD = PROMO / 'build'
 DESTINATION = SITE / 'docs/.vuepress/public/new-index3/craft'
+# 原生主栏底板：深色 0.80，浅色材质叠加后约 0.92。
+BAR_BASE = {'dark': ((24, 24, 24), 204), 'light': ((251, 251, 251), 235)}
 
 
 def sha(path):
@@ -70,13 +78,18 @@ def prepare(staging, compiled, locale, theme):
         # 取主栏上沿软笔附近的半透明像素，确认实际红色光影随笔色绘制。
         r, g, b, a = full.getpixel((round(left + (right - left) * .3), math.floor(top) - 1))
         require(r > max(g, b) + 50 and a > 30, f'Missing red edge light: {source}')
-        image.save(target, optimize=True)
+        # 网页上主栏底板与设置窗底同样更通透：只替换底板这一层，图标、文字、选中叠色与光影保持原生。
+        pixels = np.array(image)
+        body = solid_regions(pixels[..., 3], 200, 5000)
+        base_rgb, base_alpha = BAR_BASE[theme]
+        require(np.mean(pixels[..., 3][body] == base_alpha) > .7, f'Unexpected bar surface alpha: {source}')
+        Image.fromarray(thin_backdrop(pixels, base_rgb, base_alpha, body)).save(target, optimize=True)
     return {
         'capture': source.name,
         'capture_manifest_sha256': sha(source / 'capture-manifest.json'),
         'inputs_and_layers_sha256': hashes,
         'crop_rect': crop, 'edge_sample_rgba': [r, g, b, a], 'png_sha256': sha(target),
-    }
+    }, body
 
 
 def main():
@@ -89,11 +102,18 @@ def main():
     with TemporaryDirectory(dir=HERE) as temporary:
         staging = Path(temporary)
         captures = {}
+        bodies = []
         for locale in ('zh-CN', 'zh-TW', 'en-US'):
             for theme in ('light', 'dark'):
-                captures[f'{locale}/{theme}'] = prepare(staging, compiled, locale, theme)
+                captures[f'{locale}/{theme}'], body = prepare(staging, compiled, locale, theme)
+                bodies.append(body)
         require(len({entry['png_sha256'] for entry in captures.values()}) == 6, 'Duplicate localized image')
+        # 网页只在两块底板下做背景模糊（SectionCraft.vue 的 .nh3-craft-bar-glass），核对其写死的实体位置。
+        mask = np.logical_or.reduce(bodies)
+        boxes = [(s[1].start, s[0].start, s[1].stop, s[0].stop) for s in ndimage.find_objects(ndimage.label(mask)[0])]
+        require(sorted(boxes) == [(61, 61, 300, 300), (331, 61, 2370, 300)], f'Bar surfaces moved: {boxes}')
         report = {'native_build': compiled, 'sampling': 3, 'size': [2431, 361],
+                  'web_backdrop_opacity': WEB_BACKDROP_OPACITY, 'glass_sha256': sha(HERE.parent / 'glass.py'),
                   'source_build': BUILD.relative_to(SITE).as_posix(), 'captures': captures}
         (staging / 'captures.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8', newline='\n')
         DESTINATION.mkdir(parents=True, exist_ok=True)

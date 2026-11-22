@@ -14,6 +14,8 @@
     2431,
     361
   ],
+  "web_backdrop_opacity": 0.6,
+  "glass_sha256": "acfaad5a522d30a9d70b8bfca2a0a2b49dfec76bf37a00a3c4497e7f323f9b2a",
   "source_build": "media/inkeys3-theme-promo/build",
   "captures": {
     "zh-CN/light": {
@@ -38,7 +40,7 @@
         68,
         82
       ],
-      "png_sha256": "2fa12308126d2301416009864bf49eef86fdaa96f56dfb94f722ad85debfd47e"
+      "png_sha256": "87d1085b9c1ed90ca417417faa94b875df11e467e39a79746cf1a308ab933665"
     },
     "zh-CN/dark": {
       "capture": "capture-readme-zh-CN-dark-10fda3db",
@@ -62,7 +64,7 @@
         114,
         85
       ],
-      "png_sha256": "05b06ec3b8b32c8c7c4becc3b5447580147bb34b64db5e6fec989b4181d020e4"
+      "png_sha256": "1afe0ed4825068a208bd44bfbf27deb5c8e007e58ed36bc17edad7b80698da85"
     },
     "zh-TW/light": {
       "capture": "capture-readme-zh-TW-light-1d4e06f0",
@@ -86,7 +88,7 @@
         68,
         82
       ],
-      "png_sha256": "75b3b1ba7584eade337d983ee3c237349cbb25454e9f366c406288ceda165143"
+      "png_sha256": "874c38a8e83e8ffb392849856b392a29810797c91b57b733826c05fcfa9d209c"
     },
     "zh-TW/dark": {
       "capture": "capture-readme-zh-TW-dark-6b2102c5",
@@ -110,7 +112,7 @@
         114,
         85
       ],
-      "png_sha256": "4d04708ebc2718c40d7891a782206030939da951ea41c0adbea53e89ad830280"
+      "png_sha256": "33d7a0ec52c74f367a9e21d44ff6628a640a785f1197c421dc229bbb92356ca3"
     },
     "en-US/light": {
       "capture": "capture-readme-en-US-light-11bf2bd0",
@@ -134,7 +136,7 @@
         68,
         82
       ],
-      "png_sha256": "347297329be2f64da3d1698fb313f5f20cb6f3da9103f1ccd761ea4f6ac5c688"
+      "png_sha256": "a98c1888adf0d4226b2c401d3e4e3794043b752ff222032d935d788b061d7b11"
     },
     "en-US/dark": {
       "capture": "capture-readme-en-US-dark-32d5bf6f",
@@ -158,7 +160,7 @@
         114,
         85
       ],
-      "png_sha256": "531887ec82a3d4944b866aa6c4645bde21f49589e44a343751cb7aa48f6bf101"
+      "png_sha256": "6f5b49b23ab14f799b5983eed65555b4f1c16657db708935e6b49e12dc3c5b3e"
     }
   }
 }

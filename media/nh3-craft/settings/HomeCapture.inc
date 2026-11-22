@@ -7,7 +7,8 @@ namespace
 {
 	namespace Setting = Inkeys::UI::Setting;
 	constexpr float CaptureScale = 1.5F;
-	constexpr UINT CaptureWidth = 1560, CaptureHeight = 975;
+	// 产品默认客户区 960×700 DIP，首页静止时正好露出横幅下方的版权行。
+	constexpr UINT CaptureWidth = 1440, CaptureHeight = 1050;
 	#include "CaptionButtons.inc"
 
 	struct HomeImages

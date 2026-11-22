@@ -6,17 +6,23 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
 from xml.sax.saxutils import escape
 
 import numpy as np
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent))
+from glass import solid_regions, thin_backdrop  # noqa: E402
+
 BUILD = HERE / "build"
 WEB = HERE.parents[2] / "docs/.vuepress/public/new-index3/craft"
-DIMENSIONS = (1560, 975)
+DIMENSIONS = (1440, 1050)
 LOCALES = ("zh-CN", "zh-TW", "en-US")
 THEMES = ("light", "dark")
+# 产品 BlurBehind 调色板的 AppBase（alpha 204）。
+APP_BASE = {"light": (243, 243, 243), "dark": (32, 32, 32)}
 
 
 def digest(path):
@@ -126,7 +132,7 @@ def run(repo):
     report = {'version': version, 'revision': subprocess.check_output(['git','-C',repo,'rev-parse','HEAD'],text=True).strip(),
               'renderer': 'D3D11 WARP, Debug|ARM64, InkeysHeadlessTests', 'dpi': 1.5, 'size': DIMENSIONS,
               'exeSha256': digest(exe), 'buildLogSha256': digest(BUILD/'msbuild.log'),
-              'adapterSha256': {p.name:digest(p) for p in (HERE/'export.py',HERE/'HomeCapture.inc')}, 'captures': []}
+              'adapterSha256': {p.name:digest(p) for p in (HERE/'export.py',HERE/'HomeCapture.inc',HERE.parent/'glass.py')}, 'captures': []}
     WEB.mkdir(parents=True,exist_ok=True)
     staging = BUILD / 'verified'
     staging.mkdir(exist_ok=True)
@@ -147,6 +153,9 @@ def run(repo):
                 raise ValueError('Expected translucent shell and opaque foreground')
             # WARP readback 为预乘 RGBA，网页 PNG 使用直通 alpha。
             pixels[:,:,:3] = np.minimum(255, (colors * 255 + alpha//2) // np.maximum(alpha,1))
+            # 网页上窗底比原生更通透：只把 80% 的 AppBase 换成 glass 的统一不透明度，横幅等卡片区域保持原生像素。
+            cards = solid_regions(pixels[:,:,3], 236, 20000)
+            pixels = thin_backdrop(pixels, APP_BASE[theme], 204, ~cards)
             out = staging/(label+'.png')
             Image.fromarray(pixels).save(out, optimize=True)
             report['captures'].append({'file':out.name,'sha256':digest(out),'logSha256':digest(log),
