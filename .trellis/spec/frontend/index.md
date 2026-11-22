@@ -10,6 +10,8 @@ The frontend is a VuePress documentation site rooted at `docs/`. Read the guide 
 - [State Management](./state-management.md) - Component-local, route-derived, and fetched state.
 - [Type Safety](./type-safety.md) - Mixed TypeScript/JavaScript conventions and runtime validation.
 - [Quality Guidelines](./quality-guidelines.md) - Formatting, build verification, release checks, and current tooling limits.
+- [Native Media](./native-media-guidelines.md) - Production offscreen captures, source binding, body anchoring and restoration.
+- [Remotion Video](./remotion-video-guidelines.md) - Direction-first workflow, picture rules, product UI facts, ink checks, web embedding and local environment.
 
 ## Quick Checks
 
