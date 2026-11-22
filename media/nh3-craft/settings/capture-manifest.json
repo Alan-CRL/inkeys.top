@@ -1,0 +1,76 @@
+{
+  "version": "3.0.0-dev.14163",
+  "revision": "9a4dda60ce1949d779fbfc477aaa7a1e6b0d0f53",
+  "renderer": "D3D11 WARP, Debug|ARM64, InkeysHeadlessTests",
+  "dpi": 1.5,
+  "size": [
+    1560,
+    975
+  ],
+  "exeSha256": "b6a8853d0394ebf578cab926fdad5da81962996e5bc7aab42e5d225daf1fd76a",
+  "buildLogSha256": "ea63bce0e9cbf03bac2487b79327fbbd7d74f880bc4104220809cfce4a4a8193",
+  "adapterSha256": {
+    "export.py": "5c0afffd096ea5b1cbb2a8f31a5b80d8243d896cb7fd8deec99952e6e987ef4c",
+    "HomeCapture.inc": "f6f35fc79f25a6b509a5ef12d83662ae8b253577b4e550afbe095c66c8a88368"
+  },
+  "captures": [
+    {
+      "file": "settings-zh-CN-light.png",
+      "sha256": "fbebad16e80c1144d34e2d38d60345157b6ce2b533d48fa37892c1d235265525",
+      "logSha256": "833c9aa02185bb8e17310861e571498ee6678b3977e33ddbb1fc601e7949379d",
+      "localeSha256": "7a647a6834adb79ca4614cdfabe64bf29e6a76321b0074f0b797f9e90dfc0892"
+    },
+    {
+      "file": "settings-zh-CN-dark.png",
+      "sha256": "4548a4cdeded7ba622de9ee287ddb0d9d2d6ccb03a708579a7e6f53333a2952c",
+      "logSha256": "5a5a856212c71e80804c4d0c05a3aa6a2a818f19994a300d35f6fddf34b4834e",
+      "localeSha256": "7a647a6834adb79ca4614cdfabe64bf29e6a76321b0074f0b797f9e90dfc0892"
+    },
+    {
+      "file": "settings-zh-TW-light.png",
+      "sha256": "ac90d7e01da3d2fa8a4856d4c5989f6f55650c567abe5ff2c2daea4ec05744fa",
+      "logSha256": "8c9f780c0594c90a1c88992ab60b6c23f71651f17356dec1b7170ae3130e5c27",
+      "localeSha256": "273a1a682dfaf2544456ad0c8168390d0629cb2934e85be73e083e04bf95d363"
+    },
+    {
+      "file": "settings-zh-TW-dark.png",
+      "sha256": "15f64a3ca1a6b711c15d9feaf9cb80621cbee488a22777952eb0d4cb720d8415",
+      "logSha256": "e5ffff677fa42e9381d1c289ba63dd2a9041f49f5f7db6da18ee168cc1bff8a6",
+      "localeSha256": "273a1a682dfaf2544456ad0c8168390d0629cb2934e85be73e083e04bf95d363"
+    },
+    {
+      "file": "settings-en-US-light.png",
+      "sha256": "4ab3fb6a582db9199bf5de72d922499b266a8f134072278fd29deb3d05cdf60e",
+      "logSha256": "e5357620b2c2546cea3e5b60bf9408be21a444941ced2a92d95a9c2cf252e7d8",
+      "localeSha256": "ef1e481ffa80d9d89bd8d5dc959393523a548ee19083a888de146cf24a71bcdc"
+    },
+    {
+      "file": "settings-en-US-dark.png",
+      "sha256": "54c8a7477a27d976f900d72a376c9f045ef50071d9b8eb8fe50c3285ac1dd959",
+      "logSha256": "4155aa4c8a91c5f30f2fa83e90ab90272d6ebb2d31f4036e4f72693df628427e",
+      "localeSha256": "ef1e481ffa80d9d89bd8d5dc959393523a548ee19083a888de146cf24a71bcdc"
+    }
+  ],
+  "fonts": {
+    "HarmonyOS_Sans_Condensed_Bold.ttf": "f4cab6822128e2fde6ea91751b9af4407001f01ca6235451ee6c968aa47ff022",
+    "HarmonyOS_Sans_Condensed_Regular.ttf": "ef6accddbc7c494c87f5d264cfbf1b4d7def914d115b94528ffbe71f5cc7bf80",
+    "HarmonyOS_Sans_SC_Regular.ttf": "8b193c486e7fd959598d209e3974b5f3838f07384239a9f4d05d45d06e6116ae",
+    "HarmonyOS_Sans_TC_Regular.ttf": "1c32d2caa30c52822e7ee4bc0ce305f8e520a1192121a0803ed4855d47e4ebe1",
+    "HarmonyOS_SansSC_Bold.ttf": "705136d8e45591b6451da444f1c926b12b77536158f0bff744529b87010df3ee",
+    "HarmonyOS_SansTC_Bold.ttf": "c8d7fe1e9cd36af07ecf23bce18d8b918dae8e1e1e35c0553edf8b0d4e404cd1",
+    "icomoon.ttf": "ba2b01e4b3f7cf5b5b9b200de57cf7d1a40a043cc6bb0fe9d49732821f5dc950",
+    "NotoSansJP-Bold.ttf": "611dbdbda88a7a34c44232b90c71161b65178a82649bdc6e365a30f61ab28237",
+    "NotoSansJP-Regular.ttf": "57458d02bb14502d7ae98abe1e2f79b52783ceda9e4628df145faae23a3d31d2",
+    "NotoSansKR-Bold.ttf": "cf93c6acfa4c4adcb580d156aa46fc3614ed0310f1e2ef23b5954476e85c872e",
+    "NotoSansKR-Regular.ttf": "4609a7b62a6da24cae3a8b73ecde7003581b8f60662d60cc8f55a3793de07763",
+    "Segoe Fluent Icons.ttf": "82f5dc0e0cb9f41efad49e5423c76768ae0fc96e062a0893b6c729b863033013"
+  },
+  "native": {
+    "Setting.cpp": "d1f8a5d20a6c872fc005e6f3e1aafcb6b203a0540acd3fece8773ab60813ee1c",
+    "Setting.Pages.cpp": "cac83298215646d99a1c72fea46cabfba73c39d4a4d3d7f64d47ef105435350b",
+    "Setting.Controls.cpp": "42df4c7634efa41d9830a8777539720ae3239cd9cac24578fdeee292ed4c7118",
+    "Setting.Shell.cpp": "8c657fafb5f7105dcc09a00bcd106ccde8b7624ae30efef83309c4d7ddd8122f",
+    "setting_design_tests.cpp": "f835e38236b74309f1e3a664e66b18cab404a99b3d59008a95bbb5cc9c9ec147",
+    "setting_home_warp_tests.cpp": "cc3d0747e67deb6d47b4845cef09358ae493762d5a9f3f4c257cfbc18cf875c0"
+  }
+}

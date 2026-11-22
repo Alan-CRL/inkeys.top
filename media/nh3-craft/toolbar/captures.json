@@ -1,0 +1,164 @@
+{
+  "native_build": {
+    "adapters": {
+      "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+      "HeroExport.inc": "b94df41facc10277be1158b4d82c50f1f2e4ed0f25881360d08e8506fa727c7d",
+      "HeroScene.inc": "93fbacab9736287a49b232bc1d0355a04c0d63ab27746d7475f23ac82c2f4c80"
+    },
+    "executable_sha256": "76f7260ad846e32d42e7bb7766963587ace04d3321b6125450e0d449b87a4e46",
+    "revision": "571b49ecd2cab171304d4ca1aed71b73ef306542",
+    "build_log_sha256": "f93c86eae92a791632c9d03a195d0b0de6515040766db00bcf7079fd45d5621e"
+  },
+  "sampling": 3,
+  "size": [
+    2431,
+    361
+  ],
+  "source_build": "media/inkeys3-theme-promo/build",
+  "captures": {
+    "zh-CN/light": {
+      "capture": "capture-readme-zh-CN-light-92f73a0a",
+      "capture_manifest_sha256": "be40218d5e34a1152e7a3d673c9a6d199e13ca47670f888e3e92b0aa9a317da7",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "d67b74c14e30e6d916d4dd0f1edb2844d64f517377cb086c782147b762fa968c",
+        "toolbar-state.json": "412c9b63a84099ea764967057b88782d696989532aa81a24cad2ec90128c08dd",
+        "toolbar.png": "81d1aed812854136ac9670aed9467f894f137bebb4d00f48697154f001ea008e",
+        "native-scene.txt": "105a51e9d44d5d058bf33f026bb18940695574fb1405342e1da02046e507e39c",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        183,
+        75,
+        68,
+        82
+      ],
+      "png_sha256": "2fa12308126d2301416009864bf49eef86fdaa96f56dfb94f722ad85debfd47e"
+    },
+    "zh-CN/dark": {
+      "capture": "capture-readme-zh-CN-dark-10fda3db",
+      "capture_manifest_sha256": "877b35a4246a9994079fa2bd3af873983aca3832a76bbd7b6db62329617cf22c",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "d67b74c14e30e6d916d4dd0f1edb2844d64f517377cb086c782147b762fa968c",
+        "toolbar-state.json": "300bdd055a3c4800e44ec7a137b4a5d078dbacf22a5e4a27e33910c252da8da8",
+        "toolbar.png": "344682e535bb232f24959195ea3765680222a05a8d89dbd4c6355b7321b7946d",
+        "native-scene.txt": "105a51e9d44d5d058bf33f026bb18940695574fb1405342e1da02046e507e39c",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        255,
+        120,
+        114,
+        85
+      ],
+      "png_sha256": "05b06ec3b8b32c8c7c4becc3b5447580147bb34b64db5e6fec989b4181d020e4"
+    },
+    "zh-TW/light": {
+      "capture": "capture-readme-zh-TW-light-1d4e06f0",
+      "capture_manifest_sha256": "70673b613f2f950e6d05ff6dd24faf4c765b173705e208f3569bb51afed71878",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "5dd77db6a9120f0948fe0bed5d4f64e5cbb1864fe4123127e72db4c99ac44b9f",
+        "toolbar-state.json": "412c9b63a84099ea764967057b88782d696989532aa81a24cad2ec90128c08dd",
+        "toolbar.png": "9b640382af9a261f446939e058cab06809ac6a7690b92eac731fbfc74a78637f",
+        "native-scene.txt": "b29d96cffecaa266f099ec2449c4e12c06a5a4d2e9f3d197d7d9aa0414ef644f",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        183,
+        75,
+        68,
+        82
+      ],
+      "png_sha256": "75b3b1ba7584eade337d983ee3c237349cbb25454e9f366c406288ceda165143"
+    },
+    "zh-TW/dark": {
+      "capture": "capture-readme-zh-TW-dark-6b2102c5",
+      "capture_manifest_sha256": "b991b86f1d315113a5067a2332ac328f2c05bafeff26f4bf434ef46ffa8ac671",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "5dd77db6a9120f0948fe0bed5d4f64e5cbb1864fe4123127e72db4c99ac44b9f",
+        "toolbar-state.json": "300bdd055a3c4800e44ec7a137b4a5d078dbacf22a5e4a27e33910c252da8da8",
+        "toolbar.png": "37d2350c5e4c92cccb07eb30c841d66e7cff1f5410c0d1a1577d73ea626cb4c1",
+        "native-scene.txt": "b29d96cffecaa266f099ec2449c4e12c06a5a4d2e9f3d197d7d9aa0414ef644f",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        255,
+        120,
+        114,
+        85
+      ],
+      "png_sha256": "4d04708ebc2718c40d7891a782206030939da951ea41c0adbea53e89ad830280"
+    },
+    "en-US/light": {
+      "capture": "capture-readme-en-US-light-11bf2bd0",
+      "capture_manifest_sha256": "ef4f6ba95ac40a326c96aca68c89e8eadfebb0b3038726f430ed5643e7dfe89f",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "ea7872596d2f13075ab75e6d21b62c1b20a259f23d45255e2b976af56fe94345",
+        "toolbar-state.json": "52b99019978d7ee7f75349eeba934908e20d9a0e279c1d8537d537e051a22b00",
+        "toolbar.png": "d07aab228f4501d6e8d8b0758dc682a33dd1fde54b36b13897a2f2e0045342be",
+        "native-scene.txt": "0bc3f3fe1d35cc468c1bd269435df225c01864d7bbbc6dbf0cfde4bc64db512d",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        183,
+        75,
+        68,
+        82
+      ],
+      "png_sha256": "347297329be2f64da3d1698fb313f5f20cb6f3da9103f1ccd761ea4f6ac5c688"
+    },
+    "en-US/dark": {
+      "capture": "capture-readme-en-US-dark-32d5bf6f",
+      "capture_manifest_sha256": "6b00959ab9e0945cf7a199d3f679272b83556765ce0de6bbe70a9f90551ab76f",
+      "inputs_and_layers_sha256": {
+        "toolbar-body.json": "ea7872596d2f13075ab75e6d21b62c1b20a259f23d45255e2b976af56fe94345",
+        "toolbar-state.json": "83a4e00604b3843a9eeca1a32b3b11b51af8d286c89eaeb773cf91b1bc7fe6ce",
+        "toolbar.png": "d21c6bccc4554cd70dea5c96f22bf18f4b968f752acb3aa2323abeb0a0d19e66",
+        "native-scene.txt": "0bc3f3fe1d35cc468c1bd269435df225c01864d7bbbc6dbf0cfde4bc64db512d",
+        "export.log": "88ac5277d4e6a36c727477eadf540e2a1d6bef0f973b9d3435318d10ae4b6daa"
+      },
+      "crop_rect": [
+        2912,
+        286,
+        5343,
+        647
+      ],
+      "edge_sample_rgba": [
+        255,
+        120,
+        114,
+        85
+      ],
+      "png_sha256": "531887ec82a3d4944b866aa6c4645bde21f49589e44a343751cb7aa48f6bf101"
+    }
+  }
+}

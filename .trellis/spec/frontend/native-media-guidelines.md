@@ -32,3 +32,9 @@ Wrong: crop toolbar to nonzero alpha and set the PNG bottom to the taskbar. Corr
 - A triangular dot prototype may use a native D2D pattern layer clipped by production brush coverage. It remains a disclosed future-texture composition, not an existing product mode. Preserve approved geometry and texture phase.
 
 - Annotation curve flags must change the geometric path before time resampling: densely sampling sparse straight segments does not make a smooth curve. Use continuous/open or periodic/closed interpolation as appropriate, while preserving deliberate arrowheads, brackets and fraction bars; verify unchanged glyph data and pixels outside the edited strokes.
+
+## Translucent settings layers
+
+For the settings homepage, run `python media/nh3-craft/settings/export.py <native-repository>` with the bundled media Python. The adapter uses the product home, navigation, fonts and translucent palette in a windowless WARP render. Verify the output of each language/theme pair, including stable frames, fully transparent exterior corners, translucent shell pixels (alpha 204 in this palette), and opaque text/icons. The home banner uses alpha 179 over the shell. Inspect localized glyphs and compare the output hashes with the capture manifest.
+
+A WARP texture contains window content. Windows composites the desktop blur separately. On the website, sample the actual wallpaper under the window, clip that sample to its outline and place the straight-alpha PNG above it. For preblurred fallbacks, reuse the full panel's wallpaper size, position and crop. Check the boundary on both sides of a responsive breakpoint and after switching themes. Compare the finished composite at the same wallpaper coordinates, including the area behind the banner: testing the blur with the foreground hidden misses excessive material opacity. Blurring the exported PNG softens the text and leaves the wallpaper sharp.
