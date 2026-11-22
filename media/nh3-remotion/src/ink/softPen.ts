@@ -1,5 +1,5 @@
 // 软笔模型：按软件的规则计算（源码 Draw3.StrokeGeometry.cpp / Draw3.InkPrediction.cpp，
-// 调查记录见 .trellis/tasks/11-16-new-index3-s1-card-motion/research/codex-ui-survey-result.md 第 4 节）。
+// 调查记录见 .trellis/tasks/archive/2026-11/11-16-new-index3-s1-card-motion/research/codex-ui-survey-result.md 第 4 节）。
 //
 // 1. 粗细随速度：慢则粗（1.4 倍），快则细（0.8 倍），经过 60ms 的低通。
 // 2. 起笔没有渐粗：先保持基准粗细，再跟随速度。

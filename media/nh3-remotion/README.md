@@ -2,9 +2,9 @@
 
 官网 `/new-index3` 的循环小视频。目前有三支，都是浅色、深色各一版：
 
-- S1“屏幕批注”卡片，约 8.0 秒循环。设计与分镜见 `.trellis/tasks/11-16-new-index3-s1-card-motion/design.md`。
+- S1“屏幕批注”卡片，约 8.0 秒循环。设计与分镜见 `.trellis/tasks/archive/2026-11/11-16-new-index3-s1-card-motion/design.md`。
 - S1“自由白板”卡片，约 8.9 秒循环（只做到 Studio 预览，还没有导出成片）。设计记录见同目录的 `design-whiteboard.md`。
-- S1“PPT 演示”卡片，约 9.1 秒循环（只做到 Studio 预览）。激光笔圈画后自己熄灭，笔迹跟着页走。设计记录见 `.trellis/tasks/11-19-s1-card3-motion/design.md`；分页栏原生图由 `native-slideshow/` 导出。
+- S1“PPT 演示”卡片，约 9.1 秒循环（只做到 Studio 预览）。激光笔圈画后自己熄灭，笔迹跟着页走。设计记录见 `.trellis/tasks/archive/2026-11/11-19-s1-card3-motion/design.md`；分页栏原生图由 `native-slideshow/` 导出。
 
 制作约定见 `.trellis/spec/frontend/remotion-video-guidelines.md`。
 

@@ -63,7 +63,7 @@
 
 ## 软件界面的事实（2026-11-16，`dev` `c06697b1`）
 
-完整报告在 `.trellis/tasks/11-16-new-index3-s1-card-motion/research/codex-ui-survey-result.md`。常用的几条：
+完整报告在 `.trellis/tasks/archive/2026-11/11-16-new-index3-s1-card-motion/research/codex-ui-survey-result.md`。常用的几条：
 
 - 主栏按钮：Select、Soft Pen、Shapes、Erase、Undo、Clear、More、Board、Freeze；主按钮 80×80，按钮 70×70，间距 5。
 - 选中色：浅色 `#006A63`，深色 `#58FFEC`，和网页强调色相同。
@@ -74,7 +74,7 @@
 - 白板（2026-11-18，`refactoring/draw` `bcc11421`，报告在同目录的 `codex-whiteboard-survey-result.md`）：出厂底色 `#123B32`，和软件主题无关；点阵可选，点距 24、直径 2、不透明度 0.18；深底上默认笔色是白色；触摸书写不显示光标；翻页立即切换；画布能平移、不能缩放；白板的主栏是 Move、Soft Pen、Shapes、Erase、Undo、Clear、More、Close，左下角另有分页栏。
 - 立体图形（Cuboid、Cube、Cylinder、Cone、Prism、Pyramid）只有描边，分两次拖动放置（先底面、再高度）；被挡住的棱是虚线（实段 4 倍线宽、间隔 6 倍线宽）。
 - 白板底色的预设（2026-11-22）：`#123B32`、`#172A46`、`#000000`、`#FFFFFF`、`#E5E7EB`、`#F5F1E6`。
-- 放映（2026-11-22，`refactoring/drawpad-ui` `866762e0`，报告在 `.trellis/tasks/11-19-s1-card3-motion/research/`）：左下角分页栏是拖动柄、Previous、页码（上下两行）、Next，主体 240×80；最后一页时右键仍是 Next，进入结束屏后才变 End show；按下是缩到 0.95 加压暗，没有水波；每页墨迹独立保存，翻回去恢复；页面立即切换。
+- 放映（2026-11-22，`refactoring/drawpad-ui` `866762e0`，报告在 `.trellis/tasks/archive/2026-11/11-19-s1-card3-motion/research/`）：左下角分页栏是拖动柄、Previous、页码（上下两行）、Next，主体 240×80；最后一页时右键仍是 Next，进入结束屏后才变 End show；按下是缩到 0.95 加压暗，没有水波；每页墨迹独立保存，翻回去恢复；页面立即切换。
 - 激光笔（同上）：默认红色 `#FF1000`、粗细 5；四层材质（外层漫反射、实体壳、内散射环、宽为三分之一的白芯）；最后一道抬笔后满亮 1.0 秒，再 0.8 秒整条淡出，曲线 `1 − t²(3 − 2t)`；绘制时不显示光标；不进撤销历史、不保存到页面，翻页即清空，切到别的工具也立即清空。
 
 ## 笔迹
