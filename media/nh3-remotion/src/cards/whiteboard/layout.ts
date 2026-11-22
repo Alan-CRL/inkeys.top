@@ -7,11 +7,16 @@ export { SCREEN }
 /** 软件的一个逻辑单位（DIP）对应多少卡片像素；和“屏幕批注”卡片里主栏用的比例相同。 */
 export const UNIT = 0.775
 
-// 白板的出厂外观（调查记录见任务目录 research/codex-whiteboard-survey-result.md）：
-// 底色 #123B32，与软件的深浅主题无关；点阵是可选图案，点距 24、直径 2，深底上是白点、不透明度 0.18。
-export const BOARD = { color: '#123b32', gutter: '#0b2620', dot: '#ffffff', dotOpacity: 0.18, dotGap: 24 * UNIT, dotRadius: 1 * UNIT }
-/** 深底白板上的默认笔色是白色；黄色取自默认调色板。 */
-export const CHALK = { white: '#ffffff', yellow: '#ffc510' }
+// 白板底色用软件自带的两种预设（调查记录见任务目录 research/codex-whiteboard-survey-result.md）：
+// 浅色版米白 #F5F1E6，深色版墨蓝 #172A46。出厂的墨绿在纯色调的网页里显得突兀，所以不用。
+// 点阵是可选图案，点距 24、直径 2、不透明度 0.18；浅底画黑点，深底画白点。
+// 主笔迹浅底用黑、深底用白；强调笔迹浅底用软件默认的红，红色在墨蓝上偏暗，深底改用调色板里的橙。
+const DOTS = { dotOpacity: 0.18, dotGap: 24 * UNIT, dotRadius: 1 * UNIT }
+export const BOARDS = {
+  light: { ...DOTS, color: '#f5f1e6', gutter: '#e4dfd2', dot: '#000000', ink: '#000000', accent: '#ff1000' },
+  dark: { ...DOTS, color: '#172a46', gutter: '#0e1b2e', dot: '#ffffff', ink: '#ffffff', accent: '#ff8b00' },
+} as const
+export type Board = (typeof BOARDS)[keyof typeof BOARDS]
 
 /** 相邻两页之间的间隙（只在翻页的过渡里看得到）。 */
 export const PAGE_GUTTER = 14
