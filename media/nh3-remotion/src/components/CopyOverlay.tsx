@@ -2,7 +2,7 @@ import type { Theme } from '../theme/tokens'
 
 export type CopyLanguage = 'none' | 'zh-CN' | 'en-US'
 
-export type CopyCard = 'screen-annotation' | 'whiteboard'
+export type CopyCard = 'screen-annotation' | 'whiteboard' | 'slide-show'
 
 const COPY = {
   'screen-annotation': {
@@ -12,6 +12,10 @@ const COPY = {
   whiteboard: {
     'zh-CN': { title: '自由白板', text: '推导与板书，空间足够。', lineHeight: 1.75 },
     'en-US': { title: 'Whiteboard', text: 'Room to work things out, page after page.', lineHeight: 1.6 },
+  },
+  'slide-show': {
+    'zh-CN': { title: 'PPT 演示', text: '放映时自动跟上，边讲边写。', lineHeight: 1.75 },
+    'en-US': { title: 'Slide shows', text: 'Follows your slides, so you can write as you present.', lineHeight: 1.6 },
   },
 }
 

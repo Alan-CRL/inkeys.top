@@ -1,9 +1,10 @@
 # nh3-remotion：new-index3 的 Remotion 视频
 
-官网 `/new-index3` 里循环播放的小视频。目前有两支，都是浅色、深色各一版：
+官网 `/new-index3` 的循环小视频。目前有三支，都是浅色、深色各一版：
 
 - S1“屏幕批注”卡片，约 8.0 秒循环。设计与分镜见 `.trellis/tasks/11-16-new-index3-s1-card-motion/design.md`。
 - S1“自由白板”卡片，约 8.9 秒循环（只做到 Studio 预览，还没有导出成片）。设计记录见同目录的 `design-whiteboard.md`。
+- S1“PPT 演示”卡片，约 9.1 秒循环（只做到 Studio 预览）。激光笔圈画后自己熄灭，笔迹跟着页走。设计记录见 `.trellis/tasks/11-19-s1-card3-motion/design.md`；分页栏原生图由 `native-slideshow/` 导出。
 
 制作约定见 `.trellis/spec/frontend/remotion-video-guidelines.md`。
 
@@ -19,8 +20,10 @@ node scripts/run.mjs studio --port=3123
 | --- | --- |
 | `S1-ScreenAnnotation-Light` / `-Dark` | 成片，不带文字（网页自己叠加标题） |
 | `S1-Whiteboard-Light` / `-Dark` | “自由白板”卡片，不带文字 |
+| `S1-SlideShow-Light` / `-Dark` | “PPT 演示”卡片，不带文字 |
 | `Preview-Light-zh` / `Preview-Dark-en` | 叠上网页的标题和一句话，检查文字与画面的关系；不用于导出 |
 | `Preview-Whiteboard-Light-zh` / `Preview-Whiteboard-Dark-en` | 同上，“自由白板”卡片 |
+| `Preview-SlideShow-Light-zh` / `Preview-SlideShow-Dark-en` | “PPT 演示”叠加网页文案的预览 |
 | `InkTest-Light` / `InkTest-Dark` | 只有软笔，放大 3 倍、四分之一速，用来看实时笔锋和粗细变化 |
 | `GlyphTest-Light` | 手写算式放大 7 倍、半速，用来看字形 |
 
