@@ -1,0 +1,30 @@
+{
+  "id": "new-index3-s5a-writing",
+  "name": "new-index3-s5a-writing",
+  "title": "S5-A 书写体验 Remotion 动画",
+  "description": "为 S5-A 书写体验区块制作 30 秒循环的 21:9 Remotion 宣传动画，表现新绘图引擎的速度与软笔笔锋",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-11-22",
+  "completedAt": "2026-11-23",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-28-inkeys3-new-homepage",
+  "relatedFiles": [
+    "media/nh3-remotion/src/s5a/",
+    "media/nh3-remotion/scripts/patrick-centerlines.py",
+    ".trellis/spec/frontend/promo-film-guidelines.md"
+  ],
+  "notes": "第七版成片已验收（2026-11-23），约 30.9 秒，三语合成已注册；渲染与嵌入推迟到官网其余视频完成后统一进行。",
+  "meta": {}
+}
