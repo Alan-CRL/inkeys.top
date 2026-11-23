@@ -4,6 +4,10 @@ import { InkTest } from './cards/screen-annotation/InkTest'
 import { WhiteboardCard, WHITEBOARD_FRAMES } from './cards/whiteboard/Card'
 import { GlyphTest } from './cards/whiteboard/GlyphTest'
 import { SlideShowCard, SLIDE_SHOW_FRAMES } from './cards/slide-show/Card'
+import { V5Predict, V5Redraw, V5Reveal, V5Taper, V5Title } from './s5a/v5/Frames'
+import { V6Latency, V6Opener, V6Predict, V6Taper, V6Title } from './s5a/v6/Frames'
+import { S5AFilm } from './s5a/film/Film'
+import { DURATION as S5A_DURATION } from './s5a/film/timeline'
 
 export const RemotionRoot = () => {
   return (
@@ -35,6 +39,25 @@ export const RemotionRoot = () => {
         <Composition id="InkTest-Light" component={InkTest} durationInFrames={360} fps={60} width={1280} height={720} defaultProps={{ theme: 'light' }} />
         <Composition id="InkTest-Dark" component={InkTest} durationInFrames={360} fps={60} width={1280} height={720} defaultProps={{ theme: 'dark' }} />
         <Composition id="GlyphTest-Light" component={GlyphTest} durationInFrames={360} fps={60} width={1280} height={720} defaultProps={{ theme: 'light' }} />
+      </Folder>
+      {/* S5-A 书写体验成片：30 秒循环，三种语言各一版。 */}
+      <Folder name="S5A-Film">
+        <Composition id="S5A-Film-zh-CN" component={S5AFilm} durationInFrames={S5A_DURATION} fps={60} width={2520} height={1080} defaultProps={{ lang: 'zh-CN' as const }} />
+        <Composition id="S5A-Film-zh-TW" component={S5AFilm} durationInFrames={S5A_DURATION} fps={60} width={2520} height={1080} defaultProps={{ lang: 'zh-TW' as const }} />
+        <Composition id="S5A-Film-en-US" component={S5AFilm} durationInFrames={S5A_DURATION} fps={60} width={2520} height={1080} defaultProps={{ lang: 'en-US' as const }} />
+      </Folder>
+      {/* S5-A 书写体验：静态样张，确认画风用。 */}
+      <Folder name="S5A-Styleframes">
+        <Composition id="S5A-V5-Title" component={V5Title} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V5-Reveal" component={V5Reveal} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V5-Redraw" component={V5Redraw} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V5-Predict" component={V5Predict} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V5-Taper" component={V5Taper} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V6-Title" component={V6Title} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V6-Opener" component={V6Opener} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V6-Latency" component={V6Latency} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V6-Predict" component={V6Predict} durationInFrames={1} fps={60} width={2520} height={1080} />
+        <Composition id="S5A-V6-Taper" component={V6Taper} durationInFrames={1} fps={60} width={2520} height={1080} />
       </Folder>
     </>
   )

@@ -4,6 +4,8 @@
 
 官网里用 Remotion 制作的循环小视频和演示视频（S1 卡片、S2 场景等）。原生离屏导出的约定见 [native-media-guidelines.md](./native-media-guidelines.md)。
 
+带幕标题、多个功能连续展示的宣传短片（S5-A 起）另见 [promo-film-guidelines.md](./promo-film-guidelines.md)，其中的墨迹模拟（按软件 Draw3 链路）比下文“笔迹”一节更接近软件。
+
 本文件随制作过程补充。工程在 `media/nh3-remotion/`，怎么预览、改哪里见其中的 README。
 
 ## 先定方向，再写代码

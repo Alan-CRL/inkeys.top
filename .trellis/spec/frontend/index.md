@@ -12,6 +12,7 @@ The frontend is a VuePress documentation site rooted at `docs/`. Read the guide 
 - [Quality Guidelines](./quality-guidelines.md) - Formatting, build verification, release checks, and current tooling limits.
 - [Native Media](./native-media-guidelines.md) - Production offscreen captures, source binding, body anchoring and restoration.
 - [Remotion Video](./remotion-video-guidelines.md) - Direction-first workflow, picture rules, product UI facts, ink checks, web embedding and local environment.
+- [Promo Film](./promo-film-guidelines.md) - Promo-film look, shot grammar, Draw3-faithful ink simulation and lessons from S5-A.
 
 ## Quick Checks
 
