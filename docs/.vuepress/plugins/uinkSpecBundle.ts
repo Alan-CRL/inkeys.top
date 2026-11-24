@@ -120,6 +120,8 @@ function rewriteTarget(target: string, page: string): string {
 
   const pageDir = posix.dirname(`/standard/${page}`)
   let abs = pathPart.startsWith('/') ? pathPart : posix.join(pageDir, pathPart)
+  // 规范发布目录（/standard/uink-v11/spec.md、样例等）是静态文件，保持原扩展名
+  if (/^\/standard\/uink-v\d+\//.test(abs)) return abs + hash
   if (pathPart.endsWith('/') && !abs.endsWith('/')) abs += '/'
   if (!abs.endsWith('/')) {
     const base = posix.basename(abs)
@@ -209,6 +211,14 @@ function transformBody(body: string, page: string): string {
     if (/^\s*<Badge\b/.test(line)) {
       // Badge 单独成行时保留为文字，不当作组件删除
       out.push(transformInline(line, page))
+      continue
+    }
+    // 单行的 <LinkCard title href description /> 转为列表项，避免卡片内容在单文件中丢失
+    const card = /^\s*<LinkCard\b([^>]*?)\/>\s*$/.exec(line)
+    if (card) {
+      const attr = (name: string) => new RegExp(`\\b${name}=(["'])(.*?)\\1`).exec(card[1])?.[2] ?? ''
+      const desc = attr('description')
+      out.push(transformInline(`- [${attr('title')}](${attr('href')})${desc ? `：${desc}` : ''}`, page))
       continue
     }
     if (COMPONENT_LINE.test(line)) continue
