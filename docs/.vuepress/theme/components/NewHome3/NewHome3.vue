@@ -1,19 +1,25 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useDarkMode, VPLink } from 'vuepress-theme-plume/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
 import { createPlayback } from './playback'
 import { getEraserFrame } from './eraser'
 import { pointerTarget } from './parallax'
-import FeatureSections from './FeatureSections.vue'
-import ScrollFrame from './ScrollFrame.vue'
+import SectionAbilities from './SectionAbilities.vue'
+import SectionScenes from './SectionScenes.vue'
+import SectionCraft from './SectionCraft.vue'
+import SectionDownload from './SectionDownload.vue'
+import { previewLocaleFromQuery, useCopy } from './copy'
+import './home.css'
 import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
 import type { ColorChoice, PenKind, StrokeSize } from './styles'
 
 const scene = createScene()
 const downloadHref = '/download'
+const starHref = 'https://github.com/Alan-CRL/Inkeys'
+const { locale, copy } = useCopy()
 const root = ref<HTMLDivElement>()
 const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
@@ -21,8 +27,9 @@ const planeStyle = ref<Record<string, string>>({ aspectRatio: String(scene.aspec
 const clock = createActiveClock()
 const heroCopy = ref<HTMLDivElement>()
 const copyStyle = ref<Record<string, string>>({})
-const entranceStyles = shallowRef([0, 0, 0].map(() => ({ opacity: '0', transform: 'translateY(24px)' })))
-const glintRunning = ref(false)
+// 首屏入场的三个部分：艺术字、标语（整句一起出现）、按钮。
+const entranceDelays = [0, 0.3, 0.5]
+const entranceStyles = shallowRef<Record<string, string>[]>(entranceDelays.map(() => ({ opacity: '0' })))
 const playback = createPlayback()
 const paused = ref(false)
 const isDark = useDarkMode()
@@ -43,11 +50,11 @@ const selectedColor = ref<ColorChoice>('rainbow')
 const selectedSize = ref<StrokeSize>('medium')
 const artFrame = shallowRef(playback.read(0))
 const tiltStyle = ref<Record<string, string>>({})
-const penLabels: Record<PenKind | 'eraser', string> = { eraser: '橡皮', hard: '硬笔', soft: '软笔', highlighter: '荧光笔', laser: '激光笔', brush: '刷子' }
+const penLabels = computed<Record<PenKind | 'eraser', string>>(() => copy.value.hero.pens)
 const colorChoices: ColorChoice[] = ['rainbow', 'neutral', 'red', 'amber', 'green', 'cyan', 'blue', 'purple']
-const colorLabels = { rainbow: '彩虹色', neutral: '中性色', red: '红色', amber: '琥珀色', green: '绿色', cyan: '青色', blue: '蓝色', purple: '紫色' }
+const colorLabels = computed<Record<ColorChoice, string>>(() => copy.value.hero.colors)
 const sizeChoices: StrokeSize[] = ['thin', 'medium', 'thick']
-const sizeLabels = { thin: '细', medium: '中', thick: '粗' }
+const sizeLabels = computed<Record<StrokeSize, string>>(() => copy.value.hero.sizes)
 const sizeWidths = { thin: 2.8, medium: 4, thick: 5.6 }
 
 let painter: Painter | undefined
@@ -75,17 +82,20 @@ let lastEraserKey = ''
 let warmedSize = ''
 let cancelWarmup: (() => void) | undefined
 let entranceComplete = false
+let reduceMotion = false
 
 function updateEntrance(now: number) {
   if (entranceComplete) return
   const time = frozen ?? clock.read(now)
   // 播放暂停只改变调度状态，不停止可见活跃时钟，因此早暂停也不会把文案卡在半显。
-  entranceStyles.value = [0, 0.18, 0.36].map(delay => {
-    const progress = Math.max(0, Math.min(1, (time - delay) / 0.7))
+  entranceStyles.value = entranceDelays.map((delay, index) => {
+    const progress = Math.max(0, Math.min(1, (time - delay) / 0.6))
     const eased = 1 - (1 - progress) ** 3
-    return { opacity: String(eased), transform: progress === 1 ? 'none' : `translateY(${24 * (1 - eased)}px)` }
+    // 标语和按钮淡入的同时上移 12px 到位；艺术字自己有书写动画，只淡入。
+    const rise = index === 0 || reduceMotion || progress === 1 ? 0 : (1 - eased) * 12
+    return rise ? { opacity: String(eased), transform: `translateY(${rise}px)` } : { opacity: String(eased) }
   })
-  entranceComplete = time >= 1.06
+  entranceComplete = time >= 1.1
 }
 
 function iconPaths(progress: number) {
@@ -289,8 +299,6 @@ function tick(now: number) {
 
 function syncPlayback() {
   const now = performance.now()
-  // CSS 高光只切换运行状态，离屏/隐藏后保留相位，不在逐帧循环发布额外属性。
-  glintRunning.value = canAnimate() && frozen === undefined
   clock.setRunning(canAnimate() && frozen === undefined, now)
   if (!canAnimate()) {
     cancelEraserWarmup()
@@ -419,6 +427,8 @@ onMounted(() => {
   const node = canvas.value
   if (!node || !root.value) return
   mounted = true
+  reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  previewLocaleFromQuery()
   painter = createPainter(scene, node)
   // 能力检测而非 UA：旧 WebKit 不可靠地刷新 HTML 引用的 SVG 遮罩。
   cssCanvasMask.value = typeof (document as CSSCanvasDocument).getCSSCanvasContext === 'function'
@@ -457,7 +467,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   mounted = false
-  glintRunning.value = false
   cancelEraserWarmup()
   painter?.dispose()
   if (cssMaskContext) {
@@ -479,7 +488,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="nh3-root" :class="{ 'is-active': glintRunning }">
+  <div ref="root" class="nh3-root" :lang="locale">
     <div ref="plane" class="nh3-plane" :style="planeStyle">
       <div class="nh3-entrance" :style="entranceStyles[0]">
       <div class="nh3-surface" :style="tiltStyle" role="img" aria-label="Inkeys">
@@ -509,16 +518,20 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
-      <p class="nh3-tagline" :style="entranceStyles[1]"><span>让屏幕上的书写行云流水，</span><span>让每一次操作都赏心悦目。</span></p>
-      <div class="nh3-download-entrance" :style="entranceStyles[2]">
-        <VPLink class="nh3-download" :href="downloadHref" target="_blank" no-icon>立即下载</VPLink>
+      <p class="nh3-tagline" :style="entranceStyles[1]"><span v-for="clause in copy.hero.tagline" :key="clause" class="nh3-clause">{{ clause }}</span></p>
+      <div class="nh3-actions" :style="entranceStyles[2]">
+        <VPLink class="nh3-btn nh3-btn-primary" :href="downloadHref" target="_blank" no-icon>{{ copy.hero.download }}</VPLink>
+        <VPLink class="nh3-btn nh3-btn-secondary" :href="starHref" target="_blank" rel="noopener noreferrer" no-icon>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.6 9.6 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.75c0 .27.18.58.69.48A10 10 0 0 0 12 2Z" /></svg>
+          {{ copy.hero.star }}
+        </VPLink>
       </div>
     </div>
-    <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath]" class="nh3-controls">
-      <div id="nh3-style-panel" ref="panel" class="nh3-style-panel" :class="{ 'is-open': panelOpen }" :inert="!panelOpen" :aria-hidden="!panelOpen" role="group" aria-label="书写样式">
+    <div ref="controls" v-memo="[panelOpen, selectedPens, selectedEraser, selectedColor, selectedSize, isDark, paused, iconPath, locale]" class="nh3-controls" :class="{ 'is-open': panelOpen }">
+      <div id="nh3-style-panel" ref="panel" class="nh3-style-panel" :class="{ 'is-open': panelOpen }" :inert="!panelOpen" :aria-hidden="!panelOpen" role="group" :aria-label="copy.hero.stylePanel">
         <div class="nh3-style-content">
           <fieldset class="nh3-options">
-            <legend class="nh3-sr-only">笔类型</legend>
+            <legend class="nh3-sr-only">{{ copy.hero.penGroup }}</legend>
             <div class="nh3-pen-options">
               <button v-for="tool in toolChoices" :key="tool" class="nh3-tool" type="button" :tabindex="panelOpen ? 0 : -1" :aria-pressed="tool === 'eraser' ? selectedEraser : selectedPens.includes(tool)" @click="toggleTool(tool)">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" v-html="toolIcons[tool]" />
@@ -527,7 +540,7 @@ onBeforeUnmount(() => {
             </div>
           </fieldset>
           <fieldset class="nh3-options">
-            <legend class="nh3-sr-only">颜色</legend>
+            <legend class="nh3-sr-only">{{ copy.hero.colorGroup }}</legend>
             <div class="nh3-color-options">
               <label v-for="color in colorChoices" :key="color" class="nh3-color-choice" :style="{ '--nh3-swatch': colorBackground(color) }">
                 <input v-model="selectedColor" type="radio" name="nh3-color" :tabindex="panelOpen ? 0 : -1" :value="color" :aria-label="colorLabels[color]" @change="updateSettings">
@@ -536,7 +549,7 @@ onBeforeUnmount(() => {
             </div>
           </fieldset>
           <fieldset class="nh3-options">
-            <legend class="nh3-sr-only">粗细</legend>
+            <legend class="nh3-sr-only">{{ copy.hero.sizeGroup }}</legend>
             <div class="nh3-size-options">
               <label v-for="size in sizeChoices" :key="size">
                 <input v-model="selectedSize" type="radio" name="nh3-size" :tabindex="panelOpen ? 0 : -1" :value="size" :aria-label="sizeLabels[size]" @change="updateSettings">
@@ -546,140 +559,32 @@ onBeforeUnmount(() => {
           </fieldset>
         </div>
       </div>
-      <button ref="paletteButton" class="nh3-playback nh3-palette" type="button" aria-label="调整书写样式" aria-controls="nh3-style-panel" :aria-expanded="panelOpen" @click="togglePanel">
-        <svg class="nh3-playback-surface" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 1C44 1 47 4 47 24C47 44 44 47 24 47C4 47 1 44 1 24C1 4 4 1 24 1Z" /></svg>
+      <button ref="paletteButton" class="nh3-playback nh3-palette" type="button" :aria-label="copy.hero.openStylePanel" aria-controls="nh3-style-panel" :aria-expanded="panelOpen" @click="togglePanel">
         <svg class="nh3-playback-icon nh3-palette-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.3a2.1 2.1 0 0 0 1.4-3.6c-.6-.6-.2-1.7.7-1.7h1.2A4.4 4.4 0 0 0 21 11.3 8.5 8.5 0 0 0 12 3Z" /><circle cx="7.2" cy="10" r="1" /><circle cx="10.5" cy="6.8" r="1" /><circle cx="15" cy="7.4" r="1" /><circle cx="17.5" cy="11" r="1" /></svg>
       </button>
     <button
       class="nh3-playback"
       type="button"
       :aria-pressed="paused"
-      :aria-label="paused ? '继续动画' : '暂停动画'"
+      :aria-label="paused ? copy.hero.resume : copy.hero.pause"
       @click="togglePlayback"
     >
-      <svg class="nh3-playback-surface" viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M24 1C44 1 47 4 47 24C47 44 44 47 24 47C4 47 1 44 1 24C1 4 4 1 24 1Z" />
-      </svg>
       <svg class="nh3-playback-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path :d="iconPath" />
       </svg>
     </button>
     </div>
   </div>
-  <ScrollFrame />
-  <div class="nh3-below-fold">
-    <FeatureSections />
+  <div class="nh3-main" :lang="locale">
+    <SectionAbilities />
+    <SectionScenes />
+    <SectionCraft />
+    <SectionDownload />
   </div>
 </template>
 
 <style>
-/* pageClass 由 Plume 在 SSR 中输出，导航与首屏共享底色，离开此页即不再匹配。 */
-.new-home3-page {
-  --nh3-bg: #f6f9fb;
-  --nh3-mint: rgba(136, 218, 195, 0.24);
-  --nh3-lavender: rgba(173, 163, 232, 0.23);
-  --nh3-pearl: rgba(255, 236, 214, 0.18);
-  --nh3-control-bg: rgba(255, 255, 255, 0.48);
-  --nh3-control-hover: rgba(255, 255, 255, 0.76);
-  --nh3-control-border: rgba(73, 99, 120, 0.14);
-  --nh3-playback-hover: rgba(110, 139, 161, 0.17);
-  --vp-c-text-1: #283e4c;
-  --vp-c-text-2: #506473;
-  --vp-c-text-3: #6b7c8a;
-  --vp-c-brand-1: #087f91;
-  --vp-nav-bg-color: transparent;
-  --vp-nav-screen-bg-color: #f4f8fa;
-  background-color: var(--nh3-bg);
-  /* 固定首屏原有色心和椭圆尺度，整页绘制以免在 100svh 处截断渐变。 */
-  background-image:
-    radial-gradient(ellipse 124.45vw 120.21svh at 12% 15svh, var(--nh3-mint), transparent 60%),
-    radial-gradient(ellipse 124.45vw 77.78svh at 88% 45svh, var(--nh3-lavender), transparent 65%),
-    radial-gradient(ellipse 77.78vw 134.35svh at 45% 95svh, var(--nh3-pearl), transparent 60%);
-  background-repeat: no-repeat;
-}
-
-[data-theme='dark'] .new-home3-page {
-  --nh3-bg: #111820;
-  --nh3-mint: rgba(36, 102, 100, 0.23);
-  --nh3-lavender: rgba(80, 65, 137, 0.22);
-  --nh3-pearl: rgba(91, 76, 111, 0.09);
-  --nh3-control-bg: rgba(178, 204, 231, 0.07);
-  --nh3-control-hover: rgba(178, 204, 231, 0.12);
-  --nh3-control-border: rgba(186, 207, 230, 0.16);
-  --nh3-playback-hover: rgba(2, 8, 16, 0.4);
-  --vp-c-text-1: #e6edf5;
-  --vp-c-text-2: #b3c1d1;
-  --vp-c-text-3: #8b9db0;
-  --vp-c-brand-1: #7bc9cc;
-  --vp-nav-screen-bg-color: #151e29;
-}
-
-/* 固定导航保留原生菜单；无 JS 时使用实色底，确保滚动后的内容不会穿透。 */
-.new-home3-page .vp-navbar .divider {
-  display: none;
-}
-
-.theme-plume.new-home3-page .vp-nav .vp-navbar {
-  background: var(--nh3-frame-color);
-  border-bottom: 0;
-  /* 内阴影不占高度；无 JS 默认保留细分界，开屏随导航填充一起消退。 */
-  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--vp-c-text-1) calc(var(--nh3-nav-fill, 1) * 10%), transparent);
-  transform: translateY(calc((var(--nh3-nav-visible, 1) - 1) * 100%));
-  transition: transform 320ms ease, background-color 320ms ease, box-shadow 320ms ease !important;
-}
-
-.theme-plume.new-home3-page .vp-nav {
-  position: fixed;
-  opacity: var(--nh3-nav-visible, 1);
-  transition: opacity 320ms ease !important;
-}
-
-.theme-plume.new-home3-page[data-nh3-frame-ready] .vp-nav .vp-navbar {
-  background: color-mix(in srgb, var(--nh3-frame-color) calc(var(--nh3-nav-fill, 0) * 100%), transparent);
-}
-
-/* 功能翻页期间顶栏融入页面底色并去掉分界线，沿用上方 320ms 过渡切换。 */
-.theme-plume.new-home3-page[data-nh3-frame-ready][data-nh3-pager='immersive'] .vp-nav .vp-navbar {
-  background: var(--nh3-page-color);
-  box-shadow: inset 0 -1px 0 transparent;
-}
-
-.theme-plume.new-home3-page .vp-navbar .content-body {
-  background: transparent;
-}
-
-.new-home3-page[data-nh3-nav-hidden] .vp-nav,
-.new-home3-page[data-nh3-nav-hidden] .vp-nav * {
-  pointer-events: none !important;
-}
-
-/* Plume 在桌面已为固定导航留位，手机仅补回原先 relative 导航的高度。 */
-@media (max-width: 959px) {
-  .new-home3-page .vp-content {
-    padding-top: var(--vp-nav-height, 64px);
-  }
-}
-
-.nh3-below-fold {
-  position: relative;
-  isolation: isolate;
-}
-
-.new-home3-page .vp-navbar-search .mini-search-button {
-  background: var(--nh3-control-bg);
-  border-color: var(--nh3-control-border);
-}
-
-.new-home3-page .vp-navbar-search .mini-search-button:hover {
-  background: var(--nh3-control-hover);
-  border-color: var(--vp-c-brand-1);
-}
-
-.new-home3-page .vp-navbar-search .mini-search-button:focus-visible {
-  outline: 2px solid var(--vp-c-brand-1);
-  outline-offset: 3px;
-}
-
+/* 页面级令牌、顶栏、文字与按钮样式见 home.css；这里只有首屏自己的布局。 */
 .nh3-root {
   --nh3-control-gap: clamp(16px, 2vw, 24px);
   min-height: calc(100vh - var(--vp-nav-height, 64px));
@@ -712,7 +617,7 @@ onBeforeUnmount(() => {
   perspective: 1200px;
 }
 
-/* 文案和下载入口位于视差平面之外；入口外层与按钮交互各自拥有独立变换。 */
+/* 文案和按钮位于视差平面之外，不随指针倾斜。 */
 .nh3-copy {
   position: absolute;
   left: 24px;
@@ -723,118 +628,23 @@ onBeforeUnmount(() => {
 
 .nh3-tagline {
   margin: 0;
-  color: var(--vp-c-text-2);
-  font-size: clamp(17px, 1.45vw, 22px);
-  font-weight: 450;
+  color: var(--nh3-text);
+  font-size: clamp(17px, 1.4vw, 20px);
+  font-weight: 400;
   line-height: 1.75;
-  letter-spacing: 0.025em;
 }
 
-.nh3-tagline span {
-  white-space: nowrap;
+.nh3-root:lang(en) .nh3-tagline {
+  line-height: 1.6;
 }
 
-.nh3-download-entrance {
-  margin-top: 24px;
-}
-
-.nh3-download {
-  --nh3-download-text: #17515d;
-  --nh3-download-tint: rgba(121, 201, 205, 0.24);
-  --nh3-download-hover: rgba(111, 193, 201, 0.38);
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  align-items: center;
+/* 按钮一行放不下时整体换行，各占一行并居中。 */
+.nh3-actions {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  min-width: 148px;
-  min-height: 48px;
-  padding: 0 28px;
-  box-sizing: border-box;
-  border: 1px solid rgba(77, 151, 162, 0.24);
-  border-radius: 26px;
-  corner-shape: squircle;
-  background-color: var(--nh3-download-tint);
-  background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.6), rgba(236, 252, 253, 0.36) 48%, rgba(162, 219, 223, 0.28));
-  -webkit-backdrop-filter: blur(16px) saturate(135%);
-  backdrop-filter: blur(16px) saturate(135%);
-  color: var(--nh3-download-text);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
-  text-decoration: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), inset 0 -1px 0 rgba(63, 144, 155, 0.06), 0 6px 20px rgba(36, 99, 113, 0.1);
-  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35),
-    background-color 220ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms ease !important;
-}
-
-/* 双宽背景的中央高光随定位移动到按钮 22%/78% 处，固定外框裁切背景，避免反光越过圆角。 */
-.nh3-download::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  corner-shape: inherit;
-  background-image: linear-gradient(115deg, transparent 38.5%, rgba(255, 255, 255, 0.28) 50%, transparent 61.5%);
-  background-size: 200% 100%;
-  background-position: 78% 50%;
-  background-repeat: no-repeat;
-  opacity: 0.4;
-  pointer-events: none;
-  animation: nh3-download-glint 13s ease-in-out infinite alternate !important;
-  animation-play-state: paused !important;
-  transition: opacity 220ms ease !important;
-}
-
-.nh3-root.is-active .nh3-download::before {
-  animation-play-state: running !important;
-}
-
-@keyframes nh3-download-glint {
-  from { background-position: 78% 50%; }
-  to { background-position: 22% 50%; }
-}
-
-[data-theme='dark'] .nh3-download {
-  --nh3-download-text: #d9f5f4;
-  --nh3-download-tint: rgba(66, 127, 141, 0.26);
-  --nh3-download-hover: rgba(80, 151, 164, 0.38);
-  border-color: rgba(152, 220, 223, 0.27);
-  background-image: linear-gradient(160deg, rgba(177, 226, 231, 0.14), rgba(91, 153, 170, 0.09) 48%, rgba(28, 71, 88, 0.26));
-  box-shadow: inset 0 1px 0 rgba(200, 241, 241, 0.12), inset 0 -1px 0 rgba(4, 12, 21, 0.12), 0 6px 20px rgba(4, 12, 21, 0.18);
-}
-
-[data-theme='dark'] .nh3-download::before {
-  background-image: linear-gradient(115deg, transparent 38.5%, rgba(209, 245, 247, 0.12) 50%, transparent 61.5%);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .nh3-download:hover {
-    transform: scale(1.04);
-    color: var(--nh3-download-text);
-    background-color: var(--nh3-download-hover);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44), inset 0 -1px 0 rgba(63, 144, 155, 0.06), 0 9px 24px rgba(36, 99, 113, 0.14);
-  }
-
-  .nh3-download:hover::before {
-    opacity: 0.6;
-  }
-
-  [data-theme='dark'] .nh3-download:hover {
-    box-shadow: inset 0 1px 0 rgba(200, 241, 241, 0.16), inset 0 -1px 0 rgba(4, 12, 21, 0.12), 0 9px 24px rgba(4, 12, 21, 0.26);
-  }
-}
-
-.nh3-download:active {
-  transform: scale(0.96);
-  transition-duration: 120ms !important;
-}
-
-.nh3-copy .nh3-download:focus-visible {
-  border-radius: 26px;
-  outline: 2px solid var(--vp-c-brand-1);
-  outline-offset: 4px;
+  gap: 16px;
+  margin-top: 32px;
 }
 
 .nh3-mark {
@@ -844,77 +654,66 @@ onBeforeUnmount(() => {
   background: transparent;
 }
 
+/* 书写控制平时退到 35%，鼠标进入首屏、键盘聚焦或面板打开时才完全显示。 */
 .nh3-controls {
   position: absolute;
   right: var(--nh3-control-gap);
   bottom: var(--nh3-control-gap);
   display: flex;
-  gap: 12px;
+  gap: 8px;
   z-index: 2;
+  opacity: 0.35;
+  transition: opacity var(--nh3-dur) var(--nh3-ease);
+  /* 首屏入场的最后一步：标语和按钮到位后再淡入。 */
+  animation: nh3-fade-in var(--nh3-dur-slow) var(--nh3-ease-out) 900ms backwards;
+}
+
+.nh3-controls:focus-within,
+.nh3-controls.is-open {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nh3-root:hover .nh3-controls {
+    opacity: 1;
+  }
 }
 
 .nh3-playback {
-  position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   border: 0;
-  border-radius: 16px;
-  background: transparent;
-  color: var(--vp-c-text-2);
+  border-radius: var(--nh3-r-control);
+  background: var(--nh3-surface);
+  color: var(--nh3-text2);
   font: inherit;
-  font-size: 14px;
-  line-height: 1.5;
   cursor: pointer;
-  /* 本页按用户要求保留动效，覆盖 Plume reduced-motion 的全局 !important 重置。 */
-  transition: transform 360ms cubic-bezier(0.2, 0.8, 0.25, 1.35) !important;
-}
-
-.nh3-playback-surface {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: var(--nh3-control-bg);
-  stroke: var(--nh3-control-border);
-  stroke-width: 1px;
-  transition: fill 220ms cubic-bezier(0.2, 0.7, 0.2, 1) !important;
-  pointer-events: none;
+  transition: background-color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease);
 }
 
 .nh3-playback-icon {
-  position: relative;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
   pointer-events: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .nh3-playback:hover:not(:disabled) {
-    transform: scale(1.07);
-  }
-
-  .nh3-playback:hover:not(:disabled) .nh3-playback-surface {
-    fill: var(--nh3-playback-hover);
+  .nh3-playback:hover {
+    background: var(--nh3-surface-hover);
   }
 }
 
-.nh3-playback:active:not(:disabled) {
+.nh3-playback:active {
   transform: scale(0.94);
-  transition-duration: 120ms !important;
 }
 
 .nh3-playback:focus-visible {
-  outline: 2px solid var(--vp-c-brand-1);
+  outline: 2px solid var(--nh3-accent);
   outline-offset: 3px;
-}
-
-.nh3-playback:disabled {
-  opacity: 0.55;
-  cursor: default;
 }
 
 .nh3-palette-icon {
@@ -932,85 +731,77 @@ onBeforeUnmount(() => {
 
 .nh3-style-panel {
   position: absolute;
-  right: calc(100% + 12px);
+  right: calc(100% + 8px);
   bottom: 0;
   width: max-content;
-  height: 48px;
+  height: 40px;
   box-sizing: border-box;
-  border: 1px solid var(--nh3-control-border);
-  border-radius: 16px;
-  corner-shape: squircle;
-  background: var(--nh3-bg);
-  background: color-mix(in srgb, var(--nh3-bg) 86%, transparent);
-  box-shadow: 0 8px 28px rgba(15, 32, 49, 0.08);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  color: var(--vp-c-text-1);
-  /* 揭示只做矩形裁切，圆角由超椭圆外壳绘制，避免切掉四角边框。 */
-  clip-path: inset(0 0 0 100%);
+  border-radius: var(--nh3-r-control);
+  background: var(--nh3-surface);
+  color: var(--nh3-text);
+  /* 揭示只做矩形裁切，不缩放内容。 */
+  clip-path: inset(0 0 0 100% round var(--nh3-r-control));
   opacity: 0;
-  transform: translateX(8px);
   visibility: hidden;
   pointer-events: none;
-  transition: clip-path 300ms cubic-bezier(0.22, 0.8, 0.25, 1),
-    transform 300ms cubic-bezier(0.22, 0.8, 0.25, 1), opacity 220ms ease, visibility 0s 300ms !important;
+  transition: clip-path var(--nh3-dur-slow) var(--nh3-ease-out), opacity var(--nh3-dur) var(--nh3-ease), visibility 0s var(--nh3-dur-slow);
 }
 
 .nh3-style-panel.is-open {
-  clip-path: inset(0 0 0 0);
+  clip-path: inset(0 0 0 0 round var(--nh3-r-control));
   opacity: 1;
-  transform: translateX(0);
   visibility: visible;
   pointer-events: auto;
-  transition-delay: 0s !important;
+  transition-delay: 0s;
 }
 
-/* 只揭示容器，不缩放内容；改变展开方向也不会拉伸图标。 */
-.nh3-style-content { display: flex; align-items: center; justify-content: flex-start; gap: 10px; height: 100%; padding: 5px 10px; box-sizing: border-box; }
+/* 面板内的选项是中性色的小块：选中项用页面底色垫起来，不用主题色。 */
+.nh3-style-content { display: flex; align-items: center; justify-content: flex-start; gap: 8px; height: 100%; padding: 4px; box-sizing: border-box; opacity: 0; transition: opacity var(--nh3-dur) var(--nh3-ease); }
+/* 面板展开一小段后选项再淡入。 */
+.nh3-style-panel.is-open .nh3-style-content { opacity: 1; transition-delay: 120ms; }
 .nh3-options { min-width: 0; margin: 0; padding: 0; border: 0; }
-.nh3-options + .nh3-options { padding-left: 10px; border-left: 1px solid var(--nh3-control-border); }
+.nh3-options + .nh3-options { padding-left: 8px; border-left: 1px solid var(--nh3-line); }
 .nh3-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.nh3-pen-options { display: flex; gap: 4px; }
-.nh3-tool { box-sizing: border-box; display: flex; align-items: center; gap: 5px; flex-shrink: 0; height: 36px; padding: 0 8px; border: 1px solid transparent; border-radius: 12px; corner-shape: squircle; background: transparent; color: var(--vp-c-text-2); font: inherit; font-size: 12px; white-space: nowrap; cursor: pointer; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease, color 220ms ease !important; }
-.nh3-tool svg { width: 18px; height: 18px; flex-shrink: 0; pointer-events: none; }
-.nh3-tool[aria-pressed='true'] { color: var(--vp-c-brand-1); background: var(--nh3-playback-hover); border-color: var(--nh3-control-border); background: color-mix(in srgb, var(--vp-c-brand-1) 12%, transparent); border-color: color-mix(in srgb, var(--vp-c-brand-1) 24%, transparent); }
-.nh3-tool:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
-.nh3-tool:active { transform: scale(0.94); transition-duration: 120ms !important; }
+.nh3-pen-options { display: flex; gap: 2px; }
+.nh3-tool { box-sizing: border-box; display: flex; align-items: center; gap: 6px; flex-shrink: 0; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--nh3-text3); font: inherit; font-size: 13px; font-weight: 400; line-height: 1; white-space: nowrap; cursor: pointer; transition: background-color var(--nh3-dur) var(--nh3-ease), color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease); }
+.nh3-tool svg { width: 16px; height: 16px; flex-shrink: 0; pointer-events: none; }
+.nh3-tool[aria-pressed='true'] { color: var(--nh3-text); background: var(--nh3-bg); font-weight: 500; }
+.nh3-tool:focus-visible { outline: 2px solid var(--nh3-accent); outline-offset: 1px; }
+.nh3-tool:active { transform: scale(0.94); }
 .nh3-color-options { display: flex; gap: 2px; }
-.nh3-color-choice { position: relative; display: grid; place-items: center; width: 28px; height: 34px; cursor: pointer; }
+.nh3-color-choice { position: relative; display: grid; place-items: center; width: 28px; height: 32px; cursor: pointer; }
 .nh3-color-choice input, .nh3-size-options input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
-.nh3-color-choice span { width: 19px; height: 19px; border-radius: 50%; background: var(--nh3-swatch); box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.15); transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35) !important; }
-.nh3-color-choice input:checked + span { outline: 2px solid var(--vp-c-text-2); outline-offset: 2px; }
-.nh3-color-choice input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
-.nh3-size-options { display: flex; gap: 3px; }
+.nh3-color-choice span { width: 16px; height: 16px; border-radius: 50%; background: var(--nh3-swatch); transition: transform var(--nh3-dur-press) var(--nh3-ease); }
+.nh3-color-choice input:checked + span { outline: 2px solid var(--nh3-text); outline-offset: 2px; }
+.nh3-color-choice input:focus-visible + span { outline: 2px solid var(--nh3-accent); outline-offset: 2px; }
+.nh3-size-options { display: flex; gap: 2px; }
 .nh3-size-options label { position: relative; width: 32px; cursor: pointer; }
-.nh3-size-options span { display: grid; place-items: center; height: 34px; border: 1px solid transparent; border-radius: 10px; corner-shape: squircle; transition: transform 300ms cubic-bezier(0.2, 0.8, 0.25, 1.35), background 220ms ease !important; }
-.nh3-size-options svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-linecap: round; }
-.nh3-size-options input:checked + span { background: var(--nh3-playback-hover); border-color: var(--nh3-control-border); }
-.nh3-size-options input:focus-visible + span { outline: 2px solid var(--vp-c-brand-1); outline-offset: 1px; }
-.nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); transition-duration: 120ms !important; }
+.nh3-size-options span { display: grid; place-items: center; height: 32px; border-radius: 8px; color: var(--nh3-text3); transition: background-color var(--nh3-dur) var(--nh3-ease), color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease); }
+.nh3-size-options svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; }
+.nh3-size-options input:checked + span { background: var(--nh3-bg); color: var(--nh3-text); }
+.nh3-size-options input:focus-visible + span { outline: 2px solid var(--nh3-accent); outline-offset: 1px; }
+.nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); }
 
 @media (hover: hover) and (pointer: fine) {
-  .nh3-tool:hover { transform: scale(1.04); background: var(--nh3-playback-hover); }
-  .nh3-tool:active { transform: scale(0.94); }
-  .nh3-color-choice:hover span, .nh3-size-options label:hover span { transform: scale(1.07); }
-  .nh3-size-options label:hover span { background: var(--nh3-playback-hover); }
-  .nh3-color-choice:active span, .nh3-size-options label:active span { transform: scale(0.94); }
+  .nh3-tool:not([aria-pressed='true']):hover, .nh3-size-options input:not(:checked) + span:hover { background: var(--nh3-surface-hover); color: var(--nh3-text); }
 }
 
 @media (max-width: 1099px) {
-  .nh3-style-panel { right: 0; bottom: calc(100% + 12px); width: min(480px, calc(100vw - 2 * var(--nh3-control-gap))); height: auto; max-height: max(48px, calc(100vh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); max-height: max(48px, calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); overflow-y: auto; overscroll-behavior: contain; }
-  .nh3-style-content { flex-direction: column; align-items: stretch; gap: 12px; padding: 12px; }
-  .nh3-options + .nh3-options { border-left: 0; border-top: 1px solid var(--nh3-control-border); padding-left: 0; padding-top: 12px; }
-  .nh3-pen-options { flex-wrap: wrap; gap: 6px; }
-  .nh3-tool { flex: 1 0 calc(33.333% - 6px); justify-content: center; font-size: 13px; }
-  .nh3-color-options { justify-content: space-between; }
-  .nh3-color-choice { height: 36px; }
+  .nh3-style-panel { right: 0; bottom: calc(100% + 8px); width: min(480px, calc(100vw - 2 * var(--nh3-control-gap))); height: auto; max-height: max(48px, calc(100vh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); max-height: max(48px, calc(100svh - var(--vp-nav-height, 64px) - 2 * var(--nh3-control-gap) - 60px)); overflow-y: auto; overscroll-behavior: contain; }
+  .nh3-style-content { flex-direction: column; align-items: stretch; gap: 8px; padding: 8px; }
+  .nh3-options + .nh3-options { border-left: 0; border-top: 1px solid var(--nh3-line); padding-left: 0; padding-top: 8px; }
+  .nh3-pen-options { flex-wrap: wrap; gap: 4px; }
+  .nh3-tool { flex: 1 0 calc(33.333% - 4px); justify-content: center; height: 40px; font-size: 14px; }
+  .nh3-color-options { justify-content: space-between; padding: 0 6px; }
+  .nh3-color-choice { height: 40px; }
+  .nh3-color-choice span { width: 20px; height: 20px; }
+  .nh3-size-options { gap: 4px; }
   .nh3-size-options label { flex: 1; }
+  .nh3-size-options span { height: 40px; }
 }
 
 .nh3-mask-defs { position: absolute; pointer-events: none; }
-.nh3-eraser-cursor { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform-origin: center; color: var(--vp-c-text-2); }
+.nh3-eraser-cursor { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; transform-origin: center; color: var(--nh3-text2); }
 
 /* 艺术字只复用字体规则；扫光位置由活跃时钟驱动，隐藏页面不会悄悄推进。 */
 .nh3-art {
@@ -1040,8 +831,6 @@ onBeforeUnmount(() => {
 .nh3-art-shine { background-image: linear-gradient(110deg, transparent 42%, rgba(255, 255, 255, 0.65) 50%, transparent 58%); background-size: 200% 100%; }
 
 @media (max-width: 640px) {
-  .nh3-tagline span { display: block; }
-
   .nh3-plane {
     width: calc(100vw - 84px);
   }
@@ -1049,8 +838,6 @@ onBeforeUnmount(() => {
 
 @media (max-height: 500px) {
   .nh3-tagline { font-size: 16px; line-height: 1.65; }
-  .nh3-download-entrance { margin-top: 16px; }
-  .nh3-download { min-height: 44px; }
+  .nh3-actions { margin-top: 16px; }
 }
-
 </style>

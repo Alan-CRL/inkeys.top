@@ -1,0 +1,404 @@
+/*
+ * new-index3 的设计语言（见任务 11-16-new-index3-design-system 的 design.md）。
+ * 全部规则限定在 .new-home3-page 下：pageClass 由 Plume 在 SSR 中输出，离开此页即不再匹配。
+ */
+.new-home3-page {
+  --nh3-bg: #ffffff;
+  --nh3-surface: #f5f5f5;
+  --nh3-surface-hover: #ededed;
+  --nh3-text: #121212;
+  --nh3-text2: #5c5c5c;
+  --nh3-text3: #757575;
+  --nh3-line: rgba(0, 0, 0, 0.1);
+  --nh3-accent: #006a63;
+  --nh3-on-accent: #ffffff;
+  --nh3-ink-bg: #10302d;
+  --nh3-ink-fg: #eaf2f0;
+
+  --nh3-r-card: 24px;
+  --nh3-r-media: 16px;
+  --nh3-r-control: 12px;
+  --nh3-r-pill: 999px;
+
+  --nh3-dur-press: 120ms;
+  --nh3-dur: 200ms;
+  --nh3-dur-slow: 400ms;
+  --nh3-dur-enter: 600ms;
+  --nh3-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --nh3-ease-out: cubic-bezier(0.2, 0, 0, 1);
+
+  --nh3-gutter: clamp(20px, 5vw, 48px);
+  --nh3-section: clamp(96px, 12vw, 176px);
+
+  /* 拉丁字体排在中文字体前面，英文和数字不落到中文字体自带的拉丁字形上。 */
+  --nh3-latin: 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Roboto;
+  --nh3-font-sc: var(--nh3-latin), 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
+  --nh3-font-tc: var(--nh3-latin), 'PingFang TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', 'Noto Sans CJK TC', 'Source Han Sans TC', sans-serif;
+  --nh3-font-en: var(--nh3-latin), sans-serif;
+
+  /* 主题自己的变量指向本页令牌，顶栏、搜索按钮和页脚随之变化。 */
+  --vp-c-bg: var(--nh3-bg);
+  --vp-c-text-1: var(--nh3-text);
+  --vp-c-text-2: var(--nh3-text2);
+  --vp-c-text-3: var(--nh3-text3);
+  --vp-c-brand-1: var(--nh3-accent);
+  --vp-nav-bg-color: var(--nh3-bg);
+  --vp-nav-screen-bg-color: var(--nh3-bg);
+  background-color: var(--nh3-bg);
+}
+
+[data-theme='dark'] .new-home3-page {
+  --nh3-bg: #0f0f0f;
+  --nh3-surface: #1b1b1b;
+  --nh3-surface-hover: #252525;
+  --nh3-text: #f2f2f2;
+  --nh3-text2: #a6a6a6;
+  --nh3-text3: #8a8a8a;
+  --nh3-line: rgba(255, 255, 255, 0.12);
+  --nh3-accent: #58ffec;
+  --nh3-on-accent: #00201d;
+  --nh3-ink-bg: #0f2826;
+  --nh3-ink-fg: #e6f0ee;
+}
+
+/* ---------- 顶栏：沿用主题导航，只换外观 ---------- */
+
+.theme-plume.new-home3-page .vp-nav {
+  position: fixed;
+}
+
+.theme-plume.new-home3-page .vp-nav .vp-navbar {
+  /* 不支持 color-mix 的浏览器退回实色底，内容不会穿透。 */
+  background: var(--nh3-bg);
+  background: color-mix(in srgb, var(--nh3-bg) 84%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 0;
+}
+
+/* 手机菜单展开时改回实色，菜单内容与顶栏连成一片。 */
+.theme-plume.new-home3-page .vp-nav .vp-navbar.screen-open {
+  background: var(--nh3-bg);
+  border-bottom: 0;
+}
+
+.new-home3-page .vp-navbar .divider {
+  display: none;
+}
+
+.theme-plume.new-home3-page .vp-navbar .content-body {
+  background: transparent;
+}
+
+.theme-plume.new-home3-page .vp-navbar .wrapper {
+  padding: 0 var(--nh3-gutter);
+}
+
+.theme-plume.new-home3-page .vp-navbar .container {
+  max-width: 1360px;
+}
+
+/* 品牌：图标加名称，字号与右侧链接一致，只靠加粗区分。 */
+.new-home3-page .vp-navbar .vp-navbar-title .title {
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 0;
+}
+
+.new-home3-page .vp-navbar .vp-navbar-title .logo {
+  height: 22px;
+  margin-right: 10px;
+}
+
+/*
+ * 样张的顶栏只有品牌、几条文字链接和下载按钮：
+ * 搜索、角标和分隔竖线在本页收起；“下载”由右侧按钮承担；
+ * 深浅色开关和社交链接改由 NavActions.vue 的两个圆形按钮提供。
+ */
+.theme-plume.new-home3-page .vp-navbar .content-body .search,
+.theme-plume.new-home3-page .vp-navbar .content-body .social-links,
+.theme-plume.new-home3-page .vp-navbar .content-body .extra,
+.theme-plume.new-home3-page .vp-navbar .content-body .translations,
+.theme-plume.new-home3-page .vp-navbar .content-body .vp-menu-badge,
+.theme-plume.new-home3-page .vp-navbar .content-body .navbar-menu-link[href^='/download'],
+.theme-plume.new-home3-page .vp-navbar .content-body .appearance {
+  display: none;
+}
+
+.new-home3-page .vp-navbar .navbar-menu-link {
+  padding: 0 16px;
+  color: var(--nh3-text2);
+  font-weight: 400;
+  transition: color var(--nh3-dur) var(--nh3-ease);
+}
+
+.new-home3-page .vp-navbar .navbar-menu-link:hover,
+.new-home3-page .vp-navbar .navbar-menu-link.active {
+  color: var(--nh3-text);
+}
+
+/* Plume 在桌面已为固定导航留位，手机仅补回原先 relative 导航的高度。 */
+@media (max-width: 959px) {
+  .new-home3-page .vp-content {
+    padding-top: var(--vp-nav-height, 64px);
+  }
+}
+
+/* ---------- 文字 ---------- */
+
+.nh3-root,
+.nh3-main {
+  font-family: var(--nh3-font-sc);
+  color: var(--nh3-text);
+}
+
+.nh3-root:lang(zh-TW),
+.nh3-main:lang(zh-TW) {
+  font-family: var(--nh3-font-tc);
+}
+
+.nh3-root:lang(en),
+.nh3-main:lang(en) {
+  font-family: var(--nh3-font-en);
+}
+
+.nh3-display,
+.nh3-title,
+.nh3-heading,
+.nh3-lead,
+.nh3-body,
+.nh3-small,
+.nh3-caption {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.nh3-display,
+.nh3-title,
+.nh3-heading {
+  color: var(--nh3-text);
+  font-weight: 600;
+  text-wrap: balance;
+  line-break: strict;
+}
+
+.nh3-display {
+  max-width: 18em;
+  font-size: clamp(34px, 4.4vw, 60px);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+.nh3-title {
+  font-size: clamp(25px, 2.6vw, 34px);
+  line-height: 1.38;
+}
+
+.nh3-heading {
+  font-size: 21px;
+  line-height: 1.4;
+}
+
+.nh3-lead,
+.nh3-body {
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
+.nh3-lead {
+  max-width: 34em;
+  color: var(--nh3-text2);
+  font-size: clamp(17px, 1.4vw, 20px);
+}
+
+/* 居中的导语各行均衡换行，窄屏时最后一行不会只剩一两个字。 */
+.nh3-s1-head .nh3-lead,
+.nh3-ink .nh3-lead,
+.nh3-s6 .nh3-lead {
+  text-wrap: balance;
+}
+
+.nh3-body {
+  color: var(--nh3-text2);
+  font-size: 16px;
+}
+
+.nh3-small {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.nh3-caption {
+  color: var(--nh3-text3);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 英文的行高更紧，大标题收一点字距。 */
+:lang(en) .nh3-display {
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+:lang(en) .nh3-title {
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+}
+
+:lang(en) .nh3-lead,
+:lang(en) .nh3-body {
+  line-height: 1.6;
+}
+
+/* 需要在固定位置断行的文案：每个分句一个 span，只在分句之间换行。 */
+.nh3-clause {
+  display: inline-block;
+}
+
+/* ---------- 按钮 ---------- */
+
+.new-home3-page .nh3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 26px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--nh3-r-pill);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease);
+}
+
+.new-home3-page .nh3-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* 主按钮黑白反色：文字色作底、背景色作字。 */
+.new-home3-page .nh3-btn-primary,
+.new-home3-page .nh3-btn-primary:hover {
+  background-color: var(--nh3-text);
+  color: var(--nh3-bg);
+}
+
+.new-home3-page .nh3-btn-secondary,
+.new-home3-page .nh3-btn-secondary:hover {
+  background-color: var(--nh3-surface);
+  color: var(--nh3-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .new-home3-page .nh3-btn-primary:hover {
+    background-color: color-mix(in srgb, var(--nh3-text) 84%, var(--nh3-bg));
+  }
+
+  .new-home3-page .nh3-btn-secondary:hover {
+    background-color: var(--nh3-surface-hover);
+  }
+}
+
+.new-home3-page .nh3-btn:active {
+  transform: scale(0.97);
+}
+
+.new-home3-page .nh3-btn:focus-visible {
+  border-radius: var(--nh3-r-pill);
+  outline: 2px solid var(--nh3-accent);
+  outline-offset: 3px;
+}
+
+.new-home3-page .nh3-btn-small {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+/* ---------- 区块容器 ---------- */
+
+.nh3-wrap {
+  width: min(1200px, 100% - 2 * var(--nh3-gutter));
+  margin: 0 auto;
+}
+
+.nh3-section {
+  padding-top: var(--nh3-section);
+}
+
+.nh3-main {
+  padding-bottom: var(--nh3-section);
+}
+
+/* ---------- 动效 ---------- */
+
+/*
+ * 进入视口时出现一次：淡入加一小段位移（见 appear.ts）。
+ * 类名由脚本添加，没有脚本时内容直接可见；出现完成后脚本会把 .nh3-appear 去掉，
+ * 所以这里可以放心盖过按钮等元素自己的过渡。
+ */
+.new-home3-page .nh3-appear {
+  transition:
+    opacity var(--nh3-dur-enter) var(--nh3-ease-out) var(--nh3-appear-delay, 0ms),
+    transform var(--nh3-dur-enter) var(--nh3-ease-out) var(--nh3-appear-delay, 0ms);
+}
+
+.new-home3-page .nh3-appear-pending {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+/* 从右侧移入（S5-B 的界面）。 */
+.new-home3-page .nh3-appear-pending[data-nh3-item='right'] {
+  transform: translateX(40px);
+}
+
+/* 整块板面由 97% 放大到位（S5-A）。 */
+.new-home3-page .nh3-appear[data-nh3-item='panel'] {
+  transition-duration: 700ms;
+}
+
+.new-home3-page .nh3-appear-pending[data-nh3-item='panel'] {
+  transform: scale(0.97);
+}
+
+/* 首屏入场的一部分：顶栏淡入。 */
+@keyframes nh3-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.theme-plume.new-home3-page .vp-nav {
+  animation: nh3-fade-in var(--nh3-dur-slow) var(--nh3-ease-out) backwards;
+}
+
+/* 系统开启“减少动态效果”时只保留颜色变化：不位移、不缩放、不播放入场。 */
+@media (prefers-reduced-motion: reduce) {
+  .theme-plume.new-home3-page .vp-nav,
+  .new-home3-page .nh3-controls {
+    animation: none;
+  }
+
+  .new-home3-page .nh3-btn:active,
+  .new-home3-page .nh3-nav-round:active,
+  .new-home3-page .nh3-playback:active,
+  .new-home3-page .nh3-tool:active,
+  .new-home3-page .nh3-color-choice:active span,
+  .new-home3-page .nh3-size-options label:active span,
+  .new-home3-page .nh3-s1-card:active,
+  .new-home3-page .nh3-s1-card:hover .nh3-media > *,
+  .new-home3-page .nh3-nav-menu,
+  .new-home3-page .nh3-nav-theme svg {
+    transform: none;
+  }
+}

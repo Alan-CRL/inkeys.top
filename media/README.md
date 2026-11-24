@@ -17,6 +17,6 @@
 
 ## 当前网页素材
 
-`docs/.vuepress/public/feature-media/` 只保留八幕共 16 张静态 WebP。当前图片直接沿用视频封面，后续可按同名替换独立设计的图文配图。
+`docs/.vuepress/public/feature-media/` 保留八幕共 16 张静态 WebP 作为备选素材。当前 `/new-index3` 改为文字与素材占位，不加载这些封面或视频；后续按确定的图文板块补充独立配图。
 
 恢复视频时先查看本地归档及各制作工程 README；不要直接运行旧发布脚本覆盖当前图片。归档中的视频 manifest 与播放器需要一起恢复。归档不在 Git 中，迁移电脑前请另行复制整个 `media/` 目录。
