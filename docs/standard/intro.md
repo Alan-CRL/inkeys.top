@@ -41,6 +41,7 @@ UInk 把功能分成五个等级。只实现最基础的**核心级**——多�
 ## 一眼看懂结构
 
 <!-- visual: overview — 一个 .uink 拆开：Header → Header Extension（屏幕、场景）→ 一个个 Canvas（页面）→ 每页上的 Ink、Shape、Media、Clear -->
+<UInkFileStream />
 
 | 块 | 作用 |
 | --- | --- |

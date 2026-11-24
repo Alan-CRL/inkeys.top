@@ -50,6 +50,7 @@ title: Shape 块
 | `128`+ | 私有 | — |
 
 <!-- visual: shape-geometry — 七种几何并排：标出 points、centerX/centerY、width/height、size、radius、rotation 与圆角半径 -->
+<UInkShapeGeometry />
 
 ## 几何
 
@@ -108,6 +109,7 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 闭合的自由图形（心形、手绘轮廓、函数围成的区域）同理：沿边界取点，写成 Polygon，首点不重复写入（SHAPE-2），可以填充。
 
 <!-- visual: shape-curves（交互）— 双曲线写成两条 Polyline：滑块改变每支的采样点数，折线逐渐贴近真实曲线；渐近线是两条虚线 Line，四个部件组成一个对象 -->
+<UInkShapeCurves />
 
 - **SHAPE-24** 七种几何以外的曲线与不规则图形必须写成按顺序采样的点：不闭合的写成 Polyline，闭合的写成 Polygon。写入器应让折线与原曲线的最大距离不超过 0.25 个单位（与 PRESET-6 相同）；读取器按普通 Polyline、Polygon 绘制，不得猜测或平滑成其他曲线。
 - **SHAPE-25** 一条曲线由几段互不相连的部分组成时（例如双曲线的两支），每段写成一个 Shape，不得用多出来的线段把它们连起来。需要整体编辑时，用图形对象层组合（SHAPE-11），没有注册预设时不写 `preset`。
@@ -146,6 +148,7 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 | `128`+ | 私有 | — |
 
 <!-- visual: shape-stroke — 实线、虚线 {16, 8}、点线 {0, 3w}（圆头）、点划线，以及 OpenArrow 端头 -->
+<UInkShapeStroke />
 
 ### 规则
 
@@ -162,6 +165,7 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 复杂图形由多个 Shape 部件组成。例如一个立方体是 12 条边（被遮挡的边是虚线），一个圆柱是两个椭圆的可见弧与不可见弧加两条侧边。图形对象层把这些部件标记为同一个对象，让编辑器可以整体选择、移动、删除；完整级编辑器还可以从 `construction` 重新生成它们，继续编辑参数。
 
 <!-- visual: shape-object（交互）— 一个立方体拆成 12 个部件：悬停任一部件高亮整个对象；第一个部件带完整的 object，其余部件只带 ref 与 partIndex -->
+<UInkShapeObject />
 
 ### 首个部件的 `object`
 

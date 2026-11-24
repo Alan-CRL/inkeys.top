@@ -13,6 +13,7 @@ title: 墨迹主文件
 ## 文件结构
 
 <!-- visual: file-stream — 对象流：Header → Header Extension → Canvas → 内容块 → Canvas → 内容块 …… EOF；每个 Canvas 的作用域用括号标出 -->
+<UInkFileStream />
 
 ```mermaid
 flowchart TB
@@ -43,6 +44,7 @@ flowchart TB
 注册表缺失时，读取器为它建立一个[隐式单例](../glossary#文件与结构)；Canvas 可以省略对应的 GUID。最简单的文件只有 Header 和若干 Canvas。
 
 <!-- visual: registry-trees — 左边 Workspace 树（PPT ← 演示内白板），右边 Device 树（显示器 ← 板中板窗口），中间一排 Canvas 用连线分别指向两棵树 -->
+<UInkRegistryTrees />
 
 - **FILE-7** 页面由 Canvas 的 `pageGuid` 标识，在所属 Workspace 内按 `pageIndex` 排序；Canvas 在对象流中的位置不决定页序。
 - **FILE-8** 同一个 [Canvas 唯一键](../glossary#页面与画布)在文件中出现多次时，后出现的 Canvas 连同它的全部内容块，整体替代先出现的那一个（[按页追加](../incremental#按页追加)）。被替代的 Canvas 与内容不再显示，也不参与编号。

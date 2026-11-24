@@ -26,6 +26,7 @@ Header 是固定长度的数组 `array(7)`：
 | 6 | `time` | uint64 | uint64 | 8 字节 |
 
 <!-- visual: header-bytes — Header 的字节布局：数组头 0x97，随后 7 个字段按编码类型分格标注 -->
+<UInkHeaderBytes />
 
 ## 字段
 

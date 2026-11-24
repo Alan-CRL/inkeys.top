@@ -19,6 +19,7 @@ title: 笔尖与端帽
 | `orientation` | int32 | Optional | `0` Fixed（缺省）、`1` FollowDirection |
 
 <!-- visual: nib-shapes — 圆形笔尖、1:8 竖直矩形（荧光笔）、2:3 矩形与 1:1 方形（橡皮）沿同一路径扫过的形状 -->
+<UInkNibShapes />
 
 ### 笔尖尺寸
 
@@ -28,6 +29,7 @@ title: 笔尖与端帽
 - 矩形笔尖：`H = w`，`W = a × H`。例如 `w = 24` 时，1:8 荧光笔是 3 × 24，2:3 矩形橡皮是 16 × 24，1:1 方形橡皮是 24 × 24。
 
 <!-- visual: nib-size — 圆形、1:8、2:3、1:1 四种笔尖在 width = 24 时的宽高标注 -->
+<UInkNibSize />
 
 ### 方向
 
@@ -55,6 +57,7 @@ title: 笔尖与端帽
 | `2` | Bevel | 斜切角 |
 
 <!-- visual: caps-joins — Round / Square / Butt 端帽与 Round / Miter / Bevel 拐角并排对比 -->
+<UInkCapsJoins />
 
 ## 规则
 

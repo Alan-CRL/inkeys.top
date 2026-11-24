@@ -14,6 +14,7 @@ title: 兼容与回退
 ## 读取回退
 
 <!-- visual: fallback-ladder — 同一页内容在核心、基础、标准、完整、+Inkeys 下的显示差异（与主页分级演示共用） -->
+<UInkTierDemo />
 
 | 内容 | 所属等级 | 不支持时的显示 |
 | --- | --- | --- |
@@ -58,6 +59,7 @@ title: 兼容与回退
 | 透明度、笔尖、虚线等外观字段 | 保留：低等级读取器会自动忽略，不影响内容位置 |
 
 <!-- visual: export-bake-eraser — Erase Ink 烘焙前后：一条笔迹被擦断成两段 -->
+<UInkExportBakeEraser />
 
 ### 示例：Inkeys 导出给 ICC-CE
 

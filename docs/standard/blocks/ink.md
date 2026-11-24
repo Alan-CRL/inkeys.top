@@ -61,6 +61,7 @@ title: Ink 块
 | `opacity` | float32 | Conditional | 完整 | Advanced Highlighter 的点级透明度，与 `color` 成对出现 |
 
 <!-- visual: ink-points — 一条笔迹的点：首点绝对坐标、后续点的相对位移箭头、每点宽度画成圆 -->
+<UInkInkPoints />
 
 ## 规则
 
@@ -88,7 +89,9 @@ title: Ink 块
 - **INK-14** 读取器遇到不认识的 `texture` 时，必须按 `0` 绘制，不得丢弃整条 Ink。
 
 <!-- visual: ink-highlighter-composite — 荧光笔整条合成与逐段合成的对比：后者在折返处出现深色重叠 -->
+<UInkHighlighterComposite />
 <!-- visual: ink-erase-order — Erase 只擦掉对象流中在它之前的笔迹，之后写的笔迹不受影响 -->
+<UInkEraseOrder />
 
 ### 末尾最新组（完整级）
 
@@ -103,6 +106,7 @@ title: Ink 块
   这条规则只影响显示，不改变 `undoId`；隐藏的原稿仍是有效内容，完整保存时必须保留。低等级读取器忽略该字段。
 
 <!-- visual: ink-render-latest — 原稿（标记）+ 修正结果（未标记）的显示；撤回结果后原稿重新出现 -->
+<UInkRenderLatest />
 
 ### 保存
 

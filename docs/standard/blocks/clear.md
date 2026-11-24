@@ -27,6 +27,7 @@ Clear 没有范围、几何或类型筛选：它总是清空整个 Canvas 的全
 ### 显示
 
 <!-- visual: clear-intervals（交互）— 内容流 A、Clear1、B、Clear2、C 排成一行；逐步撤回时显示画面依次变为 C → 空 → B → 空 → A -->
+<UInkClearIntervals />
 
 - **CLEAR-1** 读取器按对象流顺序合成 Canvas：遇到 Clear 时，把此前形成的全部可见结果重置为透明；Clear 之后的内容从透明开始继续合成。
 - **CLEAR-2** Clear 只作用于它所在的 Canvas，不影响同一页的其他 Device、其他图层、其他页面或其他 Workspace，也不改变 Canvas 的页面身份、`viewport` 与图层顺序。

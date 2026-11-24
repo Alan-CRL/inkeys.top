@@ -80,6 +80,7 @@ title: 图形预设注册表
 记 `s = start`、`e = end`，`l = min(s.x, e.x)`、`r = max(s.x, e.x)`、`t = min(s.y, e.y)`、`b = max(s.y, e.y)`、`w = r − l`、`h = b − t`、`cx = l + w/2`、`cy = t + h/2`。
 
 <!-- visual: preset-planar — 平面预设一览：每个图形上标出 start、end 与派生出的顶点 -->
+<UInkPresetPlanar />
 
 | `preset` | 必需参数 | 局部几何 | 部件 |
 | --- | --- | --- | --- |
@@ -110,6 +111,7 @@ title: 图形预设注册表
 立体用斜二测投影画在平面上：底面在“模型平面”里，通过投影变成平行四边形或椭圆，再沿屏幕竖直方向拉出高度。
 
 <!-- visual: preset-solids（交互）— 长方体、圆柱、圆锥、棱柱、棱锥；拖动 baseRotation 与 mirrored，隐藏边实时变成虚线 -->
+<UInkPresetSolids />
 
 | `preset` | 必需参数 | 底面 | 部件 |
 | --- | --- | --- | --- |

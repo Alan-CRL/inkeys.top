@@ -1,3 +1,4 @@
+import type { Component } from 'vue'
 import { defineClientConfig } from 'vuepress/client'
 import Layout from './theme/components/Layout.vue'
 import DownloadCard from './theme/components/DownloadCard.vue'
@@ -10,6 +11,9 @@ import UInkHero from './theme/components/UInk/UInkHero.vue'
 import UInkTierDemo from './theme/components/UInk/UInkTierDemo.vue'
 import UInkStructure from './theme/components/UInk/UInkStructure.vue'
 import './theme/styles/custom.css'
+
+// UInk 规范图示：diagrams 目录下的每个组件按文件名注册，供 docs/standard 页面直接使用
+const uinkDiagrams = import.meta.glob<{ default: Component }>('./theme/components/UInk/diagrams/*.vue', { eager: true })
 
 export default defineClientConfig({
   enhance({ app, router }) {
@@ -31,6 +35,9 @@ export default defineClientConfig({
     app.component('UInkHero', UInkHero)
     app.component('UInkTierDemo', UInkTierDemo)
     app.component('UInkStructure', UInkStructure)
+    for (const [file, mod] of Object.entries(uinkDiagrams)) {
+      app.component(file.slice(file.lastIndexOf('/') + 1, -'.vue'.length), mod.default)
+    }
   },
   layouts: {
     Layout,

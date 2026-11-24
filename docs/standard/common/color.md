@@ -25,6 +25,7 @@ title: Color Map
 | `scrgb` | 线性分量，可以大于 `1` 表示 HDR 高亮，必须是有限数 |
 
 <!-- visual: color-fallback — 同一个 HDR 黄色在 HDR 屏幕上的显示与 SDR 回退色并排 -->
+<UInkColorFallback />
 
 ## 规则
 

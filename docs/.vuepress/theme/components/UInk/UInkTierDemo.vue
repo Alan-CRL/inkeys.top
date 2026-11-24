@@ -325,6 +325,19 @@ const onKeydown = (event: KeyboardEvent) => {
   letter-spacing: 0.08em;
 }
 
+/* 画板随栏宽缩小（viewBox 宽 960），手机上把 “PDF” 放大，保证实际字号不小于 12px */
+@media (max-width: 640px) {
+  .placeholder-text {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 360px) {
+  .placeholder-text {
+    font-size: 44px;
+  }
+}
+
 .ink {
   fill: none;
   stroke-linecap: round;

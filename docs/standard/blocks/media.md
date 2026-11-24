@@ -51,6 +51,7 @@ title: Media 块
 | `128`+ | 私有 | — |
 
 <!-- visual: media-fit（交互）— 同一张横图放进竖框，切换 Fill / Contain / Cover / None，并叠加 crop 矩形 -->
+<UInkMediaFit />
 
 ### `crop`
 

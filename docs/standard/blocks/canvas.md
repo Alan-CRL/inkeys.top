@@ -58,6 +58,7 @@ title: Canvas 块
 | `pattern` | int32 | Optional | `0` Blank（缺省）、`1` Dots 点阵、`2` Grid 方格；`3`–`127` 保留，`128`+ 私有 |
 
 <!-- visual: background-patterns — 同一页在 Blank、Dots、Grid 三种图案下的样子 -->
+<UInkBackgroundPatterns />
 
 - **CANVAS-9** 图案的间距、线色由软件决定。不认识的 `pattern` 按 Blank 显示。
 - **CANVAS-10** 没有 `background` 时，背景透明（屏幕批注、PPT）或由软件决定（白板）。
@@ -93,6 +94,7 @@ title: Canvas 块
 | `scale` | float32 | Required | 缩放比例，有限正数；`1` 表示一个 Canvas 单位对应一个 Device 像素 |
 
 <!-- visual: viewport-mapping（交互）— 拖动与缩放 Device 取景框，实时显示 x / y / scale 与公式的计算结果 -->
+<UInkViewportMapping />
 
 Canvas 坐标与 Device 坐标的换算：
 

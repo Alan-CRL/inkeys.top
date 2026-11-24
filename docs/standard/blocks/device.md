@@ -64,6 +64,7 @@ title: Device 结构
 | `zIndex` | uint32 | Required | 同一父 Device 下的叠放顺序，越大越靠前 |
 
 <!-- visual: device-tree — 两台显示器并排（第二台原点 x=3840），第一台上有一个板中板 Window，标出各自的 x/y/width/height -->
+<UInkDeviceTree />
 
 - **DEV-5** Window 可以嵌套 Window，可以部分超出父区域，超出部分由宿主裁剪。
 - **DEV-6** `zIndex` 相同时，后注册的 Window 在上（FILE-13）。
