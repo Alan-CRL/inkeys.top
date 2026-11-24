@@ -34,7 +34,9 @@ title: 笔尖与端帽
 ### 方向
 
 - `Fixed`：矩形与 Canvas 坐标轴对齐，高沿 Canvas Y 方向，不随书写方向转动。
-- `FollowDirection`：矩形的宽沿该点的书写方向，高与书写方向垂直。
+- `FollowDirection`：矩形的宽沿该点的书写方向，高与书写方向垂直。每个点的书写方向按 NIB-8 确定。
+
+<!-- visual: nib-orientation — 同一条折线分别用 Fixed 与 FollowDirection 的 1:4 矩形笔尖书写，标出拐点处取平分方向 -->
 
 ## 端帽
 
@@ -44,40 +46,43 @@ title: 笔尖与端帽
 | --- | --- | --- |
 | `0` | Round | 端点处加一个直径等于该处宽度的半圆 |
 | `1` | Square | 端点沿书写方向向外延伸半个宽度，形成方头 |
-| `2` | Butt | 在端点处截止，不延伸；矩形笔尖扫掠时，两端就是笔尖矩形自身的边 |
+| `2` | Butt | 在端点处截止，不延伸 |
 | `3`–`127` | 保留 | — |
 | `128`+ | 私有 | — |
+
+Ink 的端帽只对圆形笔尖有效；矩形笔尖的两端始终是笔尖矩形自身的边（NIB-3）。
 
 `lineJoin`（只用于 Shape 描边）：
 
 | 值 | 名称 | 折线拐角 |
 | --- | --- | --- |
 | `0` | Round | 圆角 |
-| `1` | Miter | 尖角；过长时的截断方式由软件决定 |
+| `1` | Miter | 尖角；尖角过长时按 Bevel 绘制，见 SHAPE-10 |
 | `2` | Bevel | 斜切角 |
 
-<!-- visual: caps-joins — Round / Square / Butt 端帽与 Round / Miter / Bevel 拐角并排对比 -->
+<!-- visual: caps-joins — Round / Square / Butt 端帽与 Round / Miter / Bevel 拐角并排对比；Miter 超过限值 4 时退回斜切 -->
 <UInkCapsJoins />
 
 ## 规则
 
 - **NIB-1** 没有 `nib` 时，笔尖为圆形，`width` 是直径。
 - **NIB-2** 笔迹是笔尖沿点序列扫过的区域。点与点之间如何插值由软件决定（INK-7），但笔尖形状、大小与方向必须符合本页定义。
-- **NIB-3** Ink 缺少 `cap` 时，圆形笔尖按 Round、矩形笔尖按 Butt 绘制。
+- **NIB-3** Ink 的 `cap` 只对圆形笔尖有效，缺少时按 Round。矩形笔尖的两端始终是笔尖矩形自身的边，不再向外延伸：读取器忽略矩形笔尖上的 `cap`，写入器可以不写。
 - **NIB-4** Shape 描边缺少 `lineCap` 时按 Round，缺少 `lineJoin` 时按 Round。
 - **NIB-5** 长度为 `0` 的虚线段（`dashArray` 中的 `0`）在 Round 端帽下画成圆点，在 Square 端帽下画成方点，在 Butt 端帽下不可见。写入器表达点线时必须使用 Round 或 Square 端帽。
 - **NIB-6** `shape = 1` 而 `aspect` 缺失或无效（非正数、NaN、Infinity）时，读取器按圆形笔尖绘制并报告警告。
 - **NIB-7** 不认识的 `shape`、`orientation`、`cap`、`lineCap`、`lineJoin` 取值，读取器按各自的缺省值处理。
+- **NIB-8** `FollowDirection` 笔尖在每个点的书写方向：首点取第一段的方向，末点取最后一段的方向，中间的点取进入方向与离开方向（单位向量）的平分方向；两者正好相反时取离开方向。长度为 `0` 的段跳过；只有一个点或所有点重合时，按 `Fixed` 绘制。点与点之间的方向如何过渡由软件决定（INK-7）。
 
 ## Inkeys 的取值
 
 | 笔 | `shape` | `aspect` | `orientation` | 端帽 |
 | --- | --- | --- | --- | --- |
 | 普通笔 | Circle | — | — | Round |
-| 荧光笔 | Rectangle | `0.125`（1:8） | Fixed | Butt |
+| 荧光笔 | Rectangle | `0.125`（1:8） | Fixed | —（笔尖的边） |
 | 圆形橡皮 | Circle | — | — | Round |
-| 矩形橡皮 | Rectangle | `0.6666667`（2:3） | Fixed | Butt |
-| 方形橡皮 | Rectangle | `1` | Fixed | Butt |
+| 矩形橡皮 | Rectangle | `0.6666667`（2:3） | Fixed | —（笔尖的边） |
+| 方形橡皮 | Rectangle | `1` | Fixed | —（笔尖的边） |
 
 Inkeys 软件内部用“与同尺寸圆形橡皮面积相等”的习惯决定矩形、方形橡皮的大小。写入文件时，Inkeys 把软件内部的橡皮尺寸 `s` 换算成笔尖高度 `H = (s / 2) × √(π / a)`，写进点的 `width`；文件中只保存直观的宽高，读取器不需要知道这个换算。
 

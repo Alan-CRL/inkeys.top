@@ -142,7 +142,7 @@ title: 图形预设注册表
 
 ## 闭合虚线
 
-- **PRESET-21** 闭合图形（矩形、圆、多边形等）的虚线以四个锚点固定相位：设轮廓周长为 `P`，从轮廓起点量起的距离为 `d`，则 `quarter = P / 4`，`centered = d − quarter × floor(d / quarter + 0.5)`，相位坐标为 `|centered| + (Dotted ? 0 : 2w)`。锚点处总是一段实线的中点（点线时为一个点），图案向两侧对称展开。
+- **PRESET-21** 闭合图形（矩形、圆、多边形等）的虚线以四个锚点固定相位：设轮廓周长为 `P`，从轮廓起点量起的距离为 `d`，则 `quarter = P / 4`，`centered = d − quarter × floor(d / quarter + 0.5)`，相位坐标为 `|centered| + (Dotted ? 0 : 2w)`。锚点处总是一段实线的中点（点线时为一个点），图案向两侧对称展开。相位坐标与 `dashOffset` 的方向一致（SHAPE-26）。
 - **PRESET-22** 轮廓起点：多边形为第一个顶点；直角矩形为左上角；圆角矩形为右上角圆弧的起点，顺时针；圆与椭圆为局部角度 `0` 处 `(cx + rx, cy)`。
 - **PRESET-23** 写入部件时，有填充先写一个只有填充的部件；再把描边按 `[kP/8, (k+1)P/8]` 拆成 8 条 Polyline，奇数段反向，每段 `dashOffset = style.dashOffset + (Dotted ? 0 : 2w)`（SHAPE-8）。读取器按普通虚线规则绘制这 8 段即可得到对称的外观。
 

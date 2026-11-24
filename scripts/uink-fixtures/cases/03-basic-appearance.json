@@ -3,7 +3,7 @@
   "title": "外观：透明度、荧光笔、笔尖、端帽、虚线、箭头、圆角、背景",
   "primaryLevel": "basic",
   "rules": ["INK-9", "INK-10", "NIB-1", "NIB-3", "NIB-4", "NIB-5", "SHAPE-3", "SHAPE-6", "SHAPE-7", "SHAPE-9", "CANVAS-8", "CANVAS-9", "COMPAT-1"],
-  "description": "一个白板 Workspace，一页，页面背景为米白色点阵（pattern 1）。Ink：半透明蓝色 Pen（opacity 0.5）；Inkeys 荧光笔（矩形笔尖 1:8、Fixed、width 表示高度、Butt 端帽，opacity 0.4），这一笔从左到右再折返，前后两段有一半重叠；Square 端帽与 Butt 端帽的粗笔迹各一条。Shape：虚线 {16, 8} 双向箭头；点线 {0, 18}（Round 端帽，画成一串圆点）；Butt 端帽 + Miter 拐角 + 终点箭头的折线；Square 端帽 + Bevel 拐角的折线；圆角矩形（rx 24、ry 16，填充透明度 0.3）；半透明虚线椭圆（opacity 0.6，dashOffset 6）。",
+  "description": "一个白板 Workspace，一页，页面背景为米白色点阵（pattern 1）。Ink：半透明蓝色 Pen（opacity 0.5）；Inkeys 荧光笔（矩形笔尖 1:8、Fixed、width 表示高度，opacity 0.4；文件里写了 cap = Butt，矩形笔尖忽略端帽，两端就是笔尖的边（NIB-3）），这一笔从左到右再折返，前后两段有一半重叠；Square 端帽与 Butt 端帽的粗笔迹各一条。Shape：虚线 {16, 8} 双向箭头；点线 {0, 18}（Round 端帽，画成一串圆点）；Butt 端帽 + Miter 拐角 + 终点箭头的折线；Square 端帽 + Bevel 拐角的折线；圆角矩形（rx 24、ry 16，填充透明度 0.3）；半透明虚线椭圆（opacity 0.6，dashOffset 6）。",
   "expectedObjects": 13,
   "expected": {
     "core": "背景按透明或软件默认背景显示。全部按不透明绘制：蓝色 Pen 不透明；荧光笔按 Pen 绘制为不透明黄色、圆形笔尖、直径 24；两条粗笔迹两端都画成圆头。4 条线都是实线、没有箭头，两条折线的拐角与端头都是圆的；矩形是直角，填充为不透明蓝色；椭圆是不透明的实线红色描边。",

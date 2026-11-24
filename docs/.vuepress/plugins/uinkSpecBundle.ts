@@ -275,6 +275,12 @@ export function buildLlmsTxt(pages: SpecPage[]): string {
       return `- [${title}](${SITE_URL}${pageSitePath(page.path)})`
     }),
     '',
+    // 公开样例：实现者用来对照各等级的期望结果
+    '## 样例',
+    '',
+    `- [UInk 1.1 公开样例清单](${SITE_URL}/standard/uink-v11/fixtures.json): 每个样例的用途、覆盖的规则编号、对象内容与各等级下的期望结果；.uink 文件与清单在同一目录`,
+    `- [样例校验和](${SITE_URL}/standard/uink-v11/SHA256SUMS.txt): 下载后用 sha256sum -c 校验`,
+    '',
     '## 存档',
     '',
     `- [UInk 1.0 Beta 规范（单文件存档）](${SITE_URL}/standard/uink-v10/spec.md): version 10 的冻结存档`,

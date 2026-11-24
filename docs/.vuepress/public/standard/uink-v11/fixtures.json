@@ -699,7 +699,7 @@
         "CANVAS-9",
         "COMPAT-1"
       ],
-      "description": "一个白板 Workspace，一页，页面背景为米白色点阵（pattern 1）。Ink：半透明蓝色 Pen（opacity 0.5）；Inkeys 荧光笔（矩形笔尖 1:8、Fixed、width 表示高度、Butt 端帽，opacity 0.4），这一笔从左到右再折返，前后两段有一半重叠；Square 端帽与 Butt 端帽的粗笔迹各一条。Shape：虚线 {16, 8} 双向箭头；点线 {0, 18}（Round 端帽，画成一串圆点）；Butt 端帽 + Miter 拐角 + 终点箭头的折线；Square 端帽 + Bevel 拐角的折线；圆角矩形（rx 24、ry 16，填充透明度 0.3）；半透明虚线椭圆（opacity 0.6，dashOffset 6）。",
+      "description": "一个白板 Workspace，一页，页面背景为米白色点阵（pattern 1）。Ink：半透明蓝色 Pen（opacity 0.5）；Inkeys 荧光笔（矩形笔尖 1:8、Fixed、width 表示高度，opacity 0.4；文件里写了 cap = Butt，矩形笔尖忽略端帽，两端就是笔尖的边（NIB-3）），这一笔从左到右再折返，前后两段有一半重叠；Square 端帽与 Butt 端帽的粗笔迹各一条。Shape：虚线 {16, 8} 双向箭头；点线 {0, 18}（Round 端帽，画成一串圆点）；Butt 端帽 + Miter 拐角 + 终点箭头的折线；Square 端帽 + Bevel 拐角的折线；圆角矩形（rx 24、ry 16，填充透明度 0.3）；半透明虚线椭圆（opacity 0.6，dashOffset 6）。",
       "expected": {
         "core": "背景按透明或软件默认背景显示。全部按不透明绘制：蓝色 Pen 不透明；荧光笔按 Pen 绘制为不透明黄色、圆形笔尖、直径 24；两条粗笔迹两端都画成圆头。4 条线都是实线、没有箭头，两条折线的拐角与端头都是圆的；矩形是直角，填充为不透明蓝色；椭圆是不透明的实线红色描边。",
         "basic": "米白色点阵背景。蓝色 Pen 半透明；荧光笔为竖直的 3 × 24 矩形笔尖扫出的黄色带，两端平头，整条合成一次，折返重叠处颜色不加深；第 3 条笔迹两端为方头（多出半个宽度），第 4 条为平头。第 1 条线是虚线且两端有开放箭头；第 2 条线是一串直径 6 的圆点；第 3 条折线平头、尖角、终点有箭头；第 4 条折线方头、斜切角。矩形四角为椭圆圆角（24 × 16），填充 30% 透明；椭圆描边 60% 透明且为虚线。",
@@ -3437,7 +3437,7 @@
         "FILE-14",
         "COMPAT-4"
       ],
-      "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed，width 40 即笔尖高度，笔尖 26.67 × 40，Butt 端帽），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1，笔尖 40 × 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
+      "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed，width 40 即笔尖高度，笔尖 26.67 × 40；cap 写 Butt，矩形笔尖两端就是笔尖的边），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1，笔尖 40 × 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
       "expected": {
         "core": "两条 Erase Ink 都必须跳过，不得画成可见笔迹。按 CLEAR-7 只显示最后一个 Clear 之后的内容：B、C、D 三条笔迹，B 完整无缺口（橡皮失效）；Clear 之前的 A 与矩形不显示。做不到时必须提示“此页的显示可能包含已被清空的内容”。",
         "basic": "与核心级相同。",

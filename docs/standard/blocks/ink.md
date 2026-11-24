@@ -35,7 +35,7 @@ title: Ink 块
 | `texture` | int32 | Required | 完整 | 纹理编号：`0` 为默认，`1`–`127` 保留，`128`+ 私有 |
 | `points` | `Array<Map>` | Required | 核心 | 至少一个点，见[轨迹点](#轨迹点) |
 | `nib` | Map | Optional | 基础 | 笔尖描述，见[笔尖与端帽](../common/nib) |
-| `cap` | int32 | Optional | 基础 | 端帽；缺省时圆形笔尖为 Round、矩形笔尖为 Butt，见[笔尖与端帽](../common/nib) |
+| `cap` | int32 | Optional | 基础 | 端帽，只对圆形笔尖有效，缺省为 Round；矩形笔尖忽略（NIB-3），见[笔尖与端帽](../common/nib) |
 | `renderOnlyWhenLatest` | bool | Optional | 完整 | 缺省为 `false`，见 INK-15 |
 | `extra` | Map | Optional | — | 软件私有字段 |
 
@@ -154,7 +154,6 @@ title: Ink 块
   "opacity": 0.4,
   "texture": 0,
   "nib": { "shape": 1, "aspect": 0.125, "orientation": 0 },
-  "cap": 2,                            // 平头
   "points": [
     { "x": 100.0, "y": 300.0, "width": 24.0 },  // width 是笔尖高度
     { "x": 180.0, "y": 0.0, "width": 24.0 }
@@ -174,7 +173,6 @@ title: Ink 块
   "opacity": 1.0,
   "texture": 0,
   "nib": { "shape": 1, "aspect": 0.6666667, "orientation": 0 },
-  "cap": 2,
   "points": [
     { "x": 320.0, "y": 180.0, "width": 24.0 },  // width 是笔尖高度：16 × 24
     { "x": 8.0, "y": -2.0, "width": 24.0 }

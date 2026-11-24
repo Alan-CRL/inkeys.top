@@ -79,8 +79,8 @@ UInk 1.1 读取：标准级 + Inkeys 附加级；写入：基础级
 读取：
 
 - [ ] 按块级 `opacity` 绘制；荧光笔整条覆盖后合成一次。（INK-9、INK-10）
-- [ ] 按 `nib` 与 `cap` 绘制笔尖形状与端帽。（NIB-1–NIB-7）
-- [ ] 绘制虚线、箭头、圆角、`lineCap` / `lineJoin`。（SHAPE-3、SHAPE-7、SHAPE-9、NIB-4、NIB-5）
+- [ ] 按 `nib` 与 `cap` 绘制笔尖形状与端帽。（NIB-1–NIB-8）
+- [ ] 绘制虚线、箭头、圆角、`lineCap` / `lineJoin`。（SHAPE-3、SHAPE-7、SHAPE-9、SHAPE-10、SHAPE-26、NIB-4、NIB-5）
 - [ ] 绘制页面背景颜色与图案。（CANVAS-8–CANVAS-10）
 
 写入：

@@ -124,7 +124,7 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 | `opacity` | float32 | Required | 基础 | 描边透明度，`0`–`1` |
 | `width` | float32 | Required | 核心 | 描边宽度，大于 `0` |
 | `dashArray` | `Array<float32>` | Optional | 基础 | 虚线的线段与间隔长度，缺失或为空时是实线 |
-| `dashOffset` | float32 | Optional | 基础 | 虚线起点偏移，缺省为 `0` |
+| `dashOffset` | float32 | Optional | 基础 | 虚线图案的起始偏移，缺省为 `0`；正值让图案朝起点方向移动（SHAPE-26） |
 | `lineCap` | int32 | Optional | 基础 | 端帽，缺省为 Round，见[笔尖与端帽](../common/nib) |
 | `lineJoin` | int32 | Optional | 基础 | 拐角，缺省为 Round |
 | `startMarker` | int32 | Optional | 基础 | 起点端头，缺省为 `0` |
@@ -147,7 +147,7 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 | `2`–`127` | 保留 | — |
 | `128`+ | 私有 | — |
 
-<!-- visual: shape-stroke — 实线、虚线 {16, 8}、点线 {0, 3w}（圆头）、点划线，以及 OpenArrow 端头 -->
+<!-- visual: shape-stroke — 实线、虚线 {16, 8}、dashOffset 偏移、点线 {0, 3w}（圆头）、点划线，以及 OpenArrow 端头 -->
 <UInkShapeStroke />
 
 ### 规则
@@ -156,9 +156,10 @@ UInk 只有七种几何，没有“曲线”类型。**任何曲线或不规则�
 - **SHAPE-5** 描边在一个 Shape 内使用同一种颜色、透明度与固定宽度。
 - **SHAPE-6** `width`、`dashArray`、`dashOffset` 的单位与坐标相同（Device 像素），是保存时最终可见的长度。软件缩放图形后要保存换算后的结果；读取器不得再额外缩放这些值。
 - **SHAPE-7** 非空 `dashArray` 必须包含偶数个非负有限值，且总和大于 `0`。长度为 `0` 的线段在 Round 端帽下画成圆点（NIB-5）；写入器表达点线时必须使用 Round 或 Square 端帽。`dashArray` 或 `dashOffset` 无效时按实线显示。
+- **SHAPE-26** `dashOffset` 是虚线图案的起始相位：路径上距起点 `s` 处，对应 `dashArray` 图案中的位置 `(s + dashOffset) mod 图案总长`。因此正值让虚线图案朝起点方向移动，负值朝终点方向移动。这与 SVG 的 `stroke-dashoffset`、Canvas 2D 的 `lineDashOffset` 相同；Direct2D 的 `dashOffset` 与 `dashes` 以描边宽度为单位，换算时除以 `width`。
 - **SHAPE-8** 线型（实线、虚线、点线）只由 `dashArray` 表达，不得把一条虚线的每一小段拆成单独的 Shape。唯一的例外：为了让闭合图形的虚线在拐角处对称，写入器可以把闭合描边拆成若干条 Polyline 部件（各自带 `dashOffset`），并用图形对象层组合（SHAPE-11）。
 - **SHAPE-9** Marker 只用于 Line、Polyline；闭合图形上出现时忽略并报告警告。箭头写成一个带 Marker 的 Line 或 Polyline，不额外生成 Shape。需要精确控制箭头外形时，可以改用图形对象层，把杆和头写成两个部件。
-- **SHAPE-10** UInk 不注册 `miterLimit`。抗锯齿与 Miter 拐角的截断方式由软件决定。
+- **SHAPE-10** UInk 不注册 `miterLimit` 字段。Miter 拐角应按限值 4 绘制：尖角长度（外侧尖端到内侧拐点的距离）超过描边宽度的 4 倍时（约小于 29° 的尖角），该拐角按 Bevel 绘制，与 SVG 的缺省值相同。软件采用其他限值不算错误；抗锯齿由软件决定。
 
 ## 图形对象层
 

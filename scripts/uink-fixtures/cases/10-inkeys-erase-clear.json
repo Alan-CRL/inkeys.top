@@ -3,7 +3,7 @@
   "title": "Inkeys 附加级：Erase Ink、橡皮笔尖与 Clear 区间",
   "primaryLevel": "inkeys",
   "rules": ["INK-11", "INK-17", "NIB-2", "NIB-3", "SHAPE-18", "CLEAR-1", "CLEAR-3", "CLEAR-4", "CLEAR-5", "CLEAR-7", "CLEAR-9", "FILE-14", "COMPAT-4"],
-  "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed，width 40 即笔尖高度，笔尖 26.67 × 40，Butt 端帽），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1，笔尖 40 × 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
+  "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed，width 40 即笔尖高度，笔尖 26.67 × 40；cap 写 Butt，矩形笔尖两端就是笔尖的边），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1，笔尖 40 × 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
   "expectedObjects": 10,
   "expected": {
     "core": "两条 Erase Ink 都必须跳过，不得画成可见笔迹。按 CLEAR-7 只显示最后一个 Clear 之后的内容：B、C、D 三条笔迹，B 完整无缺口（橡皮失效）；Clear 之前的 A 与矩形不显示。做不到时必须提示“此页的显示可能包含已被清空的内容”。",
