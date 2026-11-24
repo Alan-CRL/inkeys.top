@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/uink-spec-guidelines.md", "reason": "规范页面约定、单文件插件对组件行与图示注释的处理"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Vue 组件样式、注册、无障碍"}
+{"file": ".trellis/spec/frontend/hook-guidelines.md", "reason": "IntersectionObserver、定时器与 SSR 防护"}
+{"file": ".trellis/tasks/11-24-uink-1-1-spec/design.md", "reason": "分级矩阵与回退规则"}
+{"file": ".trellis/tasks/11-24-uink-1-1-homepage/design.md", "reason": "主页视觉语言与组件位置，图示需保持一致"}

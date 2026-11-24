@@ -94,7 +94,13 @@ pnpm fixtures:uink          # = node scripts/uink-fixtures/build.mjs (Node ≥ 2
 
 ### Status
 
-The 15 samples are final (2026-11-24), but their `expected` texts are **not yet validated by a real reader**. Inkeys validates them while adapting to 1.1. If an expectation disagrees with the spec text, the spec text wins; fix the sample.
+The 16 samples are final (2026-11-24; `16-core-shape-curves` added the same day), but their `expected` texts are **not yet validated by a real reader**. Inkeys validates them while adapting to 1.1. If an expectation disagrees with the spec text, the spec text wins; fix the sample.
+
+## Settled Semantics (do not reintroduce)
+
+- **Nib size (D20)**: there is no `widthMeaning`. Circle nib: `width` = diameter. Rectangle nib: `width` = height `H`, `W = aspect × H`. Inkeys' equal-area eraser sizing is converted to a height when writing; readers never see it. Docs use `width = 24` for rectangle examples (1:8 → 3 × 24, 2:3 → 16 × 24, 1:1 → 24 × 24).
+- **Curves and free shapes (SHAPE-24, SHAPE-25)**: no curve type and no curve equations. Sample into Polyline (open) or Polygon (closed) with ≤ 0.25 unit deviation; disconnected pieces (hyperbola branches) are separate Shapes, optionally grouped by an object without `preset`. Point lists in `cases/16-core-shape-curves.json` are literal, computed once by adaptive sampling; regenerate them only if the curve changes.
+- **1.0 files (VER-5)**: 1.1 readers read `version = 10` best-effort; full compatibility is not promised.
 
 ## Git Attributes
 

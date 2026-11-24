@@ -1,19 +1,40 @@
 # UInk 规范文档可视化
 
+> 父任务：`11-24-uink-1-1-spec`。状态：规划中（2026-11-24）。
+
 ## Goal
 
-为 UInk 1.1 文档制作静态 SVG 图示与少量交互 Vue 组件（笔尖、viewport、Clear 区间、按页追加）
+为 UInk 1.1 规范正文中标出的 28 处图示占位（`<!-- visual: … -->`）制作图示，让人类读者一眼看懂笔尖、几何、对象流、保存与撤回等概念，并帮助实现者核对自己的渲染结果。
+
+## 已确认的决策（2026-11-24）
+
+| # | 决定 |
+| --- | --- |
+| V1 | **形式**：每张图是内联 SVG 的 Vue 组件，与主页共用配色，自动适配深浅色。几何由共享的 TypeScript 模块按规范公式计算，不手画。交互组件服务端渲染时输出默认状态，不执行脚本也能看到静态图。 |
+| V2 | **两批交付**，第一批完成后由用户审阅风格，再做第二批。 |
+| V3 | **交互范围**：规范标出的 5 个交互（viewport 映射、Media 适配、Clear 区间、图形对象层、立体预设），再加 2 个步骤演示（按页追加、末尾最新组）；分级演示复用主页组件。其余为静态图。 |
 
 ## Requirements
 
-- TBD
+- 28 处占位全部有对应图示；其中 `fallback-ladder` 复用主页的 `UInkTierDemo`，`overview` 与 `file-stream` 共用一个组件。
+- 图中的几何、尺寸、相位必须与规范公式一致（笔尖宽高、端帽、虚线、斜二测投影与隐藏边、viewport 换算、Media fit / crop）。
+- 视觉延续主页：细线稿、只有墨迹是彩色的；中文标注，字段名用代码字体；手机宽度下文字不小于 12px，不出现横向溢出。
+- 不使用滚动驱动的动画；有动画的组件进入视口才播放、可暂停，`prefers-reduced-motion` 时显示静态终态。
+- 交互组件支持键盘操作（滑块用原生 `input[type=range]`，步骤用按钮），并提供文字替代说明。
+- 不改变规范正文的文字含义；只在占位注释下一行插入组件标签，注释保留，单文件规范仍输出“图示：…”文字。
+- 不新增 npm 依赖。
+
+## Out of Scope
+
+- 规范正文与样例的修改（如发现规范问题，报告后另行处理）。
+- 主页改版。
 
 ## Acceptance Criteria
 
-- [ ] TBD
-
-## Notes
-
-- Keep `prd.md` focused on requirements, constraints, and acceptance criteria.
-- Lightweight tasks can remain PRD-only.
-- For complex tasks, add `design.md` for technical design and `implement.md` for execution planning before `task.py start`.
+- [ ] 第一批 13 处占位完成，用户审阅风格通过。
+- [ ] 第二批 15 处占位完成。
+- [ ] 几何自检脚本通过：长方体部件与 `full-shape-preset` 样例一致，矩形 / 方形橡皮尺寸与 `inkeys-erase-clear` 样例描述一致。
+- [ ] 追加：「曲线与自由图形」图示（`shape-curves`）与公开样例 `core-shape-curves.uink`（用户 2026-11-24 要求）。
+- [ ] 7 个交互组件键盘可用；`prefers-reduced-motion` 下无动画。
+- [ ] `pnpm docs:build` 通过；单文件规范不含组件标签，图示文字保留。
+- [ ] 浅色、深色、手机宽度的截图验收通过。

@@ -108,6 +108,8 @@
   | `widthMeaning` | int32 | 0 Diameter（缺省）、1 Height、2 EqualAreaDiameter |
 
   Inkeys 取值：荧光笔 `{shape: 1, aspect: 0.125, orientation: 0, widthMeaning: 1}`；矩形橡皮 `{1, 1/1.5, 0, 2}`；方形橡皮 `{1, 1, 0, 2}`。Inkeys 删除私有键 `inkeysEraserShape`。
+
+  > 2026-11-24：`widthMeaning` 已被决策 D20 取代（见 `prd.md`），矩形笔尖的 `width` 一律是笔尖高度。
 - 新增 `cap`（基础级）：0 Round（缺省）、1 Square、2 Butt。荧光笔与矩形橡皮为平头扫掠。
 - 明确：未实现 Inkeys 附加级的读取器必须跳过 `inkType = 0`。
 - 不增加压感、倾斜、时间等点级通道【D8】。
