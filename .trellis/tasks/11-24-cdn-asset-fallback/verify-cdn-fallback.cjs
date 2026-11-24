@@ -107,14 +107,14 @@ async function main() {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.BROWSER_BIN || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe' })
   try {
     await scenario(browser, 'normal: everything from this site', null, async (page, requests) => {
-      for (const url of ['/new-index3.html', '/community.html', '/standard/conformance.html']) {
+      for (const url of ['/', '/community.html', '/standard/conformance.html']) {
         await visit(page, url)
         const result = await inspect(page)
         report(url, result)
         assert.ok(result.images.every(image => image.ok && hostOf(image.src) === 'local'))
         assert.ok(result.links.every(link => hostOf(link) === 'local'))
         assert.equal(result.preferred, null)
-        if (url === '/new-index3.html')
+        if (url === '/')
           assert.ok(bgHost(result.ink) === 'local' && bgHost(result.craft) === 'local')
       }
       assert.equal(requests.filter(url => url.startsWith(CN) || url.startsWith(COM)).length, 0)
@@ -140,12 +140,12 @@ async function main() {
         await route.continue().catch(() => {})
       })
     }, async (page) => {
-      await page.goto(`${origin}/new-index3.html`, { waitUntil: 'domcontentloaded' })
+      await page.goto(`${origin}/`, { waitUntil: 'domcontentloaded' })
       await page.waitForFunction(() => sessionStorage.getItem('inkeys-asset-preferred'), null, { timeout: 30000 })
       await scrollThrough(page)
       await page.waitForFunction(() => [...document.images].every(img => img.complete), null, { timeout: 30000 }).catch(() => {})
       let result = await inspect(page)
-      report('/new-index3.html', result)
+      report('/', result)
       assert.ok(result.preferred.startsWith(CN))
       assert.ok(result.images.filter(image => !image.src.endsWith('/Inkeys.svg')).every(image => image.ok && hostOf(image.src) === 'cn'))
       assert.ok(bgHost(result.ink) === 'cn' && bgHost(result.craft) === 'cn')

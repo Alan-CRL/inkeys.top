@@ -14,7 +14,7 @@ export default defineClientConfig({
     // 在路由真正提交滚动时覆盖保存位置，避免刷新后的恢复晚于组件 mounted。
     router.options.scrollBehavior = (to, from, savedPosition) => {
       // 带锚点的跳转（S1 卡片跳到 S2）交还给默认行为，否则页内链接也会被拉回顶部。
-      if (/^\/new-index3(?:\.html|\/)?$/.test(to.path) && !to.hash) {
+      if (/^\/(?:index\.html)?$/.test(to.path) && !to.hash) {
         return { top: 0, left: 0, behavior: 'instant' }
       }
       return originalScrollBehavior?.(to, from, savedPosition)

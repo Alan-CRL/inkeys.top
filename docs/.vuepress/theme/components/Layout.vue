@@ -12,7 +12,7 @@ const frontmatter = usePageFrontmatter()
 <template>
   <div>
     <Layout>
-      <!-- 仅 new-index3：顶栏右侧的下载按钮、深浅色切换和更多链接。 -->
+      <!-- 仅首页（NewHome3）：顶栏右侧的下载按钮、深浅色切换和更多链接。 -->
       <template #nav-bar-content-after>
         <NavActions v-if="frontmatter.pageLayout === 'NewHome3'" />
       </template>
