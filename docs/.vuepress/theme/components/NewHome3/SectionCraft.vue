@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { withBase } from 'vuepress/client'
+import { useAssetUrl } from '../../../cdn/useAssetUrl'
 import MediaSlot from './MediaSlot.vue'
 import { useAppear } from './appear'
 import { useCopy } from './copy'
@@ -11,13 +11,20 @@ const root = ref<HTMLElement>()
 const card = ref<HTMLElement>()
 const settings = ref<HTMLElement>()
 const bar = ref<HTMLElement>()
-const assets = withBase('/new-index3/craft/')
+// 背景图不会报加载错误，地址交给 useAssetUrl 跟随当前可用的 CDN 或本地。
+const asset = useAssetUrl()
+const craftUrl = (name: string) => `url("${asset(`/new-index3/craft/${name}`)}")`
+const inkLayers = computed(() => ({ '--ink-forest': craftUrl('performance-forest.webp') }))
 // 让 data-theme 同时切换两层原生图与壁纸，浏览器只请求生效的背景。
 const nativeLayers = computed(() => ({
-  '--settings-light': `url("${assets}settings-${locale.value}-light.png")`,
-  '--settings-dark': `url("${assets}settings-${locale.value}-dark.png")`,
-  '--toolbar-light': `url("${assets}toolbar-${locale.value}-light.png")`,
-  '--toolbar-dark': `url("${assets}toolbar-${locale.value}-dark.png")`,
+  '--settings-light': craftUrl(`settings-${locale.value}-light.png`),
+  '--settings-dark': craftUrl(`settings-${locale.value}-dark.png`),
+  '--toolbar-light': craftUrl(`toolbar-${locale.value}-light.png`),
+  '--toolbar-dark': craftUrl(`toolbar-${locale.value}-dark.png`),
+  '--wallpaper-light': craftUrl('wallpaper-light.webp'),
+  '--wallpaper-dark': craftUrl('wallpaper-dark.webp'),
+  '--wallpaper-blur-light': craftUrl('wallpaper-light-blur.webp'),
+  '--wallpaper-blur-dark': craftUrl('wallpaper-dark-blur.webp'),
 }))
 let resize: ResizeObserver | undefined
 
@@ -78,7 +85,7 @@ useAppear(root)
 
 <template>
   <section ref="root" class="nh3-section nh3-s5" aria-labelledby="nh3-s5a-title">
-    <div class="nh3-panel nh3-ink" data-nh3-appear data-nh3-item="panel">
+    <div class="nh3-panel nh3-ink" :style="inkLayers" data-nh3-appear data-nh3-item="panel">
       <div class="nh3-wrap nh3-ink-inner">
         <h2 id="nh3-s5a-title" class="nh3-display" data-nh3-item>{{ copy.s5a.title }}</h2>
         <p class="nh3-lead" data-nh3-item><span v-for="line in copy.s5a.lead" :key="line">{{ line }}</span></p>
@@ -119,7 +126,7 @@ useAppear(root)
 /* ---------- A：书写体验。两个主题共用同一幅深色森林。 ---------- */
 .nh3-ink {
   padding: clamp(56px, 8vw, 112px) 0 clamp(20px, 3vw, 40px);
-  background: var(--nh3-ink-bg) url('/new-index3/craft/performance-forest.webp') center / cover no-repeat;
+  background: var(--nh3-ink-bg) var(--ink-forest) center / cover no-repeat;
   color: var(--nh3-ink-fg);
 }
 
@@ -178,8 +185,8 @@ useAppear(root)
 .nh3-craft {
   --settings: var(--settings-light);
   --toolbar: var(--toolbar-light);
-  --wallpaper: url('/new-index3/craft/wallpaper-light.webp');
-  --wallpaper-blur: url('/new-index3/craft/wallpaper-light-blur.webp');
+  --wallpaper: var(--wallpaper-light);
+  --wallpaper-blur: var(--wallpaper-blur-light);
   --wallpaper-position: center;
   display: grid;
   grid-template: 'layer' / minmax(0, 1fr);
@@ -194,8 +201,8 @@ useAppear(root)
 [data-theme='dark'] .nh3-craft {
   --settings: var(--settings-dark);
   --toolbar: var(--toolbar-dark);
-  --wallpaper: url('/new-index3/craft/wallpaper-dark.webp');
-  --wallpaper-blur: url('/new-index3/craft/wallpaper-dark-blur.webp');
+  --wallpaper: var(--wallpaper-dark);
+  --wallpaper-blur: var(--wallpaper-blur-dark);
 }
 
 .nh3-craft-inner {

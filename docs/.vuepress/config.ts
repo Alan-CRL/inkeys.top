@@ -1,47 +1,28 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defineUserConfig } from 'vuepress'
+import type { HeadConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
+import { existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { ASSET_BASES, PROBE_PATH } from './cdn/bases'
+import { createAssetRuntimeScript } from './cdn/runtime'
 
 const isProd = process.env.NODE_ENV === 'production'
-const imageCdnBase = 'https://1709404.cdn.123clouddisk.com/1709404/Inkeys/Website/public'
-const imageFallbackScript = `
-;(() => {
-  const cdnBase = ${JSON.stringify(imageCdnBase)}
-  const cdnUrl = new URL(cdnBase)
-  const cdnPathPrefix = cdnUrl.pathname.replace(/\\/$/, '')
-
-  const getLocalImageUrl = (src) => {
-    try {
-      const url = new URL(src, window.location.href)
-      if (url.origin !== cdnUrl.origin || !url.pathname.startsWith(cdnPathPrefix + '/'))
-        return ''
-
-      return url.pathname.slice(cdnPathPrefix.length) + url.search + url.hash
-    }
-    catch {
-      return ''
-    }
-  }
-
-  document.addEventListener('error', (event) => {
-    const image = event.target
-    if (!(image instanceof HTMLImageElement) || image.dataset.localFallback === 'true')
-      return
-
-    const localUrl = getLocalImageUrl(image.currentSrc || image.src)
-    if (!localUrl)
-      return
-
-    image.dataset.localFallback = 'true'
-    image.removeAttribute('srcset')
-    image.src = localUrl
-  }, true)
-})()
-`.trim()
+const siteBase = '/'
+const publicDir = fileURLToPath(new URL('./public/', import.meta.url))
+// public 中出现的扩展名；构建时只改写 public 里真实存在的文件，其余路径（页面、外链）保持不变。
+const publicAssetPattern = /^\/[^?#]*\.(?:png|jpe?g|gif|webp|avif|svg|uink|extra|json|txt)(?:[?#].*)?$/u
+const toPrimaryAsset = (url: string) => {
+  const path = decodeURI(url.replace(/[?#].*$/u, ''))
+  // 站点图标兼探测文件留在本地：head 配置也会被打进 JS 一起替换，探测脚本里的路径不能被改写。
+  if (path === PROBE_PATH)
+    return ''
+  return existsSync(publicDir + path.slice(1)) ? `${ASSET_BASES[0]}${url}` : ''
+}
 
 export default defineUserConfig({
-  base: "/",
+  base: siteBase,
   lang: "zh-CN",
   title: "智绘教Inkeys",
   description:
@@ -79,7 +60,8 @@ export default defineUserConfig({
       },
     ],
     [ "link", { rel: "shortcut icon", href: "/Inkeys.svg" } ],
-    [ "script", {}, imageFallbackScript ],
+    // 生产站点：public 资源优先走远程地址，失败时依次换备用地址，最后退回本地（见 cdn/runtime.ts）。
+    ...(isProd ? [[ "script", {}, createAssetRuntimeScript(siteBase) ] as HeadConfig] : []),
   ],
 
   bundler: viteBundler(),
@@ -221,9 +203,9 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    replaceAssets: {
-      image: url => `${imageCdnBase}${url}`
-    },
+    replaceAssets: isProd
+      ? { rules: { find: publicAssetPattern, replacement: toPrimaryAsset } }
+      : false,
     
     /**
      * 加密功能

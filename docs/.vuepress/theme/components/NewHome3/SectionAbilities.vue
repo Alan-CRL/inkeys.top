@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { withBase } from 'vuepress/client'
+import { computed, ref } from 'vue'
+import { useAssetUrl } from '../../../cdn/useAssetUrl'
 import MediaSlot from './MediaSlot.vue'
 import { useAppear } from './appear'
 import { SCENE_IDS, useCopy } from './copy'
@@ -10,10 +10,11 @@ const root = ref<HTMLElement>()
 useAppear(root)
 
 // 每张卡片的循环动图，顺序与 copy.s1.cards 一致（屏幕批注、PPT 演示、自由白板）。
-const GIFS = ['screen-annotation', 'slide-show', 'whiteboard'].map(name => ({
-  light: withBase(`/new-index3/s1/${name}-light.gif`),
-  dark: withBase(`/new-index3/s1/${name}-dark.gif`),
-}))
+const asset = useAssetUrl()
+const GIFS = computed(() => ['screen-annotation', 'slide-show', 'whiteboard'].map(name => ({
+  light: asset(`/new-index3/s1/${name}-light.gif`),
+  dark: asset(`/new-index3/s1/${name}-dark.gif`),
+})))
 </script>
 
 <template>

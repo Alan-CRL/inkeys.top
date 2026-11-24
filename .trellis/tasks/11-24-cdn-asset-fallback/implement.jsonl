@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "public 资源与 123 云盘的发布约定"}
+{"file": ".trellis/spec/frontend/hook-guidelines.md", "reason": "浏览器集成、fetch 超时与回退写法"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "构建验证要求"}
