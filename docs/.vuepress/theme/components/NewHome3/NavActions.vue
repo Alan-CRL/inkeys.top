@@ -3,7 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useDarkMode, VPLink } from 'vuepress-theme-plume/client'
 import { useCopy } from './copy'
 
-// new-index3 顶栏右侧：下载按钮、深浅色切换、更多链接。窄屏只留下载按钮，其余在主题的手机菜单里。
+// 全站顶栏右侧：下载按钮、深浅色切换、更多链接。窄屏只留下载按钮，其余在主题的手机菜单里。
 const { copy } = useCopy()
 const isDark = useDarkMode()
 const more = ref<HTMLDivElement>()

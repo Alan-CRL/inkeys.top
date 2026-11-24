@@ -11,6 +11,7 @@ import UInkHero from './theme/components/UInk/UInkHero.vue'
 import UInkTierDemo from './theme/components/UInk/UInkTierDemo.vue'
 import UInkStructure from './theme/components/UInk/UInkStructure.vue'
 import './theme/styles/custom.css'
+import './theme/styles/site.css'
 
 // UInk 规范图示：diagrams 目录下的每个组件按文件名注册，供 docs/standard 页面直接使用
 const uinkDiagrams = import.meta.glob<{ default: Component }>('./theme/components/UInk/diagrams/*.vue', { eager: true })

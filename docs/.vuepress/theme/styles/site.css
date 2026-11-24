@@ -1,0 +1,337 @@
+/*
+ * 全站视觉：首页（new-index3）的配色、按钮和顶栏推广到所有页面（任务 11-24-site-palette）。
+ * 只覆盖 Plume 的 CSS 变量、使用公开插槽和少量类名选择器，不替换 Plume 组件，保证以后仍能升级。
+ * 首页专属的布局与令牌仍在 NewHome3/home.css。
+ */
+
+/* ---------- 令牌（原先只在首页可用，顶栏按钮需要全站可用） ---------- */
+
+:root {
+  --nh3-bg: #ffffff;
+  --nh3-surface: #f5f5f5;
+  --nh3-surface-hover: #ededed;
+  --nh3-text: #121212;
+  --nh3-text2: #5c5c5c;
+  --nh3-text3: #757575;
+  --nh3-line: rgba(0, 0, 0, 0.1);
+  --nh3-accent: #006a63;
+  --nh3-on-accent: #ffffff;
+
+  --nh3-r-card: 24px;
+  --nh3-r-media: 16px;
+  --nh3-r-control: 12px;
+  --nh3-r-pill: 999px;
+
+  --nh3-dur-press: 120ms;
+  --nh3-dur: 200ms;
+  --nh3-dur-slow: 400ms;
+  --nh3-dur-enter: 600ms;
+  --nh3-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --nh3-ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-theme='dark'] {
+  --nh3-bg: #0f0f0f;
+  --nh3-surface: #1b1b1b;
+  --nh3-surface-hover: #252525;
+  --nh3-text: #f2f2f2;
+  --nh3-text2: #a6a6a6;
+  --nh3-text3: #8a8a8a;
+  --nh3-line: rgba(255, 255, 255, 0.12);
+  --nh3-accent: #58ffec;
+  --nh3-on-accent: #00201d;
+}
+
+/* ---------- Plume 变量指向令牌 ---------- */
+
+/*
+ * 本文件在主题样式之后加载，同优先级的声明以这里为准。
+ * 变量都引用令牌，令牌随 data-theme 切换，所以这里不必再写一份深色。
+ */
+:root {
+  /* 无界感：侧边栏与内容同底色，浮层和代码块用表面色区分。 */
+  --vp-c-bg: var(--nh3-bg);
+  --vp-c-bg-alt: var(--nh3-bg);
+  --vp-c-bg-soft: var(--nh3-surface);
+  --vp-c-bg-safe: var(--nh3-surface);
+  --vp-c-bg-elv: var(--nh3-bg);
+
+  --vp-c-text-1: var(--nh3-text);
+  --vp-c-text-2: var(--nh3-text2);
+  --vp-c-text-3: var(--nh3-text3);
+
+  --vp-c-divider: var(--nh3-line);
+  --vp-c-gutter: var(--nh3-line);
+
+  /* 品牌色即首页强调色；brand-2 用于悬停，brand-3 用于实心按钮底。 */
+  --vp-c-brand-1: var(--nh3-accent);
+  --vp-c-brand-2: #00877e;
+  --vp-c-brand-3: var(--nh3-accent);
+  --vp-c-brand-soft: rgba(0, 106, 99, 0.12);
+  --vp-button-brand-text: var(--nh3-on-accent);
+  --vp-button-brand-hover-text: var(--nh3-on-accent);
+  --vp-button-brand-active-text: var(--nh3-on-accent);
+
+  --vp-input-bg-color: var(--nh3-surface);
+  --search-item-focus-bg-color: var(--nh3-surface);
+
+  /* 顶栏半透明，配合 backdrop-filter；不支持 color-mix 的浏览器整条声明无效，退回下面的实色。 */
+  --vp-nav-bg-color: var(--nh3-bg);
+  --vp-nav-bg-color: color-mix(in srgb, var(--nh3-bg) 84%, transparent);
+  --vp-nav-screen-bg-color: var(--nh3-bg);
+  --vp-local-nav-bg-color: var(--nh3-bg);
+  --vp-sidebar-bg-color: var(--nh3-bg);
+}
+
+[data-theme='dark'] {
+  --vp-c-brand-2: #9dfff4;
+  --vp-c-brand-soft: rgba(88, 255, 236, 0.14);
+  /* 深色浮层（下拉、搜索弹窗）比底色亮一档，才能从页面上浮起来。 */
+  --vp-c-bg-elv: var(--nh3-surface);
+}
+
+/* ---------- 去掉外框分割线 ---------- */
+
+/*
+ * 这些线都用 --vp-c-divider / --vp-c-gutter 画。只在对应元素上把变量设为透明，
+ * 不依赖 Plume 的选择器优先级；正文里的表格、代码块等仍保留分隔线。
+ */
+.theme-plume .vp-navbar,
+.theme-plume .vp-local-nav,
+.theme-plume .vp-sidebar,
+.theme-plume .vp-footer {
+  --vp-c-divider: transparent;
+  --vp-c-gutter: transparent;
+}
+
+.theme-plume .vp-navbar .divider {
+  display: none;
+}
+
+/* ---------- 顶栏：与首页同一外观 ---------- */
+
+.theme-plume .vp-nav .vp-navbar {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 0;
+}
+
+/* 手机菜单展开时改回实色，菜单内容与顶栏连成一片。 */
+.theme-plume .vp-nav .vp-navbar.screen-open {
+  --vp-nav-bg-color: var(--nh3-bg);
+}
+
+/* 有侧边栏时 Plume 只给右侧内容区上色，左侧品牌区透明；补上同样的底色，整条顶栏一致。 */
+@media (min-width: 960px) {
+  .theme-plume .vp-nav .vp-navbar.has-sidebar .title {
+    background-color: var(--vp-nav-bg-color);
+  }
+}
+
+/* 品牌：图标加名称，字号与右侧链接一致，只靠加粗区分。 */
+.theme-plume .vp-navbar .vp-navbar-title .title {
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 0;
+}
+
+.theme-plume .vp-navbar .vp-navbar-title .logo {
+  height: 22px;
+  margin-right: 10px;
+}
+
+/*
+ * 顶栏只留品牌、搜索、文字链接和右侧按钮：
+ * 角标、分隔竖线、“更多”折叠菜单收起；“下载”由右侧按钮承担；
+ * 深浅色开关和社交链接改由 NavActions.vue 的圆形按钮提供（手机仍在汉堡菜单里）。
+ */
+.theme-plume .vp-navbar .content-body .social-links,
+.theme-plume .vp-navbar .content-body .extra,
+.theme-plume .vp-navbar .content-body .translations,
+.theme-plume .vp-navbar .content-body .vp-menu-badge,
+.theme-plume .vp-navbar .content-body .navbar-menu-link[href^='/download'],
+.theme-plume .vp-navbar .content-body .appearance {
+  display: none;
+}
+
+.theme-plume .vp-navbar .navbar-menu-link {
+  padding: 0 16px;
+  color: var(--nh3-text2);
+  font-weight: 400;
+  transition: color var(--nh3-dur) var(--nh3-ease);
+}
+
+.theme-plume .vp-navbar .navbar-menu-link:hover,
+.theme-plume .vp-navbar .navbar-menu-link.active {
+  color: var(--nh3-text);
+}
+
+/* ---------- 搜索按钮：与首页按钮同一风格（表面色底、无边框） ---------- */
+
+.theme-plume .vp-navbar .mini-search-button {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--nh3-surface);
+  transition: background-color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease);
+}
+
+@media (min-width: 768px) {
+  .theme-plume .vp-navbar .mini-search-button {
+    width: 100%;
+    padding: 0 8px 0 14px;
+    border-radius: var(--nh3-r-pill);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-plume .vp-navbar .mini-search-button:hover {
+    background: var(--nh3-surface-hover);
+  }
+}
+
+.theme-plume .vp-navbar .mini-search-button:active {
+  transform: scale(0.97);
+}
+
+.theme-plume .vp-navbar .mini-search-button:focus-visible {
+  outline: 2px solid var(--nh3-accent);
+  outline-offset: 3px;
+}
+
+.theme-plume .vp-navbar .mini-search-button .mini-search-button-placeholder {
+  font-weight: 400;
+}
+
+/* 快捷键提示保留，但不抢眼：去掉键帽边框，只留浅色文字。 */
+.theme-plume .vp-navbar .mini-search-button .mini-search-button-key {
+  border: 0;
+  background: transparent;
+  color: var(--nh3-text3);
+}
+
+/*
+ * 中间宽度放不下“搜索框 + 六条链接 + 三个按钮”（有侧边栏时右侧只剩约 730px）：
+ * 1200px 以下搜索收成与手机一致的圆形图标按钮、链接间距收紧；960px 以下再收一档。
+ */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .theme-plume .vp-navbar .mini-search-button {
+    justify-content: center;
+    width: 38px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .theme-plume .vp-navbar .mini-search-button .mini-search-search-icon {
+    top: 0;
+    margin-right: 0;
+  }
+
+  .theme-plume .vp-navbar .mini-search-button .mini-search-button-placeholder,
+  .theme-plume .vp-navbar .mini-search-button .mini-search-button-keys {
+    display: none;
+  }
+
+  .theme-plume .vp-navbar .navbar-menu-link {
+    padding: 0 10px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 959px) {
+  .theme-plume .vp-navbar .navbar-menu-link {
+    padding: 0 7px;
+  }
+
+  .theme-plume .vp-navbar .nh3-nav-actions {
+    margin-left: 8px;
+  }
+}
+
+/* ---------- 按钮（首页与顶栏共用） ---------- */
+
+.theme-plume .nh3-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 26px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--nh3-r-pill);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur-press) var(--nh3-ease);
+}
+
+.theme-plume .nh3-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+
+/* 主按钮黑白反色：文字色作底、背景色作字。 */
+.theme-plume .nh3-btn-primary,
+.theme-plume .nh3-btn-primary:hover {
+  background-color: var(--nh3-text);
+  color: var(--nh3-bg);
+}
+
+.theme-plume .nh3-btn-secondary,
+.theme-plume .nh3-btn-secondary:hover {
+  background-color: var(--nh3-surface);
+  color: var(--nh3-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme-plume .nh3-btn-primary:hover {
+    background-color: color-mix(in srgb, var(--nh3-text) 84%, var(--nh3-bg));
+  }
+
+  .theme-plume .nh3-btn-secondary:hover {
+    background-color: var(--nh3-surface-hover);
+  }
+}
+
+.theme-plume .nh3-btn:active {
+  transform: scale(0.97);
+}
+
+.theme-plume .nh3-btn:focus-visible {
+  border-radius: var(--nh3-r-pill);
+  outline: 2px solid var(--nh3-accent);
+  outline-offset: 3px;
+}
+
+.theme-plume .nh3-btn-small {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+/* ---------- 版本列表：底色与内容区相同后，用表面色卡片区分每一篇 ---------- */
+
+.theme-plume .vp-posts .vp-post-item {
+  margin: 0;
+  padding: 20px 24px;
+  border-radius: var(--nh3-r-media);
+  background-color: var(--nh3-surface);
+}
+
+/* 系统开启“减少动态效果”时只保留颜色变化，不缩放。 */
+@media (prefers-reduced-motion: reduce) {
+  .theme-plume .nh3-btn:active,
+  .theme-plume .nh3-nav-round:active,
+  .theme-plume .vp-navbar .mini-search-button:active,
+  .theme-plume .nh3-nav-menu,
+  .theme-plume .nh3-nav-theme svg {
+    transform: none;
+  }
+}

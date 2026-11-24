@@ -52,13 +52,7 @@
 
 /* ---------- /standard/ 主页（frontmatter pageClass: uink-home） ---------- */
 
-/* 深色时内容区使用官网的 #0f0f0f；浅色本来就是白底，不改动。 */
-[data-theme='dark'] .uink-home {
-  --vp-c-bg: #0f0f0f;
-  --vp-nav-bg-color: #0f0f0f;
-  --vp-local-nav-bg-color: #0f0f0f;
-  background-color: #0f0f0f;
-}
+/* 页面底色已由 theme/styles/site.css 全站统一为官网的 #ffffff / #0f0f0f，这里不再单独覆盖。 */
 
 /* 首屏自带标题，隐藏文档默认的面包屑、页面标题和字数信息。 */
 .uink-home .vp-breadcrumb,
