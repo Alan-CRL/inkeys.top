@@ -6,6 +6,9 @@ import SiteVisitCounter from './theme/components/SiteVisitCounter.vue'
 import SwiperSelf from './theme/components/Swiper.vue'
 import VideoPlayerAmbilight from './theme/components/VideoPlayerAmbilight.vue' 
 import NewHome3 from './theme/components/NewHome3/NewHome3.vue'
+import UInkHero from './theme/components/UInk/UInkHero.vue'
+import UInkTierDemo from './theme/components/UInk/UInkTierDemo.vue'
+import UInkStructure from './theme/components/UInk/UInkStructure.vue'
 import './theme/styles/custom.css'
 
 export default defineClientConfig({
@@ -25,6 +28,9 @@ export default defineClientConfig({
     app.component('SwiperSelf', SwiperSelf) 
     app.component('VideoPlayerAmbilight', VideoPlayerAmbilight) 
     app.component('NewHome3', NewHome3)
+    app.component('UInkHero', UInkHero)
+    app.component('UInkTierDemo', UInkTierDemo)
+    app.component('UInkStructure', UInkStructure)
   },
   layouts: {
     Layout,

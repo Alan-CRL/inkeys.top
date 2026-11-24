@@ -105,8 +105,8 @@ export default defineThemeConfig({
         permalink: false, // 自动生成永久链接
       },
       // UInk 1.1 文档结构；顺序需与 plugins/uinkSpecBundle.ts 的 UINK_V11_PAGES 一致。
-      // 概览（/standard/）由主页子任务加入。
       sidebar: [
+        { text: '概览', link: '/standard/' },
         {
           text: '开始',
           items: [

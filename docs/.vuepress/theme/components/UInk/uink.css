@@ -1,0 +1,73 @@
+/*
+ * UInk 主页组件共用的令牌，数值取自官网 NewHome3/home.css（不引用、不修改 NewHome3）。
+ * 令牌挂在每个组件根元素 .uink-c 上，组件嵌入其他规范页面时同样可用。
+ */
+.uink-c {
+  --uink-bg: #ffffff;
+  --uink-surface: #f5f5f5;
+  --uink-surface-hover: #ededed;
+  --uink-text: #121212;
+  --uink-text2: #5c5c5c;
+  --uink-text3: #757575;
+  --uink-line: rgba(0, 0, 0, 0.1);
+  /* 线稿：比分隔线深一档，1.5px 时仍清楚 */
+  --uink-stroke: #9a9a9a;
+  --uink-accent: #006a63;
+  --uink-paper: #ffffff;
+
+  /* 只有墨迹是彩色的 */
+  --uink-ink-blue: #2563eb;
+  --uink-ink-red: #e5484d;
+  --uink-ink-green: #2f9e44;
+  --uink-ink-yellow: #ffd43b;
+
+  --uink-r-card: 24px;
+  --uink-r-media: 16px;
+  --uink-r-control: 12px;
+  --uink-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 拉丁字体排在中文字体前面，英文和数字不落到中文字体自带的拉丁字形上。 */
+  font-family: 'Segoe UI Variable Display', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Roboto, 'PingFang SC', 'HarmonyOS Sans SC', 'MiSans', 'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif;
+  color: var(--uink-text);
+}
+
+[data-theme='dark'] .uink-c {
+  --uink-bg: #0f0f0f;
+  --uink-surface: #1b1b1b;
+  --uink-surface-hover: #252525;
+  --uink-text: #f2f2f2;
+  --uink-text2: #a6a6a6;
+  --uink-text3: #8a8a8a;
+  --uink-line: rgba(255, 255, 255, 0.12);
+  --uink-stroke: #6b6b6b;
+  --uink-accent: #58ffec;
+  --uink-paper: #161616;
+
+  /* 深色底上提亮墨迹，保持可辨 */
+  --uink-ink-blue: #5b8cff;
+  --uink-ink-red: #ff6b70;
+  --uink-ink-green: #4cc265;
+  --uink-ink-yellow: #ffd43b;
+}
+
+/* ---------- /standard/ 主页（frontmatter pageClass: uink-home） ---------- */
+
+/* 深色时内容区使用官网的 #0f0f0f；浅色本来就是白底，不改动。 */
+[data-theme='dark'] .uink-home {
+  --vp-c-bg: #0f0f0f;
+  --vp-nav-bg-color: #0f0f0f;
+  --vp-local-nav-bg-color: #0f0f0f;
+  background-color: #0f0f0f;
+}
+
+/* 首屏自带标题，隐藏文档默认的面包屑、页面标题和字数信息。 */
+.uink-home .vp-breadcrumb,
+.uink-home .vp-doc-title,
+.uink-home .vp-doc-meta {
+  display: none;
+}
+
+/* 无大纲时文档栏可达 1100px 以上，中文段落一行过长；整页统一收窄到 960px。 */
+.uink-home .content-container {
+  max-width: 960px;
+}
