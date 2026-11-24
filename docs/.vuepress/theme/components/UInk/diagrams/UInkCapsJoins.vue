@@ -37,7 +37,7 @@ const JOIN_CENTER = polylinePath(JOIN_LINE)
 <template>
   <UInkFigure
     title="端帽与拐角"
-    desc="蓝色是描边覆盖的区域，虚线是中心线，竖虚线标出端点的位置。缺省时端帽与拐角都是 Round（NIB-3、NIB-4）。"
+    desc="蓝色是描边覆盖的区域，虚线是中心线，竖虚线标出端点的位置。缺省时端帽与拐角都是 Round（NIB-3、NIB-4）；Ink 的端帽只对圆形笔尖有效。Miter 的尖角超过描边宽度的 4 倍时退回斜切（SHAPE-10）。"
   >
     <div class="ucj">
       <div class="ucj-group">

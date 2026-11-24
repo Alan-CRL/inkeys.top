@@ -11,7 +11,14 @@ interface Row {
   code: string
   note: string
   d: string
+  /** 对比用的参照线（浅灰），只在 dashOffset 一行使用 */
+  ref?: string
 }
+
+// dashOffset 对比：上方浅灰为 dashOffset = 0，下方为 dashOffset = 6（SHAPE-26：正值让图案朝起点移动）
+const OFFSET = 6
+const REF_LINE: Point[] = LINE.map(p => ({ x: p.x, y: 7 }))
+const OFF_LINE: Point[] = LINE.map(p => ({ x: p.x, y: 21 }))
 
 // OpenArrow 的具体外形由软件决定（Marker 表）；这里画两条与杆同宽的短线
 const head = (() => {
@@ -29,6 +36,13 @@ const head = (() => {
 const ROWS: Row[] = [
   { name: '实线', code: 'dashArray 缺省', note: '缺失或为空时是实线', d: dashOutline(LINE, W) },
   { name: '虚线', code: 'dashArray: [16, 8]', note: '圆头让每段两端各多出 w/2，空隙看起来变窄', d: dashOutline(LINE, W, [16, 8], 0, CAP_ROUND) },
+  {
+    name: '偏移',
+    code: `dashOffset: ${OFFSET}`,
+    note: `图案朝起点方向移动 ${OFFSET}：第一段只剩 ${16 - OFFSET}，后面的段整体左移（SHAPE-26）。上方浅灰为 dashOffset = 0`,
+    ref: dashOutline(REF_LINE, W, [16, 8], 0, CAP_ROUND),
+    d: dashOutline(OFF_LINE, W, [16, 8], OFFSET, CAP_ROUND),
+  },
   { name: '点线', code: 'dashArray: [0, 12]', note: '即 {0, 3w}：长度为 0 的段在圆头下画成圆点（NIB-5）', d: dashOutline(LINE, W, [0, 12], 0, CAP_ROUND) },
   { name: '点划线', code: 'dashArray: [16, 8, 0, 8]', note: '线段与圆点交替', d: dashOutline(LINE, W, [16, 8, 0, 8], 0, CAP_ROUND) },
   { name: '箭头', code: 'endMarker: 1', note: 'OpenArrow，外形由软件决定；只用于 Line、Polyline', d: `${dashOutline(LINE, W)} ${head}` },
@@ -48,6 +62,11 @@ const ROWS: Row[] = [
           <span class="uss-note">{{ row.note }}</span>
         </div>
         <svg viewBox="0 0 240 28" role="img" :aria-label="`${row.name}：${row.code}。${row.note}`">
+          <template v-if="row.ref">
+            <!-- 竖虚线标出路径起点 -->
+            <path :d="`M${LINE[0].x} 0 V28`" class="uf-art uf-art--thin uf-art--dash" />
+            <path :d="row.ref" class="uss-ref" />
+          </template>
           <path :d="row.d" class="uf-fill-blue" />
         </svg>
       </div>
@@ -96,6 +115,11 @@ const ROWS: Row[] = [
   color: var(--uink-text);
   font-size: 14px;
   font-weight: 600;
+}
+
+.uss-ref {
+  fill: var(--uink-text3);
+  fill-opacity: 0.35;
 }
 
 .uss-note {

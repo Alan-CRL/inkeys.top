@@ -156,10 +156,16 @@ function rectCorners(c: Point, size: NibSize, dir: Point | null): Point[] {
   ]
 }
 
-// 某点的书写方向：取前后两段方向之和；端点取所在段的方向
-function directionAt(points: Point[], i: number): Point {
-  const prev = i > 0 ? unit(sub(points[i], points[i - 1])) : null
-  const next = i < points.length - 1 ? unit(sub(points[i + 1], points[i])) : null
+// 某点的书写方向（NIB-8）：首点取第一段、末点取最后一段，中间点取进入与离开方向的平分方向；
+// 两者正好相反时取离开方向。长度为 0 的段跳过：向前、向后各找最近一个不重合的点
+export function directionAt(points: Point[], i: number): Point {
+  const c = points[i]
+  let a = i - 1
+  while (a >= 0 && len(sub(c, points[a])) < 1e-9) a--
+  let b = i + 1
+  while (b < points.length && len(sub(points[b], c)) < 1e-9) b++
+  const prev = a >= 0 ? unit(sub(c, points[a])) : null
+  const next = b < points.length ? unit(sub(points[b], c)) : null
   if (prev && next) {
     const s = add(prev, next)
     return len(s) > 1e-9 ? s : next
@@ -171,7 +177,7 @@ function directionAt(points: Point[], i: number): Point {
  * NIB-2：笔尖沿点序列扫过的区域。相邻两点之间按线性插值，
  * 两个凸形笔尖之间扫过的区域等于二者的凸包，整条笔迹是各段凸包的并集。
  * cap 缺省时圆形笔尖为 Round、矩形笔尖为 Butt（NIB-3）。
- * 圆形笔尖支持三种端帽；矩形笔尖只画 Butt（两端就是笔尖矩形自身的边，Inkeys 的荧光笔与橡皮都如此）。
+ * 圆形笔尖支持三种端帽；矩形笔尖忽略 cap，两端就是笔尖矩形自身的边（NIB-3）。
  * 返回一条多子路径的 path，须用 fill-rule="nonzero" 填充。
  */
 export function sweepPath(points: InkPoint[], nib?: Nib, cap?: number): string {
@@ -258,7 +264,7 @@ export function strokeOutline(points: Point[], width: number, cap = CAP_ROUND, j
     if (join === JOIN_MITER) {
       const m = unit(add(n1, n2))
       const cos = m.x * n1.x + m.y * n1.y
-      // 尖角长度为 h / cos(θ/2)；过长时的截断由软件决定（SHAPE-10），这里超过 4 倍半宽时退回斜切
+      // 尖角长度（外侧尖端到内侧拐点）与描边宽度之比为 1 / cos，超过限值 4 时退回斜切（SHAPE-10）
       if (cos > 0.25) block.push(add(p, mul(m, h / cos)))
     }
     parts.push(block)

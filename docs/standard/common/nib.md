@@ -37,6 +37,7 @@ title: 笔尖与端帽
 - `FollowDirection`：矩形的宽沿该点的书写方向，高与书写方向垂直。每个点的书写方向按 NIB-8 确定。
 
 <!-- visual: nib-orientation — 同一条折线分别用 Fixed 与 FollowDirection 的 1:4 矩形笔尖书写，标出拐点处取平分方向 -->
+<UInkNibOrientation />
 
 ## 端帽
 
