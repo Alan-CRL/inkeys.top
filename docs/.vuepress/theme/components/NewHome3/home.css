@@ -362,6 +362,11 @@
   transform: translateX(40px);
 }
 
+/* 只淡入、不位移（S2 画面里的墨迹，必须和底下的内容对齐）。 */
+.new-home3-page .nh3-appear-pending[data-nh3-item='fade'] {
+  transform: none;
+}
+
 /* 整块板面由 97% 放大到位（S5-A）。 */
 .new-home3-page .nh3-appear[data-nh3-item='panel'] {
   transition-duration: 700ms;
