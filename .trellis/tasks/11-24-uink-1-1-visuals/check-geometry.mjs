@@ -4,6 +4,7 @@
 import { readFileSync } from 'node:fs'
 import {
   absolutePoints,
+  directionAt,
   closedDashPhase,
   dashSegments,
   fitRect,
@@ -184,6 +185,21 @@ const near = (a, b, tol) => Math.abs(a - b) <= tol
   check('锚点 d = 0、P/4 → 相位 2w', closedDashPhase(P, 0, w) === 4 && closedDashPhase(P, 100, w) === 4)
   check('锚点两侧对称', closedDashPhase(P, 49, w) === closedDashPhase(P, 51, w) && closedDashPhase(P, 99, w) === closedDashPhase(P, 101, w))
   check('点线锚点相位为 0', closedDashPhase(P, 200, w, true) === 0)
+}
+
+// 10. NIB-8 书写方向：首末点取所在段，中间点取平分方向，折返取离开方向，零长度段跳过
+{
+  const pts = [{ x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: -10 }, { x: 10, y: -10 }, { x: 20, y: -10 }, { x: 10, y: -10 }]
+  const d0 = directionAt(pts, 0)
+  const d1 = directionAt(pts, 1)
+  const d2 = directionAt(pts, 2)
+  const d4 = directionAt(pts, 4)
+  const d5 = directionAt(pts, 5)
+  check('首点取第一段方向', near(d0.x, 1, 1e-9) && near(d0.y, 0, 1e-9))
+  check('拐点取平分方向 (1, −1)', near(d1.x, -d1.y, 1e-9) && d1.x > 0)
+  check('重复点跳过零长度段，仍取平分方向', near(d2.x, -d2.y, 1e-9) && d2.x > 0, JSON.stringify(d2))
+  check('完全折返时取离开方向', near(d4.x, -1, 1e-9) && near(d4.y, 0, 1e-9), JSON.stringify(d4))
+  check('末点取最后一段方向', near(d5.x, -1, 1e-9))
 }
 
 console.log(failed ? `\nFAIL: ${failed} 项未通过` : '\nPASS: 全部通过')

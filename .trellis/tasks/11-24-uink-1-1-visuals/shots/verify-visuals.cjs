@@ -29,6 +29,7 @@ const DIAGRAMS = [
   { name: 'UInkInkPoints', page: '/standard/blocks/ink.html', title: '笔迹的点' },
   { name: 'UInkNibShapes', page: '/standard/common/nib.html', title: '四种笔尖' },
   { name: 'UInkNibSize', page: '/standard/common/nib.html', title: '笔尖尺寸' },
+  { name: 'UInkNibOrientation', page: '/standard/common/nib.html', title: '笔尖方向' },
   { name: 'UInkCapsJoins', page: '/standard/common/nib.html', title: '端帽与拐角' },
   { name: 'UInkShapeGeometry', page: '/standard/blocks/shape.html', title: '七种几何' },
   { name: 'UInkShapeStroke', page: '/standard/blocks/shape.html', title: '线型与端头' },

@@ -30,6 +30,12 @@
       "overflow": [],
       "width": 906
     },
+    "UInkNibOrientation@1440": {
+      "minFont": 12.5,
+      "minWhere": "CODE: orientation: 0",
+      "overflow": [],
+      "width": 906
+    },
     "UInkCapsJoins@1440": {
       "minFont": 12.5,
       "minWhere": "CODE: cap",
@@ -201,6 +207,12 @@
     "UInkNibSize@390": {
       "minFont": 12.5,
       "minWhere": "SPAN: 直径 = 24",
+      "overflow": [],
+      "width": 342
+    },
+    "UInkNibOrientation@390": {
+      "minFont": 12.5,
+      "minWhere": "CODE: orientation: 0",
       "overflow": [],
       "width": 342
     },

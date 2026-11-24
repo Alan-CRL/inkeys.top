@@ -87,6 +87,7 @@ docs/.vuepress/theme/components/UInk/
 
 | 占位 | 页面 | 组件 | 类型 |
 | --- | --- | --- | --- |
+| `nib-orientation`（D22） | common/nib | `UInkNibOrientation` | 静态：同一折线 Fixed 与 FollowDirection 对比，拐点画出平分方向 |
 | `shape-curves` | blocks/shape | `UInkShapeCurves` | 交互：滑块改变双曲线每支的采样点数，显示折线与真实曲线的最大偏差；配套正文「曲线与自由图形」（SHAPE-24、SHAPE-25）与公开样例 `core-shape-curves.uink` |
 
 ## 5. 动效与无障碍
