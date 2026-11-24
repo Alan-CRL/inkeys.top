@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/11-24-uink-1-1-spec/prd.md", "reason": "全部已确认决策 D1–D19"}
+{"file": ".trellis/tasks/11-24-uink-1-1-spec/design.md", "reason": "线格式变更、分级矩阵、回退规则（定稿）"}
+{"file": ".trellis/tasks/11-24-uink-1-1-spec/research/icc-ce-uink-gaps.md", "reason": "ICC-CE 调研，写回退与示例时参考"}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "页面、配置、public 资源的位置"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "构建验证与 public 资源提醒"}

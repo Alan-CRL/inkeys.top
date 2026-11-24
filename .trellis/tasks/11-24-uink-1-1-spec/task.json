@@ -1,0 +1,30 @@
+{
+  "id": "uink-1-1-spec",
+  "name": "uink-1-1-spec",
+  "title": "UInk 1.1 规范设计",
+  "description": "设计 UInk 1.1：功能分级（核心/标准/完整 + Inkeys 附加级）、兼容与回退、文档与可视化重写、UInk 主页重做",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-11-24",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-24-uink-1-1-spec-text",
+    "11-24-uink-1-1-visuals",
+    "11-24-uink-1-1-homepage"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

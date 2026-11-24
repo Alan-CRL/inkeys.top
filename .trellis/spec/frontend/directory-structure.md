@@ -31,6 +31,8 @@ docs/
 - Put custom Vue components in `docs/.vuepress/theme/components/`. Examples include `DownloadCard.vue`, `AsideNav.vue`, and `SiteVisitTracker.vue`.
 - Put site-wide theme overrides in `docs/.vuepress/theme/styles/custom.css`. Page-specific CSS may stay in its Markdown page, as in `docs/community.md`.
 - Put root-served static files in `docs/.vuepress/public/`. Content-specific subdirectories mirror page areas, such as `public/wiki/start/` and `public/tutorial/pptx-video-processing/`; reference them with root-relative URLs such as `/Inkeys.svg`.
+- Put local VuePress plugins in `docs/.vuepress/plugins/` and register them in the `plugins` array of `config.ts`. `uinkSpecBundle.ts` is the current example.
+- Put repository scripts outside `docs/` in `scripts/`. UInk sample generation lives in `scripts/uink-fixtures/`; see [UInk Spec Guidelines](./uink-spec-guidelines.md).
 
 ## Component Scope
 
