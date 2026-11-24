@@ -21,6 +21,20 @@ const nativeLayers = computed(() => ({
 }))
 let resize: ResizeObserver | undefined
 
+// S5-A 书写演示：123 云盘转码后的 HLS，每种语言各有 1080p / 720p / 480p 三条独立播放列表。
+// 没有控制栏可切换清晰度，挂载时按视频区域的物理像素宽度选一档（成片宽 2520，三档约 2520 / 1680 / 1120）。
+type InkResolution = '1080p' | '720p' | '480p'
+const inkResolution = ref<InkResolution>('720p')
+const inkVideo = computed(() => `https://1709404.cdn.123clouddisk.com/1709404/transcode/s5a-${locale.value}-1080p30.m3u8?extParams=m3u8&resolutions=${inkResolution.value}&suffix=mp4&from=transcode`)
+
+function pickInkResolution(): InkResolution {
+  const media = root.value?.querySelector<HTMLElement>('.nh3-ink-media')
+  const width = (media?.clientWidth || window.innerWidth) * (window.devicePixelRatio || 1)
+  // 用户开启了省流量时直接用最低档。
+  if ((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) return '480p'
+  return width > 1680 ? '1080p' : width > 1120 ? '720p' : '480p'
+}
+
 function alignBlurredWallpaper() {
   const panel = card.value
   if (!panel) return
@@ -43,6 +57,8 @@ function alignBlurredWallpaper() {
 }
 
 onMounted(() => {
+  // 视频要等进入视口才开始请求，这里先定好清晰度，不会产生多余的下载。
+  inkResolution.value = pickInkResolution()
   if (!card.value || !settings.value || !bar.value || CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)')) return
   alignBlurredWallpaper()
   if ('ResizeObserver' in window) {
@@ -66,7 +82,7 @@ useAppear(root)
       <div class="nh3-wrap nh3-ink-inner">
         <h2 id="nh3-s5a-title" class="nh3-display" data-nh3-item>{{ copy.s5a.title }}</h2>
         <p class="nh3-lead" data-nh3-item><span v-for="line in copy.s5a.lead" :key="line">{{ line }}</span></p>
-        <MediaSlot class="nh3-ink-media" data-nh3-item :label="copy.s5a.media" :note="copy.placeholder.ink" />
+        <MediaSlot class="nh3-ink-media" data-nh3-item :src-light="inkVideo" :toggle-labels="{ play: copy.s5a.play, pause: copy.s5a.pause }" :label="copy.s5a.media" :note="copy.placeholder.ink" />
       </div>
     </div>
 
@@ -134,12 +150,18 @@ useAppear(root)
   display: block;
 }
 
+/* 各宽度都保持 21:9：画面右侧是标签文字，裁成别的比例会切掉文字。 */
+/* 底色仿成片第一帧（近黑，左上与右下各一团青色光晕），视频加载完渐显时看不出边界。 */
 .nh3-ink-media {
   flex: none;
   width: 100%;
   margin-top: clamp(40px, 5vw, 64px);
   aspect-ratio: 21 / 9;
   border-radius: var(--nh3-r-media);
+  background:
+    radial-gradient(ellipse 50% 75% at 100% 100%, rgb(14 70 64 / 90%), transparent 100%),
+    radial-gradient(ellipse 22% 38% at 0 0, rgb(12 38 38 / 80%), transparent 100%),
+    #070909;
 }
 
 /* 板面上的占位再压暗一层，文字用板面的次要文字色。 */
@@ -308,10 +330,6 @@ useAppear(root)
     z-index: -1;
     inset: -40px -100vw;
     background: linear-gradient(to bottom, transparent, rgb(5 19 14 / 64%) 40px, rgb(5 19 14 / 64%) calc(100% - 40px), transparent);
-  }
-
-  .nh3-ink-media {
-    aspect-ratio: 16 / 10;
   }
 
   .nh3-ink-media .nh3-media-placeholder span {
