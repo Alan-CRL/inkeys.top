@@ -16,6 +16,7 @@ sys.path.insert(0, str(HERE.parent))
 from glass import WEB_BACKDROP_OPACITY, solid_regions, thin_backdrop  # noqa: E402
 
 SITE = HERE.parents[2]
+# 2026-11-24 起该目录已打包进 media/archive/2026-11-24-gallery-overview-tools.7z，重新运行前先解压回原处。
 PROMO = SITE / 'media/inkeys3-theme-promo'
 BUILD = PROMO / 'build'
 DESTINATION = SITE / 'docs/.vuepress/public/new-index3/craft'

@@ -15,8 +15,10 @@
 - `media/inkeys3-features/`：Python/FFmpeg 分镜、原生导出输入、合成器和 `build/` 中的预览及中间产物。
 - `media/inkeys3-remotion/`：Remotion 源码、依赖配置、`out/` 成片及 `build/previous-public/` 等输出与回滚备份。
 
+`media/archive/2026-11-24-gallery-overview-tools.7z`：画廊两张宣传图（overview / tools）的制作归档，包含原 `inkeys3-theme-promo/`、`inkeys3-hero/`、`inkeys3-showcase-assets/`、网页图层与成品、`scripts/build-showcase-layers.py`、旧图层拆解组件和任务副本；目录对照见压缩包内 `README.md`。打包后已逐文件核对 SHA-256，原目录随后移除。
+
 ## 当前网页素材
 
-`docs/.vuepress/public/feature-media/` 保留八幕共 16 张静态 WebP 作为备选素材。当前 `/new-index3` 改为文字与素材占位，不加载这些封面或视频；后续按确定的图文板块补充独立配图。
+2026-11-24 起 `docs/.vuepress/public/feature-media/` 已删除（八幕 16 张 WebP 的副本在上面的 `video-archive` 里，画廊图在上面的 7z 里）。`/new-index3` 现在使用 `public/new-index3/` 下的 S1 动图与 S5-B 素材，S5-A 视频走 123 云盘 HLS。
 
 恢复视频时先查看本地归档及各制作工程 README；不要直接运行旧发布脚本覆盖当前图片。归档中的视频 manifest 与播放器需要一起恢复。归档不在 Git 中，迁移电脑前请另行复制整个 `media/` 目录。
