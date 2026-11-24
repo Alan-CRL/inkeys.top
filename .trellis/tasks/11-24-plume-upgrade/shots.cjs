@@ -38,7 +38,8 @@ const server = http.createServer((req, res) => {
 
 async function main() {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
-  const origin = `http://127.0.0.1:${server.address().port}`
+  // 设了 BASE_URL 时改为截正在运行的 dev server（例如机器内存不足、无法构建 dist 时）。
+  const origin = process.env.BASE_URL || `http://127.0.0.1:${server.address().port}`
   // 浏览器配置目录放在 git 忽略的 .claude 下，不放进任务目录（Edge 锁文件会妨碍归档）。
   const persistent = await chromium.launchPersistentContext(path.join(base, 'browser-profile'), {
     headless: true,
@@ -54,14 +55,14 @@ async function main() {
         const page = await context.newPage()
         page.on('pageerror', error => errors.push(`${theme}/${device}: ${error}`))
         for (const [name, url] of Object.entries(pages)) {
-          const response = await page.goto(origin + url, { waitUntil: 'load' })
+          const response = await page.goto(origin + url, { waitUntil: 'load', timeout: 120000 })
           if (!response || response.status() !== 200) errors.push(`${url} -> ${response?.status()}`)
           await page.waitForTimeout(400)
           await page.screenshot({ path: path.join(output, `${name}-${theme}-${device}.png`) })
         }
         // 手机菜单展开状态
         if (device === 'mobile') {
-          await page.goto(origin + pages.wiki, { waitUntil: 'load' })
+          await page.goto(origin + pages.wiki, { waitUntil: 'load', timeout: 120000 })
           await page.locator('.vp-navbar-hamburger').click().catch(error => errors.push(`hamburger: ${error.message}`))
           await page.waitForTimeout(400)
           await page.screenshot({ path: path.join(output, `menu-${theme}-mobile.png`) })
