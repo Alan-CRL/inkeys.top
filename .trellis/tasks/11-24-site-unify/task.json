@@ -1,0 +1,31 @@
+{
+  "id": "site-unify",
+  "name": "site-unify",
+  "title": "全站视觉与内容统一",
+  "description": "把首页 / UInk 首页的配色与顶栏按钮推广到全站，升级 Plume，并优化下载卡片与页面文案",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-11-24",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-24-plume-upgrade",
+    "11-24-site-palette",
+    "11-24-download-card",
+    "11-24-page-copy"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}
