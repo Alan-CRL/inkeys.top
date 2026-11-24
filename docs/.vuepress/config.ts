@@ -7,6 +7,7 @@ import { readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createAssetRuntimeScript } from './cdn/runtime'
+import { uinkSpecBundlePlugin } from './plugins/uinkSpecBundle'
 
 const isProd = process.env.NODE_ENV === 'production'
 const siteBase = '/'
@@ -235,6 +236,8 @@ export default defineUserConfig({
         '/pptx-video-processing.html': '/tutorial/pptx-video-processing.html',
       },
     }),
+    // 构建后生成 UInk 单文件规范与规范索引（见 plugins/uinkSpecBundle.ts）
+    uinkSpecBundlePlugin(),
   ],
 
 });
