@@ -2,3 +2,8 @@
 {"file":".trellis/spec/frontend/component-guidelines.md","reason":"检查注册范围、样式约定与无障碍属性"}
 {"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"检查是否重复实现已有组件或样式"}
 {"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/inkeys3-ui3-draw3.md","reason":"核对复刻尺寸、配色与 Draw3 文案事实"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-prd.md","reason":"检查最新八幕范围、教学语义、输出与真实性验收"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-design.md","reason":"检查逐镜头内容、光标因果、斜轴转场、移动端与回滚设计"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-implement.md","reason":"检查工具路径、实施顺序、验证命令和停止点"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/media-redesign-native-evidence.md","reason":"核对 feature/shape 虚线、Laser 生命周期、PenIcon、原生边界和工具事实"}
+{"file": ".trellis/tasks/09-28-inkeys3-new-homepage/remotion-screen-freeze.md", "reason": "2026-10-25用户授权的Remotion单片范围、设计和验收，覆盖旧工具与等待限制"}

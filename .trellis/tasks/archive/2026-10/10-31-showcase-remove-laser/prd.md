@@ -1,0 +1,2 @@
+# 移除激光
+用户明确要求移除激光，其他内容不变。仅改final-v3合成器不消费ink-laser图层，复用已验证的现有原生其他图层。无需改输入、原生代码或重新捕获。保留旧版本，生成final-no-laser-preview/master和更新canonical输出。合成报告明确excluded laser，不把它列为consumed layer。验证来源绑定、所有原生文件不变、master像素差仅位于原激光alpha覆盖区、界面保护区域不变。无GUI/编译/提交/发布。

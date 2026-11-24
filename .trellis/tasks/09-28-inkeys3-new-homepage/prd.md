@@ -1,5 +1,9 @@
 # Inkeys3 新主页
 
+> 2026-10-25 当前续作：[Remotion 单片计划](./remotion-screen-freeze.md)。用户已授权直接制作一个视频；本轮使用独立 Remotion 项目并进行实际渲染审查，取代下文旧的工具限制和等待确认步骤。其他视频保留现状。
+
+> 当前续作（2026-10-24）：三组八段功能演示正在重设计，最新需求以 [media-prd.md](./media-prd.md) 为准，逐镜头与实施分别见 [media-design.md](./media-design.md)、[media-implement.md](./media-implement.md)，前期探索和原生证据见 [research/media-redesign-native-evidence.md](./research/media-redesign-native-evidence.md)。本轮仅完成规划，待用户明确批准后才开始制作。2026-10-22 旧版交付保留在 `media-result.md` 作为历史与回滚基线；下文保留最初 `/new-index` 阶段的历史需求，其“素材后置”和 reduced-motion 决策不适用于当前演示。
+
 ## Goal
 
 为 Inkeys3 发布打造一个超出 Plume 预设能力的全新主页。完成前放在 `/new-index` 测试，现有 `docs/index.md` 保持不变。本阶段重点是样式、交互和动效框架；正式文案与高清素材（官方渲染图、动图）后续由程序渲染后填入。

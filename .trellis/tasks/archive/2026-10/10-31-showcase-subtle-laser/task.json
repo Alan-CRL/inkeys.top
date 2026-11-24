@@ -1,0 +1,30 @@
+{
+  "id": "showcase-subtle-laser",
+  "name": "showcase-subtle-laser",
+  "title": "激光改为下图短弧强调",
+  "description": "移除上方抢眼大圈，仅强调下图小三角形右斜边中段，原生重放验收",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-10-31",
+  "completedAt": "2026-10-31",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/prepare_scene.py",
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/build/final-subtle-laser-preview.png",
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/build/final-subtle-laser-master.png"
+  ],
+  "notes": "Complete: upperloop removed; ONE60.164px openarc alonglower topcorner rightedge, native scale.60. Independentnative+visualPASS; sixnonlaserlayerhashes/allhand/layout/EXE/adaptersunchanged. Pixelchanges only oldnewlaserareas; master2aeabe5241820902a33cc1d6e041dfe438ee453a952fc4f7d35836a2cab5f5e0. Capture-only noGUI/build/commit/publish; beforeversionpreserved.",
+  "meta": {}
+}

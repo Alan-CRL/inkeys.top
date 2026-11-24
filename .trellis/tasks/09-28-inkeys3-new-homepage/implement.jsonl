@@ -3,3 +3,8 @@
 {"file":".trellis/spec/frontend/component-guidelines.md","reason":"组件风格、全局注册规则、Plume 变量与无障碍约定"}
 {"file":".trellis/spec/frontend/quality-guidelines.md","reason":"格式约定、SSR 安全、监听清理与构建验证"}
 {"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/inkeys3-ui3-draw3.md","reason":"UI3 主栏尺寸配色动效与 Draw3 功能事实"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-prd.md","reason":"2026-10-24 重设计需求、范围与可观察验收标准"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-design.md","reason":"逐镜头画面、图层、光标、统一斜轴转场与输出合同"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/media-implement.md","reason":"已验证工具路径、实施顺序、验证命令、停止点与 token 控制"}
+{"file":".trellis/tasks/09-28-inkeys3-new-homepage/research/media-redesign-native-evidence.md","reason":"旧实现盘点及 shape、Laser、PenIcon、Whiteboard 与本机工具证据"}
+{"file": ".trellis/tasks/09-28-inkeys3-new-homepage/remotion-screen-freeze.md", "reason": "2026-10-25用户授权的Remotion单片范围、设计和验收，覆盖旧工具与等待限制"}

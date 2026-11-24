@@ -1,5 +1,7 @@
 # Design: Inkeys3 新主页
 
+> 当前 `/new-index3` 动态素材续作设计见 [media-design.md](./media-design.md)，以下为最初主页阶段设计记录。
+
 ## 路由与外壳
 
 - 页面：`docs/new-index.md`，frontmatter `pageLayout: NewHome`、`sidebar: false`、`aside: false`、`head` 注入 `robots: noindex`。

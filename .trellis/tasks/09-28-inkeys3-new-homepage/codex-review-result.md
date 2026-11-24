@@ -1,0 +1,21 @@
+Found **four medium-severity issues**. No files changed; no builds or GUI tests run.
+
+1. **P2 — Hit testing ignores the hover transform.** [useShowcaseStack.ts:135](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/useShowcaseStack.ts:135) tests the base plane, while [ShowcaseStack.css:94](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/ShowcaseStack.css:94) adds `translateZ(46px) scale(1.035)` over 0.5 seconds. The visible image can therefore lose hover or select an underlying layer. Callout positioning includes the final lift but omits scaling and transition progress. **Fix:** share the rendered lift/scale state with hit testing and callout projection, including scaling about each layer’s centre.
+
+2. **P2 — Invisible portions of partially revealed layers are selectable.** [useShowcaseStack.ts:134](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/useShowcaseStack.ts:134) excludes reveals below `0.6`, then tests the entire layer rectangle/alpha map. Its still-clipped right portion can capture hits and obscure lower layers. **Fix:** reject points outside the actual reveal clip before sampling alpha.
+
+3. **P2 — Keyboard layer controls remain visually clipped while focused.** [ShowcaseStack.css:170](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/ShowcaseStack.css:170) permanently hides the focusable buttons rendered at [ShowcaseStack.vue:100](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/ShowcaseStack.vue:100). There is no focus-reveal rule. **Fix:** expose the controls on `:focus-within`, or provide a visible keyboard layer selector with a clear focus indicator.
+
+4. **P2 — An accessibility-hidden toolbar contains tab stops.** [ReleaseFinale.vue:48](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/ReleaseFinale.vue:48) applies `aria-hidden="true"` around `Ui3Bar`, whose native buttons remain focusable. Keyboard focus can enter controls absent from the accessibility tree. **Fix:** use a decorative mode that removes descendant tab stops, or `inert` if pointer interaction is unnecessary; otherwise expose meaningful accessible controls.
+
+The requested math checks pass for the **unlifted geometry**:
+
+- CSS applies `Rz → Rx → scale`. The signs correctly use y-down coordinates: positive `rotateX` moves the top edge away. The centred anchor and matching `inset: 0` perspective/plane boxes make both origins coincide; wrapper translation follows projection. These agree with the [CSS transform specification](https://www.w3.org/TR/css-transforms-2/).
+- Writing `q = Ax + By + o`, rearrangement gives `(P·Ax + X·Az)x + (P·Bx + X·Bz)y = X(P − oz) − P·ox`, and likewise for Y. The implemented coefficients and Cramer solve are correct. Independent in-memory matrix/inverse checks across 120 cases agreed within `3 × 10⁻¹³ px`.
+- Strict exactness has two caveats: CSS translations/depths are rounded to `0.01px`, and [stackProjection.ts:44](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/stackProjection.ts:44) clamps `P − z`, whereas `unproject` assumes ordinary perspective. Current poses stay safely outside that clamp.
+
+No accidental flattening was found inside the plane/layer/lift chain. Opacity, filter and clipping are on leaf images; the outer sticky overflow clips the completed scene. No new SSR/hydration defect or missing resource cleanup was found.
+
+`createPainter` safely handles empty `raw`, one nonempty ink stroke, and canvas-box bounds. **Performance concern:** [InkStroke.vue:111](/D:/Project/Inkeys/website/docs/.vuepress/theme/components/NewHome3/InkStroke.vue:111) redraws the visible stroke as progress changes, with three full-size canvas buffers—about **214 MiB** at 3840×2160 CSS pixels and DPR 1.5, before overhead. Consider lazy prefix-buffer allocation and a total-pixel budget.
+
+Pointer movement repeats hit-test calculations, but unchanged active IDs do not trigger rerenders and pose computations remain cached. Scroll updates unnecessarily repeat the invariant exploded-end fit; caching it separately is a small optimization. InkStroke and the stack respond to reduced-motion changes; ReleaseFinale samples the preference only at mount.

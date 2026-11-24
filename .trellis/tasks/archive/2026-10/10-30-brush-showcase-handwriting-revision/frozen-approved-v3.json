@@ -1,0 +1,21 @@
+{
+  "build_comparison.py": "42980cc9c7cb6e1d8ee9470612fb9324e434637f071e1fb74ea95943d2292bc0",
+  "build_draft.py": "4e6260025e8bd8bdf16e20c745c024b8410e759a434e062aeba291269ebe7ade",
+  "english_paths.py": "6d18ee3155867593d3d979af1d012ca013b0b5efb3749e163b4d489dbf3458bc",
+  "math_paths.py": "0da9cbd49084479399d25d0ed24f564c4f259d7417bbc11ba04d6e31508a66a6",
+  "README.md": "e91cfb647120ce5e4758d50bffeaea91958bc71c542640ea0913ea072f06cac1",
+  "build/detail-capitals.png": "40f5b81e0aab9677c40bf0852b44449677e8a9dcce9520ff79343b13d226fc0c",
+  "build/detail-notes.png": "8f03c34c8f05c6e0115c8f57bba2f077e93126419eb52df1e02487a43a036155",
+  "build/detail-numbers.png": "cf8e8443d639431d454c434f89affdfd274f86ddab58e1deb3a7720506a89b06",
+  "build/detail-roots.png": "e0b4c59df04011292e9da98541b43792026adbd97ea52a76f9b542980857b663",
+  "build/handwriting-v2-v3-common-master.png": "e9f42c28c8a5e8a75c79657071a7e80ee2ba3f22eb62a0828c250b3f908c51e7",
+  "build/handwriting-v2-v3-common-preview.png": "2ad70c7720ef758c3ee75d5cae4d7e274b4db9746fc6e404496b48385168d3eb",
+  "build/handwriting-v3-draft-master.png": "9eb216dcbddd07830a0c0fafe146c45583bfe94f2c5f2b0e1aa9434584bd2e27",
+  "build/handwriting-v3-draft-preview.png": "7e5516938f87a62d8ffa9dcf73c8c977a3c8aaa09b877a003d16f20b249ea11d",
+  "data/common-comparison.json": "ce356b40484de0ba9999cd1599814b79e10b62caac300c1f64cebad658783d07",
+  "data/draft-scene.json": "21b6b596a7132cdf6a2a1467bd627e30f8e924d45574079e8cc0d28c65ec5536",
+  "english-preview/validate_preview.py": "544656c00340678f44053f15d8785a9e1d7c0c2c6761bacbb80251d788a77ca6",
+  "english-preview/validation.json": "f712f47ff61bebbf4bfa46ceffd9142d6577100277c1a0e93b95a84ab7874375",
+  "english-preview/word-gestures-draft.png": "f35dd4d94c6be25f680399bb69ed2f3fac5e26df2ae8076184540d6819f4f50b",
+  "english-preview/words.json": "98f11aaf962f905bf76a48e3d55d6e145859065e9bd3956f2878e2c6f100ee4e"
+}

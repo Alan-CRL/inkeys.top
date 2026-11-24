@@ -1,0 +1,12 @@
+{
+  "build_shape_draft.py": "2496100410aa0221c32ee029aa1c0f5497c7016ea5200c44116fb45966e54f8a",
+  "README.md": "96dd55611b36b793d109fa711ca13d088149905ad237ca20a9bf08ef08f0e1c3",
+  "validate.py": "d11ff2086c1f9ca32f9b58a663249c376c9e9672d9c5ec2b4282ed986d8f8ce3",
+  "build/context-master.png": "0cd328013db44aaef0db7129e5b60caa95e35028a2ad81423029f543322e0eb2",
+  "build/context-preview.png": "c82f6790ef5bda4136a689f843dbe60f1782696306c77987bc92ecba7db24b93",
+  "build/context-review.png": "f010c89c169c928a6caae36ad5d40844f962ad805529702778900b00939df832",
+  "build/right-detail.png": "42ef6036fb492b16d152e30627720bed419145d187e48137de2830c7ca54b4e7",
+  "build/right-overlay.png": "3951455876f97534a58a7993cc6ed8e5d61e152ce1d733e20e907b6ace82d3e3",
+  "data/scene.json": "304cb17731938b84ac2e5a31ea5076f5581f4694efbd9a63d5273db9e9c2ae37",
+  "data/validation.json": "6e7e537791ebff3261083e84bc989312b7d9aa7e43f9e0f4ba411b4191ffe0b2"
+}

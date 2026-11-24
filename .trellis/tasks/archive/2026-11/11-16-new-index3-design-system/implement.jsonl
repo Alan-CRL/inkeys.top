@@ -1,0 +1,6 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端规范入口与快速检查"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Vue 组件、样式与无障碍约定"}
+{"file": ".trellis/spec/frontend/hook-guidelines.md", "reason": "生命周期与浏览器接口的使用约定"}
+{"file": ".trellis/tasks/11-16-new-index3-design-system/design.md", "reason": "设计语言定稿：色彩、字体、圆角、按钮、动效"}
+{"file": ".trellis/tasks/11-16-new-index3-design-system/layout.md", "reason": "各区块的布局与排版"}
+{"file": ".trellis/tasks/11-16-new-index3-content-plan/content-plan.md", "reason": "各区块的文案与媒体内容"}

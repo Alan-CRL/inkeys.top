@@ -1,0 +1,30 @@
+{
+  "id": "showcase-laser-curves",
+  "name": "showcase-laser-curves",
+  "title": "展示图激光位置与批注曲线修正",
+  "description": "移至立方体偏移截面单圈激光，补足题干圈画及蓝箭头采样，原生重放验证",
+  "status": "completed",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "AlanCRL",
+  "assignee": "AlanCRL",
+  "createdAt": "2026-10-31",
+  "completedAt": "2026-10-31",
+  "branch": "main",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/prepare_scene.py",
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/build/final-laser-curves-preview.png",
+    "media/inkeys3-brush-showcase/handwriting-revision/final-v3/build/final-laser-curves-master.png"
+  ],
+  "notes": "Complete. Uppercube onehandwavy k10 contour withsmallendgap replaceslowerdoubleloops; smooth8annotationcurves, Mclearance12.426px. Independentnative/pixelreviewPASS, fiveunrelatedlayerhashes+allnonglyphdataunchanged, outsidepermittedregionspixelidentical. Capture-onlyEXE replay,noC++build/sourcewrites/GUI/commit/publish. Versionedpreview/master andbeforebackup preserved.",
+  "meta": {}
+}

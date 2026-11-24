@@ -1,0 +1,32 @@
+# Execution
+1. 先冻结既有主要产物和来源hash，创建独立handwriting-revision目录。
+2. 并行准备字形/运动轨迹和原生小样harness（职责分离），实际运行ARM64 solution构建与无窗口导出。
+3. 用代表性字母、数字、根号、长横、MN²=3²+3²=18检验字形及真实笔宽；必要小范围迭代，禁止无关全图重构。
+4. 独立check检查原生来源、时序/Up停顿、拐角、笔宽、恢复和冻结hash，主会话视觉复核。
+5. 交付小样和简短变化说明，等待用户确认后再进行后续整图修订。无commit/GUI/发布。
+## V3 user direction (current turn)
+User wants much stronger visible change than V1→V2, especially actual internal digit/capital/radical routes. Current explicit request is DIRECT-RENDERED SHAPE DRAFT only; do not spend time rebuilding native engine or retuning thickness. Preserve native-ready centerlines/motion route for later, but clearly label current V3 preview as a directly rendered draft, not native output.
+
+Reference: C:/Users/alan-/AppData/Local/Temp/codex-clipboard-c372353e-9448-4ead-b457-2d25b34ee8cb.png. Use its visual direction, do not trace/clone it; formalV3 should be more natural. One mature teacher, slightly neater than ordinary messy classroom notes. Strong non-affine structural differences in333/222,0/6/7/8 andE/F/M/N/O. Roots highestpriority: short entryhook/downstroke, steep continuous ascent, naturallyextended slopedbar, varying proportions/spaces/terminal; no standardmathfont/staticSVG substitute. Natural corner transitions, no ruler-like geometry and no arbitrarynoise.
+
+Keep V2 accepted English connectedgesture direction, add hence and therefore the section is regular. Tests include MN²=3²+3²=18; OM=ON=MN; MN=3sqrt2; P=18sqrt2; angles. Correction: in this cube task MON=60deg; use MON=60deg andSMN=120deg rather than wrong MON120. Repetition333222;EEFFMNMN;006677ss; roots sqrt3/sqrt3/18sqrt2/3sqrt2; also test88 due explicit requirement.
+
+Output overallV3 board, same-scale commonV2/V3 comparisons, number/capital/root enlargedACTUALdraftpixelcrops (no redraw), short differences. Save under isolated handwriting-revision/v3/; preserve all V1/V2/native/oldscene artifacts. No nativebuild/UI/whole-scene changes this turn. Style gate still userapproval.
+## V3 text approved; next gate is right-hand geometry draft
+User explicitly approved V3 text. This turn ONLY direct-render right-side diagram draft and in-context preview, then stop for user confirmation; native rendering/final composition next turn after approval.
+
+Upper: retain exact central-section cube at d=0, standard ABCD/EFGH and midpoint labels M..S, verified orthographic camera/hidden edges; blue outlines only, no fill.
+Lower: generic 9<k<12 section in plane x+y+z=k, using k=10 as geometric illustration (d=1/sqrt3) but dimension labels symbolic. Big equilateral triangle X=(k,0,0),Y=(0,k,0),Z=(0,0,k); remove three congruent corner triangles side(k-6)sqrt2 from big side ksqrt2. Result is a nonregular hexagon with alternating(12-k)sqrt2 and(k-6)sqrt2. Do not reuse midpoint labels/regular-angle labels from upper case. Show big auxiliary triangle+three removed small triangles, no facefills, distinguish outer/helper vs actualsection strokes and limited red annotations.
+Dots: global triangular lattice visibly stronger than oldnative dots; set lower big side15gridsteps and each removed side6steps for k10, so all lower vertices/intersections exactly ongrid. Suggested grid20previewpx, rowheight10sqrt3; lowerZ~(1390,625), X~(1240,884.8),Y~(1540,884.8). Uppercenter may translate onto a nearbygridpoint without shearing/scaling axes differently; do notforcealluppervertices ontogrid. Opaque cream flatbrush sweeps clipped consistentphase behind both, no darker overlap.
+Laser: exactly2closed handlike perimeterloops around ONE removedsmalltriangle (recommendtopcorner), ~1.5–2x prior contourwidth; slightoffset, nointeriorhatching/fill. Keep labels readable.
+Use approvedV3 routes for handwriting labels; add missing labelglyphs locally inshape-draft without changingapprovedV3. Frozenbackground/PDF,V1/V2/V3 prioroutputs andoldnative remainunchanged. Contextpreview should show just newright draft over frozenbackground (do notpasteknownwrongoldtoolbar or repaintleftnotes). No UI/nativebuild thisturn. Provide rightdetail +1600x1000 contextpreview, sourcegeometry/paths and independentmath/layoutchecks. Explicitdraftlabels outsidecontent.
+## Approved shapes — final native integration authorized
+User confirmed current geometry draft and requests nextstage. Both V3 text and rightgeometry approved. Now produce final native+composition in isolated handwriting-revision/final-v3/ so all approveddrafts and previousfinal remainrebuildable.
+
+Integrate V3 handwriting with previous approved teaching-working layout (coordinate substitution, midpoint/length², equilateral reasoning, perimeter and six-triangle area, movingplane distance, area subtraction/expansion/max). Preserve clear process, red work andbluebackreferences, offsetsemantic yellowhighlights/redquestionmarks. Use approved shape-draft exactgeometry/labels/brushmask/dots/2laserloops; no hatch/fill. No changing approvedfontstyle. Ensure no obsolete lowerd0/60/120 annotation in(c)diagram.
+
+Nativeadapter must MERGE corrected samplefree_hold semantics (physicalUp, lastactualmovement, productionidle settling/recovery,8ms and .055taper unchanged) with fullUI/shape/brush/laser capture. UI MUST SetSelectAndClickThroughMode(0), not1; capture actualbuttonvisibility andlabels/merge mode. en-US redsoftpen drawing, Undo enabled/Redo disabled, noSelect(Clear)/Click-through; native solidbodyrect includesDCoffsets andMainButton union, anchorbottom1884(942preview), notPNG/shadowbounds.
+
+Triangulardotpattern is futuretexturebrush demonstration: native-render dotpattern using exactapproved triangularphase/step, clip oncebynativeopaquecreamflatbrushcoverage. Clearly document prototype composition, notproductionexistingbrushclaim. Native geometry all productionshape line/ellipse factories, nofills; laser2perimeterloops only with enlargednativecore/materialradius inexportadapter, notflatfilledshape/rasterpaint.
+
+Use privateOutDir builds perdev/shape, full InkeysRepo.sln Debug|ARM64,vswhereARM64MSBuild, PATH normalization preservesvaluein samePS,nodereuse,>=5min; temporaryharnessbytesguardedrestore, no permanentnative/productconfig changes, noGUI/commit/push/publication. Captureinput/exe/adapters/layers/metadata/log hashes bind composition withfailures0; no draft fallback. Final1600x1000preview/3200x2000master, QA+README, independentreview. Useralreadyauthorized finalstage, no additionalgatebefore completing.

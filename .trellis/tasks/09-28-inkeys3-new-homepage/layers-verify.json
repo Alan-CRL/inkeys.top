@@ -1,0 +1,686 @@
+{
+  "status": "passed",
+  "pages": {
+    "overview": {
+      "status": "passed",
+      "themes": {
+        "light": {
+          "source_replay": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "lossless_png": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "full_webp": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          }
+        },
+        "dark": {
+          "source_replay": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "lossless_png": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "full_webp": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          }
+        }
+      },
+      "size": [
+        2880,
+        1620
+      ],
+      "derivation": {
+        "light": {
+          "dividers": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "slide-ink": {
+            "alpha_adjusted_pixels": 114,
+            "max_alpha_increase": 1
+          },
+          "board-shapes": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "board-ink": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "wordmark": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "tagline": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          }
+        },
+        "dark": {
+          "dividers": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "slide-ink": {
+            "alpha_adjusted_pixels": 114,
+            "max_alpha_increase": 1
+          },
+          "board-shapes": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "board-ink": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "wordmark": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          },
+          "tagline": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          }
+        }
+      },
+      "full_encoding": {
+        "quality": null,
+        "lossless": true,
+        "method": 6
+      },
+      "files": {
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-ink-shared-full.webp": 172224,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-ink-shared-half.webp": 63076,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-pager-dark-full.webp": 6358,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-pager-dark-half.webp": 3228,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-pager-light-full.webp": 5944,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-pager-light-half.webp": 2820,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-shapes-shared-full.webp": 44876,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-shapes-shared-half.webp": 32074,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-shared-full.webp": 99266,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/board-shared-half.webp": 5552,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/desktop-shared-full.webp": 734644,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/desktop-shared-half.webp": 27562,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/dividers-shared-full.webp": 266710,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/dividers-shared-half.webp": 36896,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/ppt-pager-dark-full.webp": 5814,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/ppt-pager-dark-half.webp": 2866,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/ppt-pager-light-full.webp": 5528,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/ppt-pager-light-half.webp": 2566,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/slide-ink-shared-full.webp": 919744,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/slide-ink-shared-half.webp": 121016,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/slide-shared-full.webp": 1036426,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/slide-shared-half.webp": 31122,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/tagline-shared-full.webp": 149306,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/tagline-shared-half.webp": 19568,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/toolbar-dark-full.webp": 37408,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/toolbar-dark-half.webp": 15178,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/toolbar-light-full.webp": 33974,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/toolbar-light-half.webp": 12720,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/wordmark-shared-full.webp": 328742,
+        "docs/.vuepress/public/feature-media/new-index3/layers/overview/wordmark-shared-half.webp": 43278
+      },
+      "full_bytes": 3846964,
+      "half_bytes": 419522,
+      "half_target_bytes": 2500000,
+      "half_target_met": true,
+      "lossless_png_bytes": 5595763,
+      "layers": [
+        {
+          "id": "desktop",
+          "box": [
+            840,
+            0,
+            1220,
+            1620
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "slide",
+          "box": [
+            0,
+            0,
+            1080,
+            1620
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "board",
+          "box": [
+            1820,
+            0,
+            1060,
+            1620
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "dividers",
+          "box": [
+            811,
+            0,
+            1278,
+            1620
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "slide-ink",
+          "box": [
+            0,
+            121,
+            911,
+            1256
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "board-shapes",
+          "box": [
+            2226,
+            76,
+            606,
+            507
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "board-ink",
+          "box": [
+            2212,
+            80,
+            628,
+            1405
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "wordmark",
+          "box": [
+            746,
+            206,
+            1389,
+            685
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "tagline",
+          "box": [
+            951,
+            819,
+            980,
+            224
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "toolbar",
+          "box": [
+            669,
+            1357,
+            1551,
+            176
+          ],
+          "clip": null,
+          "themes": "split",
+          "half": true
+        },
+        {
+          "id": "ppt-pager",
+          "box": [
+            36,
+            1357,
+            483,
+            163
+          ],
+          "clip": null,
+          "themes": "split",
+          "half": true
+        },
+        {
+          "id": "board-pager",
+          "box": [
+            2381,
+            1357,
+            463,
+            163
+          ],
+          "clip": null,
+          "themes": "split",
+          "half": true
+        }
+      ]
+    },
+    "tools": {
+      "status": "passed",
+      "themes": {
+        "light": {
+          "source_replay": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "lossless_png": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "full_webp": {
+            "mean_abs_diff": 0.5272665104166666,
+            "p99_9_abs_diff": 17.0,
+            "max_diff": 77,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.52263875,
+                "p99_9_abs_diff": 18.0,
+                "max_diff": 77
+              },
+              "g": {
+                "mean_abs_diff": 0.38828203125,
+                "p99_9_abs_diff": 10.0,
+                "max_diff": 36
+              },
+              "b": {
+                "mean_abs_diff": 0.67087875,
+                "p99_9_abs_diff": 21.0,
+                "max_diff": 58
+              }
+            }
+          }
+        },
+        "dark": {
+          "source_replay": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "lossless_png": {
+            "mean_abs_diff": 0.0,
+            "p99_9_abs_diff": 0.0,
+            "max_diff": 0,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "g": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              },
+              "b": {
+                "mean_abs_diff": 0.0,
+                "p99_9_abs_diff": 0.0,
+                "max_diff": 0
+              }
+            }
+          },
+          "full_webp": {
+            "mean_abs_diff": 0.5268378125,
+            "p99_9_abs_diff": 17.0,
+            "max_diff": 87,
+            "per_channel": {
+              "r": {
+                "mean_abs_diff": 0.5217203125,
+                "p99_9_abs_diff": 18.0,
+                "max_diff": 87
+              },
+              "g": {
+                "mean_abs_diff": 0.388389375,
+                "p99_9_abs_diff": 10.0,
+                "max_diff": 39
+              },
+              "b": {
+                "mean_abs_diff": 0.67040375,
+                "p99_9_abs_diff": 21.0,
+                "max_diff": 58
+              }
+            }
+          }
+        }
+      },
+      "size": [
+        3200,
+        2000
+      ],
+      "derivation": {
+        "light": {
+          "pattern": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          }
+        },
+        "dark": {
+          "pattern": {
+            "alpha_adjusted_pixels": 0,
+            "max_alpha_increase": 0
+          }
+        }
+      },
+      "full_encoding": {
+        "quality": 85,
+        "lossless": false,
+        "method": 6
+      },
+      "files": {
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/background-shared-full.webp": 171184,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/background-shared-half.webp": 67448,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/brush-shared-full.webp": 7296,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/brush-shared-half.webp": 5122,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/geometry-shared-full.webp": 48276,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/geometry-shared-half.webp": 35190,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/handwriting-shared-full.webp": 303450,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/handwriting-shared-half.webp": 163586,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/highlight-shared-full.webp": 3982,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/highlight-shared-half.webp": 3088,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/pattern-shared-full.webp": 15942,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/pattern-shared-half.webp": 39064,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/toolbar-dark-full.webp": 19034,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/toolbar-dark-half.webp": 9510,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/toolbar-light-full.webp": 16882,
+        "docs/.vuepress/public/feature-media/new-index3/layers/tools/toolbar-light-half.webp": 8040
+      },
+      "full_bytes": 586046,
+      "half_bytes": 331048,
+      "half_target_bytes": 2500000,
+      "half_target_met": true,
+      "lossless_png_bytes": 1720183,
+      "layers": [
+        {
+          "id": "background",
+          "box": [
+            0,
+            0,
+            3200,
+            2000
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "highlight",
+          "box": [
+            1392,
+            1003,
+            876,
+            145
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "brush",
+          "box": [
+            2409,
+            454,
+            711,
+            1416
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "pattern",
+          "box": [
+            2418,
+            454,
+            701,
+            1387
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "geometry",
+          "box": [
+            2478,
+            483,
+            604,
+            1290
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "handwriting",
+          "box": [
+            531,
+            462,
+            2592,
+            1361
+          ],
+          "clip": null,
+          "themes": "shared",
+          "half": true
+        },
+        {
+          "id": "toolbar",
+          "box": [
+            1107,
+            1771,
+            1086,
+            113
+          ],
+          "clip": null,
+          "themes": "split",
+          "half": true
+        }
+      ]
+    }
+  },
+  "environment": {
+    "python": "3.13.14 (tags/v3.13.14:fd17997, Jun 10 2026, 13:03:48) [MSC v.1944 64 bit (AMD64)]",
+    "pillow": "13.0.0",
+    "numpy": "2.5.4"
+  },
+  "derivation_notes": [
+    "Original compose functions are instrumented; no layout coordinates are duplicated.",
+    "Overview background panels own the highest-coverage zone-mask pixels; original antialiased seam blends and white wash are baked into those pixels.",
+    "Dividers are reconstructed from original washed before/after canvases using straight-alpha RGB inversion.",
+    "Ink, wordmark and tagline shadows stay with their semantic layers; integer grouping is reconciled only within original alpha support.",
+    "Tools brush/pattern alpha is redistributed to preserve original coverage under ordinary alpha-over; pattern is a composed texture prototype.",
+    "Paint order is retained: overview dividers precede ink; toolbar precedes pagers; tools geometry precedes handwriting."
+  ],
+  "half_encoding": {
+    "quality": 85,
+    "method": 6,
+    "lossless": false
+  },
+  "total_webp_bytes": 5183580,
+  "total_lossless_png_bytes": 7315946,
+  "total_bytes_excluding_script_and_report": 12503520
+}

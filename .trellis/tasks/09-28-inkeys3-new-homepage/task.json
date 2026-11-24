@@ -23,10 +23,25 @@
     "10-19-new-index3-release",
     "10-22-new-index3-feature-framework",
     "10-22-feature-cards-motion",
-    "11-22-new-index3-s5b-craft"
+    "10-29-new-index3-feature-paging",
+    "10-30-inkeys3-brush-showcase",
+    "10-30-brush-showcase-handwriting-revision",
+    "11-16-new-index3-content-plan",
+    "11-16-new-index3-design-system",
+    "11-22-new-index3-s5b-craft",
+    "11-22-new-index3-s5a-writing"
   ],
   "parent": null,
   "relatedFiles": [],
   "notes": "",
-  "meta": {}
+  "meta": {
+    "featureMediaRemotion": {
+      "scene": "screen-freeze",
+      "status": "completed",
+      "date": "2026-10-25",
+      "result": "remotion-result.md",
+      "durationMs": 14000,
+      "fps": 60
+    }
+  }
 }

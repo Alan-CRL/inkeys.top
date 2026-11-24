@@ -1,5 +1,7 @@
 # Implement: Inkeys3 新主页
 
+> 当前动态素材实施见 [media-implement.md](./media-implement.md)，以下为最初主页阶段清单。
+
 ## Checklist
 
 1. [ ] 脚手架：`docs/new-index.md`（`pageLayout: NewHome`、noindex）；`NewHome/NewHome.vue`；`client.ts` 注册 `NewHome`；`shim.d.ts` 增加 `*.svg?raw` 声明。
