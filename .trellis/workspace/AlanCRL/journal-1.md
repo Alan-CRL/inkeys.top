@@ -805,3 +805,26 @@ V3文字已确认；完成上方中心截面立方体、下方面积相减构造
 
 - S2 三张场景卡片视频；评审并实现 S7–S9；首屏碎片
 - 上线前：S5-A 繁中/英文版式、主栏红笔、去掉 ?lang= 预览、首屏字体本地子集、清理旧 public 图片
+
+
+## Session 27: new-index3 S2 场景卡片静态层叠画面
+<!-- trellis-session: v=2 fp=eaad2c767c710ef5 -->
+
+**Date**: 2026-11-24
+**Task**: new-index3 S2 场景卡片静态层叠画面
+**Branch**: `main`
+
+### Summary
+
+三张场景卡片右侧改为网页内层叠的静态画面：内容层、Inkeys 墨迹层、en-US 界面层，深浅色各一套，依次出场。线条改用原始采样点，停顿收笔不出锋。素材由 media/nh3-scenes/build.py 生成。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `00a90da` | feat(new-index3): S2 场景卡片改为静态层叠画面 |
+| `ad99653` | chore(trellis): S2 场景画面任务文档、验收脚本与规范 |
+
+### Status
+
+[OK] **Completed**
