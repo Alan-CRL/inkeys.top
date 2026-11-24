@@ -36,10 +36,10 @@
 
 ## Acceptance Criteria
 
-- [ ] 所有 `docs/standard/**` 页面描述的都是 1.1，版本、等级、术语、链接互相一致。
-- [ ] 每个字段都标注等级；每个块页面都有回退说明。
-- [ ] 五个等级（核心、基础、标准、完整、Inkeys 附加级）各有读取与写入检查清单。
-- [ ] 1.1 样例覆盖每个等级与 §3 回退表中的每一行；`fixtures.json` 写明每个样例在各等级下的期望结果。
-- [ ] 生成脚本可以重复运行，输出与已提交的样例逐字节一致。
-- [ ] `pnpm docs:build` 通过，产物中包含 `/standard/uink-v11/spec.md`、`/standard/uink-v10/spec.md` 与 `/standard/llms.txt`（根目录 `/llms.txt` 由 plume 的 `llmstxt: true` 生成全站索引，UInk 索引放在 `/standard/` 下以免覆盖，2026-11-24 实施时调整）。
-- [ ] 1.0 勘误与“1.0 → 1.1 变更”页面发布。
+- [x] 所有 `docs/standard/**` 页面描述的都是 1.1，版本、等级、术语、链接互相一致。
+- [x] 每个字段都标注等级；每个块页面都有回退说明。
+- [x] 五个等级（核心、基础、标准、完整、Inkeys 附加级）各有读取与写入检查清单。（完整级的写入清单 2026-11-24 归档前补齐）
+- [x] 1.1 样例覆盖每个等级与 §3 回退表中的每一行；`fixtures.json` 写明每个样例在各等级下的期望结果。
+- [x] 生成脚本可以重复运行，输出与已提交的样例逐字节一致。
+- [x] `pnpm docs:build` 通过，产物中包含 `/standard/uink-v11/spec.md`、`/standard/uink-v10/spec.md` 与 `/standard/llms.txt`（根目录 `/llms.txt` 由 plume 的 `llmstxt: true` 生成全站索引，UInk 索引放在 `/standard/` 下以免覆盖，2026-11-24 实施时调整）。
+- [x] 1.0 勘误与“1.0 → 1.1 变更”页面发布。

@@ -31,11 +31,11 @@
 
 ## Acceptance Criteria
 
-- [ ] 第一批 13 处占位完成，用户审阅风格通过。
-- [ ] 第二批 15 处占位完成。
-- [ ] 几何自检脚本通过：长方体部件与 `full-shape-preset` 样例一致，矩形 / 方形橡皮尺寸与 `inkeys-erase-clear` 样例描述一致。
-- [ ] 追加：「曲线与自由图形」图示（`shape-curves`）与公开样例 `core-shape-curves.uink`（用户 2026-11-24 要求）。
-- [ ] 追加：D21–D24 对应的图示更新——`shape-stroke` 加 `dashOffset` 对比、新增 `nib-orientation`（`UInkNibOrientation`）、`caps-joins` 说明 Miter 限值与矩形笔尖端帽。
-- [ ] 7 个交互组件键盘可用；`prefers-reduced-motion` 下无动画。
-- [ ] `pnpm docs:build` 通过；单文件规范不含组件标签，图示文字保留。
-- [ ] 浅色、深色、手机宽度的截图验收通过。
+- [x] 第一批 13 处占位完成，用户审阅风格通过。
+- [x] 第二批 15 处占位完成。
+- [x] 几何自检脚本通过：长方体部件与 `full-shape-preset` 样例一致，矩形 / 方形橡皮尺寸与 `inkeys-erase-clear` 样例描述一致。
+- [x] 追加：「曲线与自由图形」图示（`shape-curves`）与公开样例 `core-shape-curves.uink`（用户 2026-11-24 要求）。
+- [x] 追加：D21–D24 对应的图示更新——`shape-stroke` 加 `dashOffset` 对比、新增 `nib-orientation`（`UInkNibOrientation`）、`caps-joins` 说明 Miter 限值与矩形笔尖端帽。
+- [x] 7 个交互组件键盘可用；`prefers-reduced-motion` 下无动画。
+- [x] `pnpm docs:build` 通过；单文件规范不含组件标签，图示文字保留。
+- [x] 浅色、深色、手机宽度的截图验收通过。
