@@ -6,3 +6,11 @@ docs/.vuepress/dist
 
 .DS_Store
 *.log
+
+# AI 编程工具与 Trellis 各平台的本地配置，只保留在本机，不进入仓库
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/.kimi-code/
+/.opencode/
