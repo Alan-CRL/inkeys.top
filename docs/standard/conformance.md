@@ -79,10 +79,11 @@ UInk 不设认证机构，也不提供自动化测试工具。软件按以下步
 | `full-hdr-advanced.uink` | 完整 | HDR 颜色、Advanced Highlighter、`renderOnlyWhenLatest` |
 | `full-shape-preset.uink` | 完整 | 注册预设的 `construction`；不认识的预设退回对象层 |
 | `inkeys-erase-clear.uink` | Inkeys | Erase Ink、橡皮笔尖、Clear 区间 |
-| `compat-v10.uink` | 核心 | 1.1 读取器读取 version 10 文件 |
+| `compat-v10.uink` | 核心 | 1.1 读取器尽力读取 version 10 文件 |
 | `fallback-unknown.uink` | 核心 | 不认识的块、键与枚举值的回退 |
 | `truncated-tail.uink` | 核心 | 最后一个对象不完整时的恢复 |
 | `corrupt-middle.uink` | 核心 | 中间对象损坏时保留之前的内容并停止读取 |
 | `future-minor.uink` | 核心 | `version = 12` 的文件：跳过不认识的块与键，尽力读取 |
+| `core-shape-curves.uink` | 核心 | 曲线与自由图形：双曲线的两支写成两个 Polyline 并组合成对象，心形写成 Polygon |
 
 1.0 的样例保留在 [`/standard/uink-v10/`](/standard/uink-v10/fixtures.json)，不再更新。

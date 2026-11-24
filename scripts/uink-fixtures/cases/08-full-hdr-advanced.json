@@ -28,7 +28,7 @@
     {
       "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 3 },
       "color": { "$rgb": "7CD4FF" }, "opacity": { "f32": 0.5 }, "texture": { "i32": 0 },
-      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.125 }, "orientation": { "i32": 0 }, "widthMeaning": { "i32": 1 } },
+      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.125 }, "orientation": { "i32": 0 } },
       "cap": { "i32": 2 },
       "points": { "$inkPoints": [
         [200, 360, 24],

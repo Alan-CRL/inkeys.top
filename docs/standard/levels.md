@@ -58,11 +58,11 @@ UInk 1.1 读取：标准级 + Inkeys 附加级；写入：基础级
 
 读取：
 
-- [ ] 验证 Header，接受 version `10`–`19`；同主版本更高次版本尽力读取；能读 version 10。（VER-3、VER-4、VER-5、HDR-2）
+- [ ] 验证 Header，接受 version `10`–`19`；同主版本更高次版本与 version 10 都尽力读取。（VER-3、VER-4、VER-5、HDR-2）
 - [ ] 跳过不认识的块与键；结尾不完整时只丢弃最后一个对象；中间损坏时停止读取。（TYPE-8、TYPE-9、FILE-16、FILE-17）
 - [ ] 按 `pageIndex` 列出全部页面，包括空白页；同一个 Canvas 唯一键出现多次时以最后一次为准。（FILE-7、FILE-8、FILE-9、SAVE-14）
 - [ ] 按点坐标与每点宽度画出 Pen 笔迹，颜色使用 `fallback`；不认识的 `inkType` 按 Pen 画。（INK-4、INK-5、INK-7、INK-13、NIB-1、COLOR-2）
-- [ ] 画出七种基础 Shape（含旋转）的描边与单色填充。（SHAPE-1–SHAPE-4、SHAPE-19–SHAPE-22）
+- [ ] 画出七种基础 Shape（含旋转）的描边与单色填充；曲线与自由图形按采样点连线，不做平滑。（SHAPE-1–SHAPE-4、SHAPE-19–SHAPE-22、SHAPE-24）
 - [ ] 跳过 Erase Ink；遇到 Clear 时按回退规则处理。（INK-11、CLEAR-7）
 - [ ] 回退结果不写回源文件；含不支持内容的文件默认另存为。（COMPAT-1–COMPAT-3、TYPE-12）
 

@@ -21,7 +21,7 @@ UInk 1.1 Beta，`Header.version = 11`。Inkeys 与 ICC-CE 完成适配、公开�
 - **VER-2** 1.1 写入器必须写入 `version = 11`，即使文件只用到了 1.0 已有的能力。
 - **VER-3** 读取器先验证首块：必须是 `array(7)` 的 Header，`type = 0`，`version` 在 `10`–`19` 之间。任一条件不满足时，读取器必须拒绝按 UInk 1.x 解析该文件。
 - **VER-4** 读取器遇到同一主版本、但次版本更高的文件时，必须尽力读取：跳过不认识的块与键，按已知规则显示其余内容，并可以提示用户“文件来自更新的版本，部分内容可能无法显示”。
-- **VER-5** 1.1 读取器必须能读取 `version = 10` 的文件。1.0 文件中的坐标同样按 Device 像素理解，不做换算。
+- **VER-5** 1.1 读取器不保证完全兼容 `version = 10` 的文件，遇到时应尽力读取：按 1.1 的规则解析，跳过不认识或不符合 1.1 的内容，显示其余内容，并可以提示用户“文件来自 UInk 1.0，部分内容可能无法正确显示”。1.0 文件中的坐标同样按 Device 像素理解，不做换算。
 - **VER-6** UInk 不注册 magic 标识。`.uink` 扩展名只用于识别文件，不代替 VER-3 的检查。
 - **VER-7** 完整保存同一个逻辑文件时，不得改变 `Header.guid`、已有 Workspace / Device 的 GUID 与已有页面的 `pageGuid`；“另存为”新的逻辑文件时必须生成新的 `Header.guid`。
 - **VER-8** Beta 期间规范仍可修正。冻结为正式版后，任何不兼容修改都必须使用新的 `version`。
@@ -45,6 +45,7 @@ UInk 1.1 Beta，`Header.version = 11`。Inkeys 与 ICC-CE 完成适配、公开�
 | 笔尖描述 `nib` 与端帽 `cap`；Shape 描边的 `lineCap` / `lineJoin` | [笔尖与端帽](common/nib) |
 | 图形对象层 `object`，以及完整级的图形预设注册表 | [Shape 块](blocks/shape)、[图形预设注册表](appendix/shape-presets) |
 | Media 的 `fit` 与 `crop` | [Media 块](blocks/media) |
+| 曲线与自由图形的写法：按顺序采样成 Polyline / Polygon，断开的部分分别写（SHAPE-24、SHAPE-25） | [Shape 块](blocks/shape#曲线与自由图形) |
 | 规则编号、术语表、单文件规范与 `llms.txt` | [术语表](glossary) |
 
 ### 修改

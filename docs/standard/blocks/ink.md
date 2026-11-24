@@ -73,7 +73,7 @@ title: Ink 块
 ### 几何
 
 - **INK-4** `points` 至少有一个点。首点是 Canvas 绝对坐标，之后每个点保存相对前一点的位移。读取器应使用 float64 累加位移，避免长笔迹累积误差。
-- **INK-5** `width` 必须大于 `0`。它的含义由 `nib.widthMeaning` 决定；没有 `nib` 时，`width` 是该点处笔迹的直径。
+- **INK-5** `width` 必须大于 `0`。圆形笔尖（包括没有 `nib`）时，`width` 是该点处笔迹的直径；矩形笔尖时，`width` 是笔尖高度，见[笔尖尺寸](../common/nib#笔尖尺寸)。
 - **INK-6** 坐标与宽度的单位是 Device 像素。缩放由 Canvas 的 `viewport.scale` 表达，渲染时宽度随之缩放。
 - **INK-7** 读取器必须保持点的顺序、位置与宽度含义。点与点之间的曲线插值、轮廓生成与抗锯齿由软件决定；单点 Ink 按同样的笔尖画成一个点。
 - **INK-8** 读取器必须忽略不认识的点键。1.1 不注册压感、倾斜、时间等输入通道；笔锋效果应直接体现在每点的 `width` 中。
@@ -149,7 +149,7 @@ title: Ink 块
   "color": { "fallback": 16776960 },   // 0xFFFF00，黄色
   "opacity": 0.4,
   "texture": 0,
-  "nib": { "shape": 1, "aspect": 0.125, "orientation": 0, "widthMeaning": 1 },
+  "nib": { "shape": 1, "aspect": 0.125, "orientation": 0 },
   "cap": 2,                            // 平头
   "points": [
     { "x": 100.0, "y": 300.0, "width": 24.0 },  // width 是笔尖高度
@@ -169,11 +169,11 @@ title: Ink 块
   "color": { "fallback": 0 },
   "opacity": 1.0,
   "texture": 0,
-  "nib": { "shape": 1, "aspect": 0.6666667, "orientation": 0, "widthMeaning": 2 },
+  "nib": { "shape": 1, "aspect": 0.6666667, "orientation": 0 },
   "cap": 2,
   "points": [
-    { "x": 320.0, "y": 180.0, "width": 40.0 },  // width 是等面积圆的直径
-    { "x": 8.0, "y": -2.0, "width": 40.0 }
+    { "x": 320.0, "y": 180.0, "width": 24.0 },  // width 是笔尖高度：16 × 24
+    { "x": 8.0, "y": -2.0, "width": 24.0 }
   ]
 }
 ```

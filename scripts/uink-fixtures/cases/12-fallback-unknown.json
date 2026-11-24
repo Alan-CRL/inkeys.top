@@ -3,7 +3,7 @@
   "title": "不认识的块、键与枚举值，以及非规范的数值编码",
   "primaryLevel": "core",
   "rules": ["VER-4", "TYPE-5", "TYPE-8", "TYPE-9", "TYPE-12", "FILE-18", "FILE-20", "HEXT-14", "CANVAS-9", "INK-8", "INK-13", "INK-14", "NIB-7", "SHAPE-20", "SHAPE-21", "MEDIA-3", "MEDIA-6", "COMPAT-1", "COMPAT-2", "COMPAT-3"],
-  "description": "模拟“来自更新版本或其他软件”的文件，故意包含读取器不认识的内容（见 deviations）。Header Extension 有不认识的键 futureRegistry，唯一的 Workspace 的 workspaceType 为保留值 99。Canvas 的 pageIndex 写成 fixint、pageNumber 写成 uint8、viewport 的三个分量写成 float64（都是能无损转换的非规范编码），background.pattern 为 99，另有不认识的键 futurePageField。随后依次为：Type ID 7 的完整块（7 及以上保留给后续版本，1.1 写入器不得写出）；inkType 77 的 Ink（点上带不认识的键 pressure，nib.shape 99、orientation 7、widthMeaning 9，cap 99，texture 99（保留值），块上有不认识的键 futureInkField）；shapeType 99 的 Shape；contentId 写成 uint8、endMarker 99、lineCap 99、lineJoin 99 的 Line；fillType 99、描边宽度写成 float64 的 Rectangle；fit 99 的图片 Media（资源包不存在）；inkType 200（私有值）的 Ink。",
+  "description": "模拟“来自更新版本或其他软件”的文件，故意包含读取器不认识的内容（见 deviations）。Header Extension 有不认识的键 futureRegistry，唯一的 Workspace 的 workspaceType 为保留值 99。Canvas 的 pageIndex 写成 fixint、pageNumber 写成 uint8、viewport 的三个分量写成 float64（都是能无损转换的非规范编码），background.pattern 为 99，另有不认识的键 futurePageField。随后依次为：Type ID 7 的完整块（7 及以上保留给后续版本，1.1 写入器不得写出）；inkType 77 的 Ink（点上带不认识的键 pressure，nib.shape 99、orientation 7，cap 99，texture 99（保留值），块上有不认识的键 futureInkField）；shapeType 99 的 Shape；contentId 写成 uint8、endMarker 99、lineCap 99、lineJoin 99 的 Line；fillType 99、描边宽度写成 float64 的 Rectangle；fit 99 的图片 Media（资源包不存在）；inkType 200（私有值）的 Ink。",
   "expectedObjects": 10,
   "deviations": [
     "#1 HeaderExtension.workspaces[0].workspaceType: 99 是未注册的保留值",
@@ -24,7 +24,6 @@
     "#4 Ink.points[2].pressure: 未注册的键（TYPE-4）",
     "#4 Ink.nib.shape: 99 是未注册的保留值",
     "#4 Ink.nib.orientation: 7 是未注册的保留值",
-    "#4 Ink.nib.widthMeaning: 9 是未注册的保留值",
     "#4 Ink.cap: 99 是未注册的保留值",
     "#4 Ink.futureInkField: 未注册的键（TYPE-4）",
     "#5 Shape.shapeType: 99 是未注册的保留值",
@@ -78,7 +77,7 @@
         [320, 260, 7, { "pressure": { "f32": 0.6 } }],
         [440, 300, 8, { "pressure": { "f32": 0.9 } }]
       ] },
-      "nib": { "shape": { "i32": 99 }, "aspect": { "f32": 0.5 }, "orientation": { "i32": 7 }, "widthMeaning": { "i32": 9 } },
+      "nib": { "shape": { "i32": 99 }, "aspect": { "f32": 0.5 }, "orientation": { "i32": 7 } },
       "cap": { "i32": 99 },
       "futureInkField": true
     },

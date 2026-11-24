@@ -249,7 +249,7 @@ const map = (fields, required = [], open = false) => ({ kind: 'map', fields, req
 const COLOR = map({ fallback: U32, space: STR, components: arr(F32, 3) }, ['fallback'])
 const PT = map({ x: F32, y: F32 }, ['x', 'y'])
 const INK_PT = map({ x: F32, y: F32, width: F32, color: COLOR, opacity: F32 }, ['x', 'y', 'width'])
-const NIB = map({ shape: en(0, 1), aspect: F32, orientation: en(0, 1), widthMeaning: en(0, 1, 2) })
+const NIB = map({ shape: en(0, 1), aspect: F32, orientation: en(0, 1) })
 const STROKE = map({
   color: COLOR, opacity: F32, width: F32, dashArray: arr(F32), dashOffset: F32,
   lineCap: en(0, 1, 2), lineJoin: en(0, 1, 2), startMarker: en(0, 1), endMarker: en(0, 1),

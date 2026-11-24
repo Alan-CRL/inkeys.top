@@ -3,14 +3,14 @@
   "title": "Inkeys 附加级：Erase Ink、橡皮笔尖与 Clear 区间",
   "primaryLevel": "inkeys",
   "rules": ["INK-11", "INK-17", "NIB-2", "NIB-3", "SHAPE-18", "CLEAR-1", "CLEAR-3", "CLEAR-4", "CLEAR-5", "CLEAR-7", "CLEAR-9", "FILE-14", "COMPAT-4"],
-  "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed、EqualAreaDiameter，width 40，Butt 端帽），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1、EqualAreaDiameter，width 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
+  "description": "隐式单例，一页，按对象流顺序：A 蓝色横线（undoId 0）；矩形（undoId 1）；矩形橡皮擦过的轨迹（Erase Ink，nib 为 Rectangle 2:3、Fixed，width 40 即笔尖高度，笔尖 26.67 × 40，Butt 端帽），竖直穿过 A 与矩形的上下两条边（undoId 2）；Clear（undoId 3，独占一组）；B 红色横线（undoId 4）；C 绿色横线（undoId 5）；方形橡皮（nib 为 Rectangle 1:1，笔尖 40 × 40）竖直穿过 B（undoId 6）；D 紫色斜线（undoId 7），在橡皮之后画过被擦掉的位置。",
   "expectedObjects": 10,
   "expected": {
     "core": "两条 Erase Ink 都必须跳过，不得画成可见笔迹。按 CLEAR-7 只显示最后一个 Clear 之后的内容：B、C、D 三条笔迹，B 完整无缺口（橡皮失效）；Clear 之前的 A 与矩形不显示。做不到时必须提示“此页的显示可能包含已被清空的内容”。",
     "basic": "与核心级相同。",
     "standard": "与核心级相同；撤回只按 undoId 分组，不理解 Clear 的区间语义。",
     "full": "与核心级相同。",
-    "inkeys": "当前画面为 B、C、D：B 在 x = 450 附近被方形橡皮擦出一段约 35.4 宽的缺口（方形边长 = 20 × √π），D 在橡皮之后画出，完整显示。逐组撤回：撤回 D；撤回方形橡皮后 B 恢复完整；撤回 C、B 后画布为空；撤回 Clear 后显示 A 与矩形，它们在 x = 450 附近被矩形橡皮擦出约 28.9 宽的竖直缺口（橡皮高 43.4、宽 28.9）。"
+    "inkeys": "当前画面为 B、C、D：B 在 x = 450 附近被方形橡皮擦出一段约 40 宽的缺口（方形边长 = width = 40），D 在橡皮之后画出，完整显示。逐组撤回：撤回 D；撤回方形橡皮后 B 恢复完整；撤回 C、B 后画布为空；撤回 Clear 后显示 A 与矩形，它们在 x = 450 附近被矩形橡皮擦出约 26.7 宽的竖直缺口（橡皮高 40、宽 26.7）。"
   },
   "objects": [
     [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-000a-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
@@ -32,7 +32,7 @@
     {
       "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 0 },
       "color": { "$rgb": "000000" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
-      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.6666667 }, "orientation": { "i32": 0 }, "widthMeaning": { "i32": 2 } },
+      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.6666667 }, "orientation": { "i32": 0 } },
       "cap": { "i32": 2 },
       "points": { "$inkPoints": [[450, 240, 40], [450, 400, 40], [450, 600, 40]] }
     },
@@ -52,7 +52,7 @@
     {
       "type": { "u16": 3 }, "contentId": { "u32": 6 }, "undoId": { "u32": 6 }, "inkType": { "i32": 0 },
       "color": { "$rgb": "000000" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
-      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 1 }, "orientation": { "i32": 0 }, "widthMeaning": { "i32": 2 } },
+      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 1 }, "orientation": { "i32": 0 } },
       "cap": { "i32": 2 },
       "points": { "$inkPoints": [[450, 700, 40], [450, 820, 40]] }
     },
