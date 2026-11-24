@@ -1,0 +1,88 @@
+{
+  "file": "full-layers-devices.uink",
+  "title": "多图层、多 Device 与嵌套 Workspace",
+  "primaryLevel": "full",
+  "rules": ["FILE-9", "FILE-11", "FILE-12", "FILE-13", "CANVAS-2", "CANVAS-4", "CANVAS-8", "CANVAS-15", "DEV-1", "DEV-4", "DEV-5", "DEV-6", "HEXT-2", "HEXT-5", "HEXT-11", "HEXT-12", "COMPAT-1"],
+  "description": "Device：D1 主显示器 (0, 0) 1920×1080（带 hardware，scaleFactor 1.25 仅供参考）；D2 副显示器 (1920, 0) 1920×1080；D3 是 D1 上的板中板 Window，位于 (960, 120)，800×600，zIndex 1。Workspace：W1 白板；W2 是 W1 的子白板（parentWorkspaceGuid = W1）。W1 的第 1 页在 D1 上有两个图层：第 0 层是网格背景和一条蓝色笔迹，第 1 层是一个不透明的黄色矩形，盖住蓝色笔迹的中段；同一页在 D2 上另有一个 Canvas，只有一条红色笔迹。W2 的第 1 页只在 D3 上，有一条绿色笔迹。页面元数据只写在第 0 层。",
+  "expectedObjects": 10,
+  "expected": {
+    "core": "按 Workspace 注册顺序列出 2 页。W1 的页面取第一个注册 Device（D1）上的 Canvas：第 0 层与第 1 层按 layerIndex 叠加成一层显示，黄色矩形盖住蓝色笔迹中段；D2 上的红色笔迹不显示（或由软件让用户选择 Device）。W2 是独立的页面序列：它的页面在第一个注册 Device（D1）上没有 Canvas，按注册顺序取第一个有这一页 Canvas 的 Device（D3），作为独立页面显示绿色笔迹，不叠加到 D1 上。背景透明或为软件默认背景。",
+    "basic": "与核心级相同；W1 第 1 页显示白色网格背景。",
+    "standard": "与基础级相同；两个 Workspace 都识别为白板。",
+    "full": "D1 显示 W1 第 1 页：网格背景、蓝色笔迹，第 1 层的黄色矩形在其上方。D2 同时显示同一页的另一个 Canvas，只有红色笔迹，与 D1 的内容互相独立。D3 是 D1 上 (960, 120) 处 800×600 的窗口，W2 的页面合成在 W1 之上，绿色笔迹画在窗口内（窗口自身的 Canvas 坐标）。",
+    "inkeys": "与完整级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0007-4000-8000-000000000000" }, { "u32": 3 }, { "u32": 2 }, { "u32": 2 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "name": "双屏与板中板",
+      "devices": [
+        {
+          "guid": "dddddddd-0007-4000-8000-000000000001", "deviceType": { "i32": 0 }, "name": "主显示器",
+          "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 },
+          "hardware": { "name": "Generic Monitor", "id": "DISPLAY\\GEN0001", "physicalWidth": { "u32": 1920 }, "physicalHeight": { "u32": 1080 }, "scaleFactor": { "f32": 1.25 } }
+        },
+        {
+          "guid": "dddddddd-0007-4000-8000-000000000002", "deviceType": { "i32": 0 }, "name": "副显示器",
+          "x": { "i32": 1920 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 }
+        },
+        {
+          "guid": "dddddddd-0007-4000-8000-000000000003", "deviceType": { "i32": 1 }, "name": "板中板",
+          "parentDeviceGuid": "dddddddd-0007-4000-8000-000000000001",
+          "x": { "f32": 960 }, "y": { "f32": 120 }, "width": { "f32": 800 }, "height": { "f32": 600 }, "zIndex": { "u32": 1 }
+        }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-0007-4000-8000-000000000001", "workspaceType": { "i32": 1 }, "name": "白板", "currentPageIndex": { "u32": 0 } },
+        { "guid": "aaaaaaaa-0007-4000-8000-000000000002", "workspaceType": { "i32": 1 }, "name": "板中板白板", "parentWorkspaceGuid": "aaaaaaaa-0007-4000-8000-000000000001" }
+      ]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0007-4000-8000-000000000001", "deviceGuid": "dddddddd-0007-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0007-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "background": { "color": { "$rgb": "FFFFFF" }, "pattern": { "i32": 2 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 400, 10], [800, 400, 10]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0007-4000-8000-000000000001", "deviceGuid": "dddddddd-0007-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0007-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 1 }, "layerNumber": { "u32": 1 }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "shapeType": { "i32": 2 },
+      "geometry": { "centerX": { "f32": 500 }, "centerY": { "f32": 400 }, "width": { "f32": 200 }, "height": { "f32": 120 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "FFE08A" }, "opacity": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0007-4000-8000-000000000001", "deviceGuid": "dddddddd-0007-4000-8000-000000000002",
+      "pageGuid": "cccccccc-0007-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "background": { "color": { "$rgb": "FFFFFF" }, "pattern": { "i32": 2 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 600, 8], [900, 500, 8]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0007-4000-8000-000000000002", "deviceGuid": "dddddddd-0007-4000-8000-000000000003",
+      "pageGuid": "cccccccc-0007-4000-8000-000000000002",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[100, 300, 6], [400, 200, 6], [700, 300, 6]] }
+    }
+  ]
+}

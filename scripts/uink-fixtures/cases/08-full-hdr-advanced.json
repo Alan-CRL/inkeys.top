@@ -1,0 +1,69 @@
+{
+  "file": "full-hdr-advanced.uink",
+  "title": "HDR 颜色、Advanced Highlighter、纹理与 renderOnlyWhenLatest",
+  "primaryLevel": "full",
+  "rules": ["COLOR-1", "COLOR-2", "INK-9", "INK-10", "INK-12", "INK-13", "INK-14", "INK-15", "SAVE-4", "COMPAT-1"],
+  "description": "隐式单例，一页，6 个内容块，各自一个撤回组：① Pen，颜色为 scRGB HDR 黄色 [1.8, 0.65, 0.1]，fallback 0xFFCC00；② Advanced Highlighter（inkType 3），块级颜色为浅蓝、opacity 0.5，第 2 个点带橙色 0.6 锚点、第 4 个点带洋红 0.3 锚点；③ Pen，texture = 130（私有纹理，只有事先约定的软件认识）；④ Rectangle，描边颜色为 srgb [0.2, 0.4, 1.0]，fallback 0x3366FF；⑤ 手画的不规则圆（Pen，renderOnlyWhenLatest = true，形状修正前的原稿）；⑥ 修正结果：一个标准 Circle（未标记）。",
+  "expectedObjects": 8,
+  "expected": {
+    "core": "全部 6 个内容都显示。① 用 fallback 0xFFCC00 绘制；② 按 Pen 绘制：圆形笔尖、直径 24、块级浅蓝色、不透明，没有点级颜色；③ 按默认纹理绘制；④ 描边使用 fallback 0x3366FF；⑤ 手画原稿与 ⑥ 修正后的圆同时显示（重叠在一起）。",
+    "basic": "与核心级相同，但 ② 按 Highlighter 绘制：矩形笔尖、块级浅蓝、整条 50% 透明合成一次，不使用点级锚点。",
+    "standard": "与基础级相同。",
+    "full": "① 在 HDR 屏幕上使用 scRGB [1.8, 0.65, 0.1]（超出 SDR 的高亮黄色），在 SDR 屏幕上使用 fallback；② 第 2 个点之前为橙色 0.6，第 2 到第 4 个点之间由橙色 0.6 平滑过渡到洋红 0.3，之后保持洋红 0.3，整条合成一次；③ 私有纹理 130 不认识，按 0 绘制；④ 使用 srgb 扩展颜色（与 fallback 视觉相同）；⑤ 被隐藏，只显示 ⑥ 修正后的圆。撤回 ⑥ 后，⑤ 成为末尾最新组，重新显示。",
+    "inkeys": "与完整级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0008-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0008-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "fallback": { "u32": 16763904 }, "space": "scrgb", "components": { "$f32s": [1.8, 0.65, 0.1] } },
+      "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 200, 10], [400, 180, 10], [600, 220, 10]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 3 },
+      "color": { "$rgb": "7CD4FF" }, "opacity": { "f32": 0.5 }, "texture": { "i32": 0 },
+      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.125 }, "orientation": { "i32": 0 }, "widthMeaning": { "i32": 1 } },
+      "cap": { "i32": 2 },
+      "points": { "$inkPoints": [
+        [200, 360, 24],
+        [320, 360, 24, { "color": { "$rgb": "FF8A00" }, "opacity": { "f32": 0.6 } }],
+        [440, 360, 24],
+        [560, 360, 24, { "color": { "$rgb": "D63384" }, "opacity": { "f32": 0.3 } }],
+        [680, 360, 24]
+      ] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 130 },
+      "points": { "$inkPoints": [[200, 480, 8], [400, 500, 8], [600, 480, 8]] }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 3 }, "undoId": { "u32": 3 }, "shapeType": { "i32": 2 },
+      "geometry": { "centerX": { "f32": 400 }, "centerY": { "f32": 680 }, "width": { "f32": 300 }, "height": { "f32": 160 } },
+      "stroke": {
+        "color": { "fallback": { "u32": 3368703 }, "space": "srgb", "components": { "$f32s": [0.2, 0.4, 1] } },
+        "opacity": { "f32": 1 }, "width": { "f32": 6 }
+      }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 4 }, "undoId": { "u32": 4 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [
+        [1320, 400, 5], [1309, 463, 5], [1257, 499, 5], [1200, 522, 5], [1142, 500, 5], [1093, 462, 5], [1082, 400, 5],
+        [1091, 337, 5], [1143, 301, 5], [1200, 278, 5], [1259, 299, 5], [1308, 338, 5], [1316, 396, 5]
+      ] },
+      "renderOnlyWhenLatest": true
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 5 }, "undoId": { "u32": 5 }, "shapeType": { "i32": 5 },
+      "geometry": { "centerX": { "f32": 1200 }, "centerY": { "f32": 400 }, "radius": { "f32": 120 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 5 } }
+    }
+  ]
+}

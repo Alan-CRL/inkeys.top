@@ -1,0 +1,51 @@
+{
+  "file": "corrupt-middle.uink",
+  "title": "中间对象损坏：保留之前的内容并停止读取",
+  "primaryLevel": "core",
+  "rules": ["FILE-17", "FILE-24", "SAVE-21", "SAVE-22", "SAVE-24", "HDR-5", "COMPAT-2"],
+  "description": "隐式单例，原本是 2 页的有效文件（Header 的 pageNum 为 2）：第 1 页有蓝、红、绿三条笔迹，第 2 页有一条紫色笔迹。第 1 页的第二条笔迹（红色）的首字节被改成 0xC1（MessagePack 中永不使用的字节），其余字节原样保留，所以紧随其后仍有看起来完整的 Map 与对象。validPrefixBytes 是损坏对象的起点；bytesAfterCorruption 是之后被放弃的字节数。",
+  "expectedObjects": 3,
+  "expected": {
+    "core": "只保留损坏位置之前的 3 个完整对象：显示 1 页，只有蓝色笔迹。红色笔迹、绿色笔迹与第 2 页都不显示；读取器不得逐字节向后搜索下一个对象，也不得因为 Header 的 pageNum 为 2 而补出空白页。应提示文件已损坏、部分内容无法读取；恢复结果只用于显示，不自动写回源文件。再次保存时必须完整保存（或另存为），不得截断到 validPrefixBytes 后直接追加。",
+    "basic": "与核心级相同。",
+    "standard": "与核心级相同。",
+    "full": "与核心级相同。",
+    "inkeys": "与核心级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-000e-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 2 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000e-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 300, 6], [400, 280, 6], [600, 300, 6]] }
+    },
+    {
+      "$replaceFirstByte": "c1",
+      "object": {
+        "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 1 },
+        "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+        "points": { "$inkPoints": [[200, 400, 6], [400, 380, 6], [600, 400, 6]] }
+      }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 500, 6], [400, 480, 6], [600, 500, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000e-4000-8000-000000000002",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "7C3AED" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 300, 6], [700, 500, 6]] }
+    }
+  ]
+}

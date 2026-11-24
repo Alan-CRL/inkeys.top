@@ -1,0 +1,54 @@
+{
+  "file": "future-minor.uink",
+  "title": "来自更高次版本的文件（version 12）",
+  "primaryLevel": "core",
+  "rules": ["VER-1", "VER-3", "VER-4", "HDR-2", "TYPE-8", "TYPE-9", "TYPE-11", "TYPE-12", "FILE-18", "COMPAT-1", "COMPAT-3"],
+  "description": "模拟 UInk 1.2 写入器产生的文件：Header.version = 12（同一主版本、更高次版本），隐式单例，一页。Canvas、第一条 Ink 与 Rectangle 上各有一个 1.1 未注册的键（futureLayout、futureStyle、futureEffect）；两条 Ink 之间有一个 Type ID 9 的完整块（1.1 未注册）。其余内容都是 1.1 已有的写法。对 1.1 生成脚本而言，version 12、未注册的键与 Type ID 都是故意的偏离（见 deviations）。未按勘误更新的 1.0 读取器只接受 version 10，会拒绝这个文件；已按勘误更新的 1.0 读取器与 1.1 读取器一样尽力读取。",
+  "expectedObjects": 6,
+  "deviations": [
+    "#0 Header.version: 写入 12，1.1 写入器必须写 11（VER-2）",
+    "#1 Canvas.futureLayout: 未注册的键（TYPE-4）",
+    "#2 Ink.futureStyle: 未注册的键（TYPE-4）",
+    "#3: Type ID 9 未注册",
+    "#4 Shape.futureEffect: 未注册的键（TYPE-4）"
+  ],
+  "expected": {
+    "core": "接受 version 12（在 10–19 之间），尽力读取，不拒绝文件；可以提示“文件来自更新的版本，部分内容可能无法显示”。显示 1 页：蓝色笔迹、矩形（描边 + 浅黄填充）与红色笔迹。跳过 Type ID 9 的块，忽略三个不认识的键，它们不改变已知字段的含义。文件含有读取器不认识的内容，保存时默认另存为，用户确认后才可以覆盖。",
+    "basic": "与核心级相同。",
+    "standard": "与核心级相同。",
+    "full": "与核心级相同。",
+    "inkeys": "与核心级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 12 }, { "str8": "ffffffff-000f-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000f-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "futureLayout": { "mode": "infinite", "gridSize": { "f32": 40 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 300, 6], [400, 260, 7], [600, 300, 6]] },
+      "futureStyle": { "glow": { "f32": 0.5 } }
+    },
+    {
+      "type": { "u16": 9 },
+      "text": "来自 1.2 的新块",
+      "x": { "f32": 800 }, "y": { "f32": 300 }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "shapeType": { "i32": 2 },
+      "geometry": { "centerX": { "f32": 400 }, "centerY": { "f32": 520 }, "width": { "f32": 300 }, "height": { "f32": 160 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "FFE08A" }, "opacity": { "f32": 1 } },
+      "futureEffect": "shadow"
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[800, 520, 6], [1000, 500, 6], [1200, 540, 6]] }
+    }
+  ]
+}

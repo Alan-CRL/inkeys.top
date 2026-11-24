@@ -15,6 +15,7 @@
     "docs:dev-clean": "vuepress dev docs --clean-cache --clean-temp",
     "docs:build": "vuepress build docs --clean-cache --clean-temp",
     "docs:preview": "http-server docs/.vuepress/dist",
+    "fixtures:uink": "node scripts/uink-fixtures/build.mjs",
     "vp-update": "pnpm dlx vp-update"
   },
   "devDependencies": {

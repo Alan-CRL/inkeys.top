@@ -1,0 +1,53 @@
+{
+  "file": "compat-v10.uink",
+  "title": "1.1 读取器读取 version 10 文件",
+  "primaryLevel": "core",
+  "rules": ["VER-1", "VER-3", "VER-5", "HDR-2", "INK-4", "INK-9", "INK-10", "NIB-1", "SHAPE-7", "SHAPE-9", "CANVAS-16"],
+  "description": "Header.version = 10，只使用 1.0 已有的字段，按 1.0 的写法每个 Canvas 都写了 viewport（单位视口）。隐式单例，共 2 页：第 1 页一条 Pen 与一条 Highlighter（1.0 没有 nib 与 cap，按圆形笔尖、圆头绘制，opacity 0.4）；第 2 页一条虚线 [12, 6] 带终点箭头的 Line 与一个只填充的 Ellipse。坐标按 Device 像素理解，不做换算。这是 1.0 写入器产生的文件，version 10 不是 1.1 写入器应写的值（见 deviations）。",
+  "expectedObjects": 7,
+  "deviations": [
+    "#0 Header.version: 写入 10，1.1 写入器必须写 11（VER-2）"
+  ],
+  "expected": {
+    "core": "正常读取，不拒绝。共 2 页：第 1 页蓝色 Pen 与黄色笔迹（荧光笔按 Pen 绘制，可以不透明）；第 2 页一条实线、无箭头的直线与一个绿色填充椭圆。所有坐标按 Device 像素原样使用。",
+    "basic": "与核心级相同，但荧光笔为圆形笔尖、40% 透明、整条合成一次；直线为 [12, 6] 虚线，终点有开放箭头。",
+    "standard": "与基础级相同；viewport 为单位视口，显示位置不变。",
+    "full": "与基础级相同。",
+    "inkeys": "与基础级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 10 }, { "str8": "ffffffff-000b-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 2 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000b-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "viewport": { "x": { "f32": 0 }, "y": { "f32": 0 }, "scale": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 240, 6], [400, 220, 6.5], [600, 240, 6]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 2 },
+      "color": { "$rgb": "FFE600" }, "opacity": { "f32": 0.4 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 360, 20], [600, 360, 20]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000b-4000-8000-000000000002",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "viewport": { "x": { "f32": 0 }, "y": { "f32": 0 }, "scale": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[200, 300], [700, 300]] } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 }, "dashArray": { "$f32s": [12, 6] }, "endMarker": { "i32": 1 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "shapeType": { "i32": 4 },
+      "geometry": { "centerX": { "f32": 1000 }, "centerY": { "f32": 500 }, "width": { "f32": 280 }, "height": { "f32": 160 }, "rotation": { "f32": 0 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 } }
+    }
+  ]
+}

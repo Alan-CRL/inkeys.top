@@ -1,0 +1,117 @@
+{
+  "file": "fallback-unknown.uink",
+  "title": "不认识的块、键与枚举值，以及非规范的数值编码",
+  "primaryLevel": "core",
+  "rules": ["VER-4", "TYPE-5", "TYPE-8", "TYPE-9", "TYPE-12", "FILE-18", "FILE-20", "HEXT-14", "CANVAS-9", "INK-8", "INK-13", "INK-14", "NIB-7", "SHAPE-20", "SHAPE-21", "MEDIA-3", "MEDIA-6", "COMPAT-1", "COMPAT-2", "COMPAT-3"],
+  "description": "模拟“来自更新版本或其他软件”的文件，故意包含读取器不认识的内容（见 deviations）。Header Extension 有不认识的键 futureRegistry，唯一的 Workspace 的 workspaceType 为保留值 99。Canvas 的 pageIndex 写成 fixint、pageNumber 写成 uint8、viewport 的三个分量写成 float64（都是能无损转换的非规范编码），background.pattern 为 99，另有不认识的键 futurePageField。随后依次为：Type ID 7 的完整块（7 及以上保留给后续版本，1.1 写入器不得写出）；inkType 77 的 Ink（点上带不认识的键 pressure，nib.shape 99、orientation 7、widthMeaning 9，cap 99，texture 99（保留值），块上有不认识的键 futureInkField）；shapeType 99 的 Shape；contentId 写成 uint8、endMarker 99、lineCap 99、lineJoin 99 的 Line；fillType 99、描边宽度写成 float64 的 Rectangle；fit 99 的图片 Media（资源包不存在）；inkType 200（私有值）的 Ink。",
+  "expectedObjects": 10,
+  "deviations": [
+    "#1 HeaderExtension.workspaces[0].workspaceType: 99 是未注册的保留值",
+    "#1 HeaderExtension.workspaces[0].futureWorkspaceKey: 未注册的键（TYPE-4）",
+    "#1 HeaderExtension.futureRegistry: 未注册的键（TYPE-4）",
+    "#2 Canvas.pageIndex: 应为 u32，实际为 fixint",
+    "#2 Canvas.pageNumber: 应为 u32，实际为 u8",
+    "#2 Canvas.viewport.x: 应为 f32，实际为 f64",
+    "#2 Canvas.viewport.y: 应为 f32，实际为 f64",
+    "#2 Canvas.viewport.scale: 应为 f32，实际为 f64",
+    "#2 Canvas.background.pattern: 99 是未注册的保留值",
+    "#2 Canvas.futurePageField: 未注册的键（TYPE-4）",
+    "#3: Type ID 7 未注册",
+    "#4 Ink.inkType: 77 是未注册的保留值",
+    "#4 Ink.texture: 99 是未注册的保留值",
+    "#4 Ink.points[0].pressure: 未注册的键（TYPE-4）",
+    "#4 Ink.points[1].pressure: 未注册的键（TYPE-4）",
+    "#4 Ink.points[2].pressure: 未注册的键（TYPE-4）",
+    "#4 Ink.nib.shape: 99 是未注册的保留值",
+    "#4 Ink.nib.orientation: 7 是未注册的保留值",
+    "#4 Ink.nib.widthMeaning: 9 是未注册的保留值",
+    "#4 Ink.cap: 99 是未注册的保留值",
+    "#4 Ink.futureInkField: 未注册的键（TYPE-4）",
+    "#5 Shape.shapeType: 99 是未注册的保留值",
+    "#5 Shape.geometry.spokes: 未注册的键（TYPE-4）",
+    "#6 Shape.contentId: 应为 u32，实际为 u8",
+    "#6 Shape.stroke.lineCap: 99 是未注册的保留值",
+    "#6 Shape.stroke.lineJoin: 99 是未注册的保留值",
+    "#6 Shape.stroke.endMarker: 99 是未注册的保留值",
+    "#7 Shape.stroke.width: 应为 f32，实际为 f64",
+    "#7 Shape.fill.fillType: 99 是未注册的保留值",
+    "#8 Media.fit: 99 是未注册的保留值"
+  ],
+  "expected": {
+    "core": "不拒绝文件，显示 1 页。跳过 Type ID 7 的块（读取器不认识的 Type ID）；忽略全部不认识的键（包括点上的 pressure）。inkType 77 的 Ink 按 Pen 画出蓝色曲线（圆形笔尖、width 为直径）；shapeType 99 的 Shape 整个跳过，不猜测成其他几何；Line 画出；Rectangle 按 Solid 填充浅黄色（fillType 99），描边宽 4；Media 跳过；inkType 200 的 Ink 按 Pen 画出红色笔迹。非规范编码的数值都能无损转换，照常使用。默认不覆盖原文件，保存时另存为。",
+    "basic": "与核心级相同；背景为白色、图案按 Blank（pattern 99）；inkType 77 的笔迹 nib 与 cap 取值不认识，按圆形笔尖、圆头绘制；Line 终点不画箭头（endMarker 99 按 None），端帽与拐角按 Round。",
+    "standard": "与基础级相同；Workspace 类型 99 按普通白板加载，不执行宿主绑定；viewport 为单位视口；图片 Media 的资源包不存在，在 (1200, 200) 保留 320×180 的位置并提示资源缺失（fit 99 按 Fill 处理）。",
+    "full": "与标准级相同；纹理 99 是保留值，不认识，按 0 绘制。",
+    "inkeys": "与完整级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-000c-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "devices": [
+        { "guid": "dddddddd-000c-4000-8000-000000000001", "deviceType": { "i32": 0 }, "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 } }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-000c-4000-8000-000000000001", "workspaceType": { "i32": 99 }, "name": "来自未来版本的场景", "futureWorkspaceKey": "ignored" }
+      ],
+      "futureRegistry": [{ "kind": "sensor", "rate": { "u16": 120 } }]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-000c-4000-8000-000000000001", "deviceGuid": "dddddddd-000c-4000-8000-000000000001",
+      "pageGuid": "cccccccc-000c-4000-8000-000000000001",
+      "pageIndex": { "fixint": 0 }, "pageNumber": { "u8": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "viewport": { "x": { "f64": 0 }, "y": { "f64": 0 }, "scale": { "f64": 1 } },
+      "background": { "color": { "$rgb": "FFFFFF" }, "pattern": { "i32": 99 } },
+      "futurePageField": "ignored"
+    },
+    {
+      "type": { "u16": 7 },
+      "payload": "complete unknown block",
+      "nested": { "list": [{ "u8": 1 }, { "u8": 2 }], "flag": true }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 77 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 99 },
+      "points": { "$inkPoints": [
+        [200, 300, 6, { "pressure": { "f32": 0.3 } }],
+        [320, 260, 7, { "pressure": { "f32": 0.6 } }],
+        [440, 300, 8, { "pressure": { "f32": 0.9 } }]
+      ] },
+      "nib": { "shape": { "i32": 99 }, "aspect": { "f32": 0.5 }, "orientation": { "i32": 7 }, "widthMeaning": { "i32": 9 } },
+      "cap": { "i32": 99 },
+      "futureInkField": true
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "shapeType": { "i32": 99 },
+      "geometry": { "centerX": { "f32": 700 }, "centerY": { "f32": 300 }, "radius": { "f32": 80 }, "spokes": { "u32": 6 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u8": 2 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[200, 500], [600, 500]] } },
+      "stroke": {
+        "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 6 },
+        "lineCap": { "i32": 99 }, "lineJoin": { "i32": 99 }, "startMarker": { "i32": 0 }, "endMarker": { "i32": 99 }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 3 }, "undoId": { "u32": 3 }, "shapeType": { "i32": 2 },
+      "geometry": { "centerX": { "f32": 900 }, "centerY": { "f32": 650 }, "width": { "f32": 240 }, "height": { "f32": 140 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f64": 4 } },
+      "fill": { "fillType": { "i32": 99 }, "color": { "$rgb": "FFE08A" }, "opacity": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 4 }, "undoId": { "u32": 4 },
+      "path": "images/future.png", "mimeType": "image/png",
+      "width": { "f32": 320 }, "height": { "f32": 180 },
+      "transform": { "$f32s": [1, 0, 0, 1, 1200, 200] },
+      "fit": { "i32": 99 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 5 }, "undoId": { "u32": 5 }, "inkType": { "i32": 200 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[1200, 600, 6], [1400, 640, 6], [1600, 600, 6]] }
+    }
+  ]
+}

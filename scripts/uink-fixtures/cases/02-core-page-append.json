@@ -1,0 +1,98 @@
+{
+  "file": "core-page-append.uink",
+  "title": "按页追加：同一页以最后出现的版本为准",
+  "primaryLevel": "core",
+  "rules": ["FILE-7", "FILE-8", "FILE-9", "CANVAS-3", "CANVAS-5", "CANVAS-6", "SAVE-10", "SAVE-12", "SAVE-14", "SAVE-15", "SAVE-20", "SAVE-21", "HDR-4", "HDR-5", "HEXT-5", "HEXT-10"],
+  "description": "一个白板 Workspace，一个 1920×1080 Device。完整保存时有 A、B、C 三页（pageIndex 0、1、2），Header 的 pageNum 快照为 3。之后第 2 页 B 被按页追加了两次：第一次追加的 B′ 多了一笔；第二次追加的 B″ 又多了一个圆，并把 pageIndex 改成 2（用户把 B 拖到最后，C 的新版本还没来得及追加），于是 pageIndex 1 暂时空缺、pageIndex 2 暂时重复。每个新版本的 contentId 与 undoId 都从 0 开始。",
+  "expectedObjects": 15,
+  "expected": {
+    "core": "列出 3 页，顺序为 A、C、B（pageIndex 2 重复，C 的 Canvas 在对象流中先出现，B″ 后出现；读取器为本次显示重新编号为 0、1、2）。A 有 1 条蓝色笔迹；C 有 1 条绿色笔迹；B 只显示最后一个版本 B″：2 条红色笔迹和 1 个圆。B 的旧版本与 B′ 不显示。Header 的 pageNum 与实际页数一致，但读取器不得依赖它。",
+    "basic": "与核心级相同；页码标签按 pageNumber 显示为 1、3、3（pageNumber 只用于显示，可以重复）。",
+    "standard": "与基础级相同；按白板打开；currentPageIndex 为 0，按读取器排好的页序解释（HEXT-10），初始显示 A。B″ 的撤回组为 3 个（两笔与圆各一组）。",
+    "full": "与标准级相同。",
+    "inkeys": "与标准级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0002-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 3 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "name": "按页追加示例",
+      "devices": [
+        { "guid": "dddddddd-0002-4000-8000-000000000001", "deviceType": { "i32": 0 }, "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 } }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-0002-4000-8000-000000000001", "workspaceType": { "i32": 1 }, "name": "白板", "currentPageIndex": { "u32": 0 } }
+      ]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0002-4000-8000-000000000001", "deviceGuid": "dddddddd-0002-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0002-4000-8000-00000000000a",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 400, 6], [420, 360, 6], [540, 400, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0002-4000-8000-000000000001", "deviceGuid": "dddddddd-0002-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0002-4000-8000-00000000000b",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 300, 6], [600, 300, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0002-4000-8000-000000000001", "deviceGuid": "dddddddd-0002-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0002-4000-8000-00000000000c",
+      "pageIndex": { "u32": 2 }, "pageNumber": { "u32": 3 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 500, 6], [420, 560, 6], [540, 500, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0002-4000-8000-000000000001", "deviceGuid": "dddddddd-0002-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0002-4000-8000-00000000000b",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 300, 6], [600, 300, 6]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 380, 6], [600, 380, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0002-4000-8000-000000000001", "deviceGuid": "dddddddd-0002-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0002-4000-8000-00000000000b",
+      "pageIndex": { "u32": 2 }, "pageNumber": { "u32": 3 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 300, 6], [600, 300, 6]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[300, 380, 6], [600, 380, 6]] }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 5 },
+      "geometry": { "centerX": { "f32": 760 }, "centerY": { "f32": 340 }, "radius": { "f32": 60 } },
+      "stroke": { "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } }
+    }
+  ]
+}

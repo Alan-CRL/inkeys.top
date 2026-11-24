@@ -1,0 +1,107 @@
+{
+  "file": "basic-appearance.uink",
+  "title": "外观：透明度、荧光笔、笔尖、端帽、虚线、箭头、圆角、背景",
+  "primaryLevel": "basic",
+  "rules": ["INK-9", "INK-10", "NIB-1", "NIB-3", "NIB-4", "NIB-5", "SHAPE-3", "SHAPE-6", "SHAPE-7", "SHAPE-9", "CANVAS-8", "CANVAS-9", "COMPAT-1"],
+  "description": "一个白板 Workspace，一页，页面背景为米白色点阵（pattern 1）。Ink：半透明蓝色 Pen（opacity 0.5）；Inkeys 荧光笔（矩形笔尖 1:8、Fixed、width 表示高度、Butt 端帽，opacity 0.4），这一笔从左到右再折返，前后两段有一半重叠；Square 端帽与 Butt 端帽的粗笔迹各一条。Shape：虚线 {16, 8} 双向箭头；点线 {0, 18}（Round 端帽，画成一串圆点）；Butt 端帽 + Miter 拐角 + 终点箭头的折线；Square 端帽 + Bevel 拐角的折线；圆角矩形（rx 24、ry 16，填充透明度 0.3）；半透明虚线椭圆（opacity 0.6，dashOffset 6）。",
+  "expectedObjects": 13,
+  "expected": {
+    "core": "背景按透明或软件默认背景显示。全部按不透明绘制：蓝色 Pen 不透明；荧光笔按 Pen 绘制为不透明黄色、圆形笔尖、直径 24；两条粗笔迹两端都画成圆头。4 条线都是实线、没有箭头，两条折线的拐角与端头都是圆的；矩形是直角，填充为不透明蓝色；椭圆是不透明的实线红色描边。",
+    "basic": "米白色点阵背景。蓝色 Pen 半透明；荧光笔为竖直的 3 × 24 矩形笔尖扫出的黄色带，两端平头，整条合成一次，折返重叠处颜色不加深；第 3 条笔迹两端为方头（多出半个宽度），第 4 条为平头。第 1 条线是虚线且两端有开放箭头；第 2 条线是一串直径 6 的圆点；第 3 条折线平头、尖角、终点有箭头；第 4 条折线方头、斜切角。矩形四角为椭圆圆角（24 × 16），填充 30% 透明；椭圆描边 60% 透明且为虚线。",
+    "standard": "与基础级相同。",
+    "full": "与基础级相同。",
+    "inkeys": "与基础级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0003-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "devices": [
+        { "guid": "dddddddd-0003-4000-8000-000000000001", "deviceType": { "i32": 0 }, "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 } }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-0003-4000-8000-000000000001", "workspaceType": { "i32": 1 }, "name": "白板" }
+      ]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0003-4000-8000-000000000001", "deviceGuid": "dddddddd-0003-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0003-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "background": { "color": { "$rgb": "FAF7F0" }, "pattern": { "i32": 1 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 0.5 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 200, 8], [320, 180, 8], [440, 200, 8], [560, 180, 8]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 2 },
+      "color": { "$rgb": "FFE600" }, "opacity": { "f32": 0.4 }, "texture": { "i32": 0 },
+      "nib": { "shape": { "i32": 1 }, "aspect": { "f32": 0.125 }, "orientation": { "i32": 0 }, "widthMeaning": { "i32": 1 } },
+      "cap": { "i32": 2 },
+      "points": { "$inkPoints": [[200, 320, 24], [560, 320, 24], [240, 332, 24], [600, 332, 24]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "cap": { "i32": 1 },
+      "points": { "$inkPoints": [[200, 460, 16], [560, 460, 16]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 3 }, "undoId": { "u32": 3 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "cap": { "i32": 2 },
+      "points": { "$inkPoints": [[200, 540, 16], [560, 540, 16]] }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 4 }, "undoId": { "u32": 4 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[700, 200], [1100, 200]] } },
+      "stroke": {
+        "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "width": { "f32": 4 },
+        "dashArray": { "$f32s": [16, 8] }, "lineCap": { "i32": 0 }, "startMarker": { "i32": 1 }, "endMarker": { "i32": 1 }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 5 }, "undoId": { "u32": 5 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[700, 300], [1100, 300]] } },
+      "stroke": {
+        "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 6 },
+        "dashArray": { "$f32s": [0, 18] }, "lineCap": { "i32": 0 }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 6 }, "undoId": { "u32": 6 }, "shapeType": { "i32": 1 },
+      "geometry": { "points": { "$points": [[700, 480], [820, 380], [940, 480], [1060, 380]] } },
+      "stroke": {
+        "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "width": { "f32": 14 },
+        "lineCap": { "i32": 2 }, "lineJoin": { "i32": 1 }, "endMarker": { "i32": 1 }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 7 }, "undoId": { "u32": 7 }, "shapeType": { "i32": 1 },
+      "geometry": { "points": { "$points": [[700, 640], [820, 540], [940, 640], [1060, 540]] } },
+      "stroke": {
+        "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "width": { "f32": 14 },
+        "lineCap": { "i32": 1 }, "lineJoin": { "i32": 2 }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 8 }, "undoId": { "u32": 8 }, "shapeType": { "i32": 2 },
+      "geometry": {
+        "centerX": { "f32": 1400 }, "centerY": { "f32": 300 }, "width": { "f32": 320 }, "height": { "f32": 180 },
+        "cornerRadiusX": { "f32": 24 }, "cornerRadiusY": { "f32": 16 }
+      },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 0.3 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 9 }, "undoId": { "u32": 9 }, "shapeType": { "i32": 4 },
+      "geometry": { "centerX": { "f32": 1400 }, "centerY": { "f32": 600 }, "width": { "f32": 300 }, "height": { "f32": 160 } },
+      "stroke": {
+        "color": { "$rgb": "E5484D" }, "opacity": { "f32": 0.6 }, "width": { "f32": 6 },
+        "dashArray": { "$f32s": [24, 12] }, "dashOffset": { "f32": 6 }
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "file": "standard-media.uink",
+  "title": "图片 Media：fit、crop、transform、viewport 映射与资源缺失",
+  "primaryLevel": "standard",
+  "rules": ["MEDIA-1", "MEDIA-2", "MEDIA-3", "MEDIA-4", "MEDIA-6", "MEDIA-7", "MEDIA-8", "MEDIA-9", "MEDIA-11", "CANVAS-16", "CANVAS-17", "CANVAS-18", "CANVAS-21", "EXTRA-1", "EXTRA-2", "EXTRA-3", "EXTRA-4", "EXTRA-9", "EXTRA-11", "FILE-14", "COMPAT-1", "TYPE-10"],
+  "description": "一个白板页面，viewport = { x: 100, y: 50, scale: 1.5 }：Device 像素 = (Canvas 坐标 − (100, 50)) × 1.5，可见范围为 Canvas (100, 50)–(1380, 770)。资源包 standard-media.uink.extra 中有 32×16 的四色 PNG（左上蓝、右上橙、左下绿、右下洋红）、96×96 的静态 SVG、两页 PDF 和一段 WAV。内容依次为：① PNG 放进 320×320 的框，fit = 1 Contain，平移到 (140, 100)；② PNG 放进 160×160 的框，fit = 2 Cover，平移到 (520, 100)；③ PNG 的 crop 为左半部分 (0, 0, 16, 16)，fit = 0 Fill 放进 160×160 的框，transform 为顺时针旋转 90° 后平移到 (880, 100)；④ SVG 放进 64×64 的框，fit = 3 None，opacity 0.6，平移到 (960, 100)；⑤ 一条红色 Pen 笔迹画在图片 ① 上；⑥ 引用资源包中不存在的 images/missing.png，框 240×135，平移到 (140, 460)；⑦ PDF 的第 2 页（pageCount 2、pageIndex 1），框 320×180，平移到 (440, 460)；⑧ 一段音频（不自动播放、音量 0.8）。",
+  "expectedObjects": 11,
+  "expected": {
+    "core": "跳过全部 Media 与资源包，也忽略 viewport：只显示红色笔迹，位于 Canvas 坐标 (150, 260)–(450, 260)，宽 6，按 Device 像素原样绘制。",
+    "basic": "与核心级相同。",
+    "standard": "应用 viewport：每个内容都按 (x − 100) × 1.5、(y − 50) × 1.5 映射，宽度乘 1.5。① 四色图保持比例放进框内：图像占框中间的 320×160（Canvas y 180–340），上下各留 80 透明；② 四色图保持比例铺满 160×160 的框，只显示中间一半，左边蓝 / 绿、右边橙 / 洋红各占一半；③ 只取左半部分（上蓝下绿）拉伸到 160×160 后顺时针旋转 90°，占据 Canvas (720, 100)–(880, 260)，蓝色在右、绿色在左；④ SVG 不缩放，只显示左上 64×64（蓝色圆角方块与白色圆的一部分），60% 透明；⑤ 红色笔迹画在图片 ① 之上（Device 坐标 (75, 315)–(525, 315)，宽 9）；⑥ 资源缺失：在 (140, 460) 保留 240×135 的位置并提示缺失，其他内容不受影响；⑦ PDF 不支持：在 (440, 460) 保留 320×180 的占位并提示不支持；⑧ 音频不支持：提示不支持。",
+    "full": "与标准级相同，但 ⑦ 显示 PDF 的第 2 页（橙色矩形中间一个白色方块），⑧ 可以播放音频，音量 0.8，不自动播放、不循环。",
+    "inkeys": "与完整级相同。"
+  },
+  "extra": {
+    "file": "standard-media.uink.extra",
+    "title": "standard-media.uink 的资源包",
+    "description": "不压缩的 ZIP，条目按路径排序。PNG 与 PDF 由生成脚本逐字节构造；SVG 只含静态图形，没有脚本、事件与外部引用；images/missing.png 故意不放入。",
+    "entries": [
+      { "path": "images/quadrants.png", "mimeType": "image/png", "source": "png-quadrants" },
+      { "path": "images/badge.svg", "mimeType": "image/svg+xml", "source": "svg-badge" },
+      { "path": "documents/handout.pdf", "mimeType": "application/pdf", "source": "pdf-handout" },
+      { "path": "audio/chime.wav", "mimeType": "audio/wav", "source": "wav-chime" }
+    ]
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0005-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "devices": [
+        { "guid": "dddddddd-0005-4000-8000-000000000001", "deviceType": { "i32": 0 }, "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 } }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-0005-4000-8000-000000000001", "workspaceType": { "i32": 1 }, "name": "白板" }
+      ]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0005-4000-8000-000000000001", "deviceGuid": "dddddddd-0005-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0005-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "viewport": { "x": { "f32": 100 }, "y": { "f32": 50 }, "scale": { "f32": 1.5 } }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 },
+      "path": "images/quadrants.png", "mimeType": "image/png",
+      "width": { "f32": 320 }, "height": { "f32": 320 },
+      "transform": { "$f32s": [1, 0, 0, 1, 140, 100] },
+      "fit": { "i32": 1 }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 },
+      "path": "images/quadrants.png", "mimeType": "image/png",
+      "width": { "f32": 160 }, "height": { "f32": 160 },
+      "transform": { "$f32s": [1, 0, 0, 1, 520, 100] },
+      "fit": { "i32": 2 }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 },
+      "path": "images/quadrants.png", "mimeType": "image/png",
+      "width": { "f32": 160 }, "height": { "f32": 160 },
+      "transform": { "$f32s": [0, 1, -1, 0, 880, 100] },
+      "fit": { "i32": 0 },
+      "crop": { "x": { "f32": 0 }, "y": { "f32": 0 }, "width": { "f32": 16 }, "height": { "f32": 16 } }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 3 }, "undoId": { "u32": 3 },
+      "path": "images/badge.svg", "mimeType": "image/svg+xml",
+      "width": { "f32": 64 }, "height": { "f32": 64 },
+      "transform": { "$f32s": [1, 0, 0, 1, 960, 100] },
+      "opacity": { "f32": 0.6 },
+      "fit": { "i32": 3 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 4 }, "undoId": { "u32": 4 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[150, 260, 6], [450, 260, 6]] }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 5 }, "undoId": { "u32": 5 },
+      "path": "images/missing.png", "mimeType": "image/png",
+      "width": { "f32": 240 }, "height": { "f32": 135 },
+      "transform": { "$f32s": [1, 0, 0, 1, 140, 460] }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 6 }, "undoId": { "u32": 6 },
+      "path": "documents/handout.pdf", "mimeType": "application/pdf",
+      "width": { "f32": 320 }, "height": { "f32": 180 },
+      "transform": { "$f32s": [1, 0, 0, 1, 440, 460] },
+      "pageCount": { "u32": 2 }, "pageIndex": { "u32": 1 }
+    },
+    {
+      "type": { "u16": 4 }, "contentId": { "u32": 7 }, "undoId": { "u32": 7 },
+      "path": "audio/chime.wav", "mimeType": "audio/wav",
+      "autoplay": false, "loop": false, "volume": { "f32": 0.8 }, "startTime": { "f64": 0 }, "playbackRate": { "f32": 1 }
+    }
+  ]
+}

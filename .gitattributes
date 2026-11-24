@@ -10,6 +10,10 @@
 *.tff binary
 *.woff binary
 *.woff2 binary
+*.uink binary
+*.uink.extra binary
+# UInk 样例校验文件需保持 LF，否则 sha256sum -c 无法读取
+docs/.vuepress/public/standard/**/SHA256SUMS.txt text eol=lf
 
 # Trellis: append-only developer journals should merge cleanly across
 # parallel sessions/worktrees — each session only appends a new block, so

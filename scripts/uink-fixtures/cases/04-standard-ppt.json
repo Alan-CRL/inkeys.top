@@ -1,0 +1,93 @@
+{
+  "file": "standard-ppt.uink",
+  "title": "PPT 批注：slideId 绑定、页码绑定、保留页、结束页",
+  "primaryLevel": "standard",
+  "rules": ["HEXT-7", "HEXT-8", "HEXT-10", "HEXT-14", "FILE-9", "CANVAS-8", "CANVAS-11", "CANVAS-12", "CANVAS-13", "CANVAS-14", "COMPAT-1", "COMPAT-4"],
+  "description": "一个 PPT Workspace（workspaceType 2，hostId 为 INKEYS-PPT-7B58E2A1，currentPageIndex 1），一个 1920×1080 Device，共 5 页：第 0 页按 slideId 256 绑定；第 1 页按 slideId 257 绑定，有一条笔迹和一个带箭头的直线；第 2 页 binding = 1，按页码绑定第 3 张幻灯片，不写 slideId；第 3 页 pageState = 1（保留页），原本绑定的 slideId 258 已在演示文稿中删除；第 4 页 pageKind = 1（放映结束后的黑屏页），不写 slideId。没有 background，PPT 页面背景透明。",
+  "expectedObjects": 13,
+  "expected": {
+    "core": "Workspace 类型与绑定字段全部忽略，按普通页面序列显示 5 页（按 pageIndex 0–4），保留页与结束页也作为普通页面显示：第 1 页红色下划线；第 2 页蓝色圈注与一条直线；第 3 页绿色对勾；第 4 页灰色删除线；第 5 页黄色“谢谢”涂写。",
+    "basic": "与核心级相同；页码标签为 1–5；直线终点有开放箭头。",
+    "standard": "识别为 hostId 为 INKEYS-PPT-7B58E2A1 的演示文稿批注。第 0 页附着到 SlideID 256 的幻灯片，第 1 页附着到 SlideID 257，第 2 页按页码附着到第 3 张幻灯片；第 4 页是放映结束后的黑屏页；第 3 页是保留页，不放进正常页序，可以单独列出供用户查看或重新绑定。打开后定位到第 1 页（SlideID 257）。在当前演示文稿中找不到 SlideID 256 或 257 时，对应页面必须保留为未绑定页并提示用户，不得按页码、当前页或其他幻灯片自动附着。",
+    "full": "与标准级相同。",
+    "inkeys": "与标准级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0004-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 5 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 1 },
+      "name": "物理课",
+      "devices": [
+        { "guid": "dddddddd-0004-4000-8000-000000000001", "deviceType": { "i32": 0 }, "x": { "i32": 0 }, "y": { "i32": 0 }, "width": { "u32": 1920 }, "height": { "u32": 1080 } }
+      ],
+      "workspaces": [
+        { "guid": "aaaaaaaa-0004-4000-8000-000000000001", "workspaceType": { "i32": 2 }, "name": "第三章 力", "hostId": "INKEYS-PPT-7B58E2A1", "currentPageIndex": { "u32": 1 } }
+      ]
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0004-4000-8000-000000000001", "deviceGuid": "dddddddd-0004-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0004-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "slideId": { "i32": 256 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[400, 620, 6], [700, 624, 6], [1000, 618, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0004-4000-8000-000000000001", "deviceGuid": "dddddddd-0004-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0004-4000-8000-000000000002",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "slideId": { "i32": 257 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[900, 300, 5], [1000, 260, 5], [1100, 300, 5], [1100, 380, 5], [1000, 420, 5], [900, 380, 5], [900, 310, 5]] }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[600, 600], [880, 400]] } },
+      "stroke": { "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "width": { "f32": 4 }, "endMarker": { "i32": 1 } }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0004-4000-8000-000000000001", "deviceGuid": "dddddddd-0004-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0004-4000-8000-000000000003",
+      "pageIndex": { "u32": 2 }, "pageNumber": { "u32": 3 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "binding": { "i32": 1 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[1400, 500, 8], [1440, 540, 8], [1520, 440, 8]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0004-4000-8000-000000000001", "deviceGuid": "dddddddd-0004-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0004-4000-8000-000000000004",
+      "pageIndex": { "u32": 3 }, "pageNumber": { "u32": 4 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "pageState": { "i32": 1 }, "slideId": { "i32": 258 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "6B7280" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[500, 540, 6], [1400, 540, 6]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "workspaceGuid": "aaaaaaaa-0004-4000-8000-000000000001", "deviceGuid": "dddddddd-0004-4000-8000-000000000001",
+      "pageGuid": "cccccccc-0004-4000-8000-000000000005",
+      "pageIndex": { "u32": 4 }, "pageNumber": { "u32": 5 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 },
+      "pageKind": { "i32": 1 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "FFD400" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[800, 520, 8], [860, 480, 8], [900, 560, 8], [960, 470, 8], [1000, 560, 8], [1060, 480, 8], [1120, 540, 8]] }
+    }
+  ]
+}

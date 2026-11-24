@@ -1,0 +1,39 @@
+{
+  "file": "truncated-tail.uink",
+  "title": "最后一个对象不完整时的恢复",
+  "primaryLevel": "core",
+  "rules": ["FILE-16", "SAVE-6", "SAVE-22", "SAVE-23", "COMPAT-2"],
+  "description": "隐式单例，一页，前两条 Pen 笔迹完整；第三条 Ink 在写入过程中崩溃，文件在它的 points 数组中间结束（被截掉最后 20 字节）。validPrefixBytes 是第二条笔迹的结束位置，也是再次追加前应截断到的安全位置。",
+  "expectedObjects": 4,
+  "truncateBytes": 20,
+  "expected": {
+    "core": "保留前 4 个完整对象，丢弃不完整的第三条 Ink：页面显示蓝色与绿色两条笔迹。不报告文件损坏而拒绝打开，也不自动修改源文件。准备再次追加时，先把文件截断到 validPrefixBytes，新内容的 contentId 从 2、undoId 从 2 开始。",
+    "basic": "与核心级相同。",
+    "standard": "与核心级相同。",
+    "full": "与核心级相同。",
+    "inkeys": "与核心级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-000d-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-000d-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 300, 6], [400, 280, 6], [600, 300, 6]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "22A06B" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 400, 6], [400, 380, 6], [600, 400, 6]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[200, 500, 6], [400, 480, 6], [600, 500, 6], [800, 480, 6]] }
+    }
+  ]
+}

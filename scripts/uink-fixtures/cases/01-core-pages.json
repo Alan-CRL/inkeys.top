@@ -1,0 +1,85 @@
+{
+  "file": "core-pages.uink",
+  "title": "多页、笔迹与七种基础图形",
+  "primaryLevel": "core",
+  "rules": ["VER-2", "HDR-1", "TYPE-1", "HEXT-3", "HEXT-4", "HEXT-6", "FILE-1", "FILE-3", "FILE-5", "FILE-7", "FILE-9", "FILE-15", "CANVAS-1", "CANVAS-10", "CANVAS-16", "INK-2", "INK-3", "INK-4", "INK-5", "INK-7", "NIB-1", "COLOR-2", "SHAPE-1", "SHAPE-2", "SHAPE-3", "SHAPE-4"],
+  "description": "没有 Header Extension，Device 与 Workspace 都是隐式单例（隐式 Workspace 为屏幕批注）。共 3 页：第 1 页 3 条 Pen 笔迹（一条宽度从 4 渐变到 10 再回到 4，一条单点笔迹，一条对勾）；第 2 页依次是 Line、Polyline、Rectangle（旋转 15°，描边 + 填充）、Square（旋转 45°）、Ellipse（旋转 −20°，只填充）、Circle、Polygon 三角形（描边 + 填充）；第 3 页是没有内容的空白页。所有透明度都是 1。",
+  "expectedObjects": 14,
+  "expected": {
+    "core": "列出 3 页。第 1 页：蓝色波浪笔迹的宽度按每个点的 width 由细到粗再变细；(800, 300) 处一个直径 16 的红色圆点；一个黑色对勾。第 2 页：7 个图形全部画出，旋转角度正确，矩形与三角形同时有描边和填充，椭圆只有浅蓝填充。第 3 页为空白页，不得被省略。",
+    "basic": "与核心级相同；页码标签为 1、2、3。没有 background，背景透明（隐式 Workspace 是屏幕批注）。",
+    "standard": "与基础级相同；隐式 Workspace 按屏幕批注处理，没有 viewport，按 { x: 0, y: 0, scale: 1 } 显示；每个内容块是一个撤回组。",
+    "full": "与标准级相同。",
+    "inkeys": "与标准级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0001-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 3 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0001-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[240, 300, 4], [300, 280, 6], [360, 270, 8], [420, 280, 10], [480, 300, 10], [540, 320, 8], [600, 330, 6], [660, 320, 4]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[800, 300, 16]] }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[960, 320, 5], [1000, 360, 6], [1080, 260, 5]] }
+    },
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0001-4000-8000-000000000002",
+      "pageIndex": { "u32": 1 }, "pageNumber": { "u32": 2 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 0 }, "undoId": { "u32": 0 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[200, 200], [500, 260]] } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 1 }, "undoId": { "u32": 1 }, "shapeType": { "i32": 1 },
+      "geometry": { "points": { "$points": [[600, 260], [680, 180], [760, 260], [840, 180]] } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 2 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 2 },
+      "geometry": { "centerX": { "f32": 300 }, "centerY": { "f32": 520 }, "width": { "f32": 240 }, "height": { "f32": 140 }, "rotation": { "f32": 0.2617994 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "FFE08A" }, "opacity": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 3 }, "undoId": { "u32": 3 }, "shapeType": { "i32": 3 },
+      "geometry": { "centerX": { "f32": 620 }, "centerY": { "f32": 520 }, "size": { "f32": 160 }, "rotation": { "f32": 0.7853982 } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 4 }, "undoId": { "u32": 4 }, "shapeType": { "i32": 4 },
+      "geometry": { "centerX": { "f32": 920 }, "centerY": { "f32": 520 }, "width": { "f32": 260 }, "height": { "f32": 140 }, "rotation": { "f32": -0.3490659 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "8FD3FF" }, "opacity": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 5 }, "undoId": { "u32": 5 }, "shapeType": { "i32": 5 },
+      "geometry": { "centerX": { "f32": 1220 }, "centerY": { "f32": 520 }, "radius": { "f32": 80 } },
+      "stroke": { "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "width": { "f32": 6 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 6 }, "undoId": { "u32": 6 }, "shapeType": { "i32": 6 },
+      "geometry": { "points": { "$points": [[1460, 600], [1560, 420], [1660, 600]] } },
+      "stroke": { "color": { "$rgb": "1F2937" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "FFB3B3" }, "opacity": { "f32": 1 } }
+    },
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0001-4000-8000-000000000003",
+      "pageIndex": { "u32": 2 }, "pageNumber": { "u32": 3 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    }
+  ]
+}

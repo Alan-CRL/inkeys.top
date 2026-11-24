@@ -1,0 +1,60 @@
+{
+  "file": "standard-shape-object.uink",
+  "title": "图形对象层：箭头、长方体与不完整的对象",
+  "primaryLevel": "standard",
+  "rules": ["SHAPE-7", "SHAPE-8", "SHAPE-9", "SHAPE-11", "SHAPE-12", "SHAPE-13", "SHAPE-14", "PRESET-7", "PRESET-9", "PRESET-14", "PRESET-15", "PRESET-17", "PRESET-18", "PRESET-19", "INK-3", "COMPAT-1"],
+  "description": "隐式单例，一页。对象 1 是箭头（preset arrow）：杆是 Line，箭头是三点实线 Polyline，两个部件共享 undoId 0。对象 2 是长方体（preset cuboid，底面中心 (960, 640)，baseSize 320 × 240，height −240，描边宽 3）：12 条 Line 按“底边 i、顶边 i、侧棱 i”顺序输出，看不见的 3 条边写成虚线 [12, 18]，共享 undoId 1，首个部件带单位矩阵 transform。两个对象都没有 construction（部件即权威几何），部件几何由生成脚本按图形预设注册表计算。对象 3 故意不完整：partCount 为 3 但只写了 2 个部件（undoId 2），用于验证 SHAPE-14 的回退。最后是一条独立的 Pen 笔迹（undoId 3）。",
+  "expectedObjects": 19,
+  "deviations": [
+    "#18 Shape.object: 对象 eeeeeeee-0006-4000-8000-000000000003 只有 2/3 个连续部件（被其他内容打断，SHAPE-11）"
+  ],
+  "expected": {
+    "core": "忽略对象层，16 个 Shape 各自作为独立图形画出：箭头的杆与箭头（实线）、长方体的 12 条边（全部画成实线）、两条平行横线；另有 1 条蓝色笔迹。",
+    "basic": "与核心级相同，但长方体看不见的 3 条边（底面后边、底面左边、左后竖棱）画成 [12, 18] 的虚线。",
+    "standard": "外观与基础级相同。箭头的 2 个部件、长方体的 12 个部件分别作为一个整体选择、移动、删除；对象 3 部件数与 partCount 不符，两条横线作为独立 Shape 处理并报告警告，不拒绝整页。撤回组共 4 个：撤回一次去掉笔迹，再撤回去掉两条横线，再撤回去掉整个长方体，最后去掉箭头。",
+    "full": "与标准级相同；对象没有 construction，不能修改参数，按对象层整体编辑。",
+    "inkeys": "与完整级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0006-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0006-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "$preset": "arrow",
+      "contentId": { "u32": 0 }, "undoId": { "u32": 0 },
+      "id": "eeeeeeee-0006-4000-8000-000000000001", "revision": { "u64": 1 },
+      "construction": { "start": { "$pt": [200, 500] }, "end": { "$pt": [520, 340] } },
+      "style": { "strokeColor": { "$rgb": "1F2937" }, "width": { "f32": 4 } },
+      "write": []
+    },
+    {
+      "$preset": "cuboid",
+      "contentId": { "u32": 2 }, "undoId": { "u32": 1 },
+      "id": "eeeeeeee-0006-4000-8000-000000000002", "revision": { "u64": 1 },
+      "transform": { "$f32s": [1, 0, 0, 1, 0, 0] },
+      "construction": { "start": { "$pt": [960, 640] }, "height": { "f32": -240 }, "baseSize": { "$pt": [320, 240] } },
+      "style": { "strokeColor": { "$rgb": "1F2937" }, "width": { "f32": 3 } },
+      "write": ["transform"]
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 14 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[1300, 300], [1500, 300]] } },
+      "stroke": { "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "object": { "id": "eeeeeeee-0006-4000-8000-000000000003", "revision": { "u64": 1 }, "partCount": { "u32": 3 } }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 15 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[1300, 360], [1500, 360]] } },
+      "stroke": { "color": { "$rgb": "E5484D" }, "opacity": { "f32": 1 }, "width": { "f32": 4 } },
+      "object": { "ref": "eeeeeeee-0006-4000-8000-000000000003", "partIndex": { "u32": 1 } }
+    },
+    {
+      "type": { "u16": 3 }, "contentId": { "u32": 16 }, "undoId": { "u32": 3 }, "inkType": { "i32": 1 },
+      "color": { "$rgb": "1E5AFF" }, "opacity": { "f32": 1 }, "texture": { "i32": 0 },
+      "points": { "$inkPoints": [[1300, 500, 5], [1400, 480, 5], [1500, 500, 5]] }
+    }
+  ]
+}

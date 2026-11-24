@@ -1,0 +1,68 @@
+{
+  "file": "full-shape-preset.uink",
+  "title": "图形预设：construction 重建与不认识的预设",
+  "primaryLevel": "full",
+  "rules": ["SHAPE-11", "SHAPE-12", "SHAPE-13", "SHAPE-15", "PRESET-1", "PRESET-2", "PRESET-3", "PRESET-4", "PRESET-5", "PRESET-7", "PRESET-8", "PRESET-10", "PRESET-14", "PRESET-15", "PRESET-17", "PRESET-18", "PRESET-19", "PRESET-20", "COMPAT-1"],
+  "description": "隐式单例，一页，3 个对象，每个对象一个撤回组。对象 1 是长方体（preset cuboid，revision 3）：construction 为 start (0, 0)、height −160、baseSize 200 × 160、baseRotation 0.5 弧度；对象 transform 为等比缩放 1.5 并平移到 (700, 620)；style.width 为 2（局部单位），部件描边宽度 = 2 × 1.5 = 3，隐藏边为 [12, 18] 虚线；aux = 0。对象 2 是圆（preset circle，mode 1 圆心 + 半径）：圆心 (1400, 400)、半径 120，描边 + 浅蓝填充，aux = 1 在圆心生成一个半径 4 的点（只有填充的 Circle，颜色与透明度取描边的 1E5AFF 与 strokeOpacity），共 2 个部件。两个对象的部件都由生成脚本从 construction 计算，与 construction 一致。对象 3 的 preset 为 x-example-unknown（私有预设，读取器不认识），带一个五角星 Polygon 与一条 Line，construction 中还有不认识的键 spikes。",
+  "expectedObjects": 18,
+  "expected": {
+    "core": "忽略对象层，16 个 Shape 各自画出：长方体 12 条边（按 PRESET-19 的顶点顺序输出，全部实线，宽 3）、圆（描边 + 填充）与圆心实心点、五角星与下方横线。",
+    "basic": "与核心级相同，但长方体看不见的边画成 [12, 18] 虚线。",
+    "standard": "外观与基础级相同；3 个对象各自作为整体选择、移动、删除，不能修改参数。",
+    "full": "外观与标准级相同，显示以文件中的部件为准。长方体与圆认识预设且 construction 有效，可以重建后继续编辑参数（例如拖动高度、修改 baseRotation 或半径），编辑后替换全部部件；x-example-unknown 不认识，退回对象层，只能整体编辑，不拒绝整页。",
+    "inkeys": "与完整级相同。"
+  },
+  "objects": [
+    [{ "u16": 0 }, { "u16": 11 }, { "str8": "ffffffff-0009-4000-8000-000000000000" }, { "u32": 1 }, { "u32": 1 }, { "u32": 1 }, { "u64": 1795478400 }],
+    {
+      "type": { "u16": 2 },
+      "pageGuid": "cccccccc-0009-4000-8000-000000000001",
+      "pageIndex": { "u32": 0 }, "pageNumber": { "u32": 1 }, "layerIndex": { "u32": 0 }, "layerNumber": { "u32": 0 }
+    },
+    {
+      "$preset": "cuboid",
+      "contentId": { "u32": 0 }, "undoId": { "u32": 0 },
+      "id": "eeeeeeee-0009-4000-8000-000000000001", "revision": { "u64": 3 },
+      "transform": { "$f32s": [1.5, 0, 0, 1.5, 700, 620] },
+      "construction": {
+        "start": { "$pt": [0, 0] }, "height": { "f32": -160 }, "baseSize": { "$pt": [200, 160] }, "baseRotation": { "f32": 0.5 }
+      },
+      "style": {
+        "stroke": true, "fill": false, "strokeColor": { "$rgb": "1F2937" }, "strokeOpacity": { "f32": 1 },
+        "width": { "f32": 2 }, "linePattern": { "i32": 0 }
+      },
+      "aux": { "u32": 0 }
+    },
+    {
+      "$preset": "circle",
+      "contentId": { "u32": 12 }, "undoId": { "u32": 1 },
+      "id": "eeeeeeee-0009-4000-8000-000000000002", "revision": { "u64": 1 },
+      "construction": { "start": { "$pt": [1400, 400] }, "end": { "$pt": [1520, 400] }, "mode": { "i32": 1 } },
+      "style": {
+        "stroke": true, "fill": true, "strokeColor": { "$rgb": "1E5AFF" }, "fillColor": { "$rgb": "DCE8FF" },
+        "strokeOpacity": { "f32": 1 }, "fillOpacity": { "f32": 1 }, "width": { "f32": 4 }, "linePattern": { "i32": 0 }
+      },
+      "aux": { "u32": 1 }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 14 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 6 },
+      "geometry": { "points": { "$points": [
+        [1450, 700], [1464, 740.5], [1507, 741.5], [1473, 767.5], [1485, 808.5],
+        [1450, 784], [1415, 808.5], [1427, 767.5], [1393, 741.5], [1436, 740.5]
+      ] } },
+      "stroke": { "color": { "$rgb": "D63384" }, "opacity": { "f32": 1 }, "width": { "f32": 3 } },
+      "fill": { "fillType": { "i32": 0 }, "color": { "$rgb": "FFE08A" }, "opacity": { "f32": 1 } },
+      "object": {
+        "id": "eeeeeeee-0009-4000-8000-000000000003", "revision": { "u64": 1 }, "preset": "x-example-unknown", "partCount": { "u32": 2 },
+        "construction": { "start": { "$pt": [1390, 700] }, "end": { "$pt": [1510, 810] }, "sides": { "u32": 5 }, "spikes": { "f32": 0.4 } },
+        "style": { "stroke": true, "fill": true, "strokeColor": { "$rgb": "D63384" }, "fillColor": { "$rgb": "FFE08A" }, "width": { "f32": 3 } }
+      }
+    },
+    {
+      "type": { "u16": 5 }, "contentId": { "u32": 15 }, "undoId": { "u32": 2 }, "shapeType": { "i32": 0 },
+      "geometry": { "points": { "$points": [[1380, 840], [1520, 840]] } },
+      "stroke": { "color": { "$rgb": "D63384" }, "opacity": { "f32": 1 }, "width": { "f32": 3 } },
+      "object": { "ref": "eeeeeeee-0009-4000-8000-000000000003", "partIndex": { "u32": 1 } }
+    }
+  ]
+}
