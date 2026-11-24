@@ -2,74 +2,73 @@
 title: Device 结构
 ---
 
-- Type: Map
-- Registry Entry
+- 类型：Map
+- 位置：Header Extension 的 `devices` 注册表
 
-Device 是 [Header Extension](headerExtension) 的 `devices` 数组中的显示面注册项，不是顶级块，也不形成文件流作用域。使用显式 Device 注册表时，Canvas 通过 `deviceGuid` 引用一个 Device；注册表缺失时，省略 `deviceGuid` 的 Canvas 使用文件内隐式 Device 单例。Canvas 的显示视口始终填满对应显示面。Device 与 Canvas 坐标统一使用平台无关的逻辑像素。
+**Device 描述一块显示区域在哪里、有多大**：可以是一台显示器（Display），也可以是显示器里的一个窗口或“板中板”（Window）。Device 不是顶层块，只出现在注册表里。
 
-Device 只描述显示面在系统或父 Device 中的位置与大小，不保存页面正在查看的 Canvas 世界坐标。Canvas 的平移和缩放状态由 [Canvas.viewport](canvas#viewport-map) 保存；Device 的 `x/y` 不得作为 `viewport` 的默认值或替代值。
+::: tip 等级
+- **核心级**：只需要知道有哪些 Device，按 FILE-9 取第一个 Device 的 Canvas 显示。
+- **完整级**：多 Device 的位置、Window 嵌套与 `zIndex` 合成。
+:::
+
+## 单位
+
+- **DEV-1** Device 的位置与尺寸使用像素：Display 使用系统虚拟桌面的像素坐标，Window 使用父 Device 的像素坐标。Canvas 的坐标与笔迹宽度使用所属 Device 的像素（INK-6）。
+- **DEV-2** 文件不记录 DPI 缩放。同一个文件在 DPI 不同的屏幕上打开时，笔迹相对屏幕的物理大小可能不同；需要保持视觉大小的软件可以调整 Canvas 的 `viewport.scale`。
+- **DEV-3** Device 只描述显示区域本身，不描述它正在看 Canvas 的哪一部分；那是 Canvas `viewport` 的职责。Device 的 `x` / `y` 不得当作 `viewport` 使用。
 
 ## 公共字段
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `guid` | string(36) | Required | Device 的永久 UUID |
-| `deviceType` | int32 | Required | Device 类型 |
+| `deviceType` | int32 | Required | `0` Display、`1` Window；`2`–`127` 保留，`128`+ 私有 |
 | `name` | string | Optional | 显示名称 |
-| `hardware` | Map | Optional | 物理显示器匹配信息 |
-| `extra` | Map | Optional | 私有扩展 |
+| `hardware` | Map | Optional | 物理显示器的匹配信息，只用于 Display |
+| `extra` | Map | Optional | 软件私有字段 |
 
-| 值 | 名称 | 说明 |
-| --- | --- | --- |
-| `0` | Display | 物理显示器在系统虚拟桌面中提供的逻辑显示区域 |
-| `1` | Window | 相对父 Device 的窗口或板中板区域 |
-| `2`–`127` | Reserved | UInk 后续版本保留 |
-| `128` 及以上 | Private | 软件私有显示面 |
+## Display
 
-`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。读取器遇到未知 `deviceType` 时，应将对应 Device 作为仅供本次加载使用的根显示面，并报告警告；不得把该容错结果自动写回文件。
-
-## Display Device
-
-Display 增加以下必填字段：
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `x` | int32 | 系统虚拟桌面的逻辑 X 原点，可为负数 |
-| `y` | int32 | 系统虚拟桌面的逻辑 Y 原点，可为负数 |
-| `width` | uint32 | 显示区域逻辑宽度，必须大于 0 |
-| `height` | uint32 | 显示区域逻辑高度，必须大于 0 |
+| 字段 | 类型 | 要求 | 说明 |
+| --- | --- | --- | --- |
+| `x` | int32 | Required | 在系统虚拟桌面中的 X 原点，可以为负 |
+| `y` | int32 | Required | 在系统虚拟桌面中的 Y 原点，可以为负 |
+| `width` | uint32 | Required | 宽度，大于 `0` |
+| `height` | uint32 | Required | 高度，大于 `0` |
 
 ### Hardware Map
 
-`hardware` 的所有字段均为可选匹配信息：
+全部字段可选，只用于把 Device 匹配到实际的显示器：
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `name` | string | 硬件报告的显示名称 |
+| `name` | string | 硬件报告的名称 |
 | `id` | string | 平台提供的硬件标识 |
-| `identifiers` | `Map<string, string>` | 其他硬件标识；键和值都必须是 string |
-| `physicalWidth` | uint32 | 原生物理像素宽度，存在时必须大于 0 |
-| `physicalHeight` | uint32 | 原生物理像素高度，存在时必须大于 0 |
-| `scaleFactor` | float32 | 物理像素 / 逻辑像素，存在时必须为有限正数 |
+| `identifiers` | `Map<string, string>` | 其他标识，键和值都是 string |
+| `physicalWidth` | uint32 | 原生分辨率宽度，大于 `0` |
+| `physicalHeight` | uint32 | 原生分辨率高度，大于 `0` |
+| `scaleFactor` | float32 | 保存时系统的显示缩放比例，仅供参考，有限正数 |
 
-物理像素、DPI 或缩放因子不参与 Canvas 线格式坐标计算，也不得覆盖 Display 保存的逻辑几何。硬件标识无法匹配时，读取器仍应使用保存的逻辑几何或当前渲染目标继续加载。
+- **DEV-4** `hardware` 中的信息不参与坐标计算。硬件无法匹配时，读取器仍使用保存的几何或当前显示区域继续加载。
 
-## Window Device
+## Window
 
-Window 增加以下必填字段：
+| 字段 | 类型 | 要求 | 说明 |
+| --- | --- | --- | --- |
+| `parentDeviceGuid` | string(36) | Required | 父 Display 或 Window |
+| `x` | float32 | Required | 相对父 Device 的 X |
+| `y` | float32 | Required | 相对父 Device 的 Y |
+| `width` | float32 | Required | 宽度，大于 `0` |
+| `height` | float32 | Required | 高度，大于 `0` |
+| `zIndex` | uint32 | Required | 同一父 Device 下的叠放顺序，越大越靠前 |
 
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `parentDeviceGuid` | string(36) | 父 Display 或 Window 的 UUID |
-| `x` | float32 | 相对父 Device 的逻辑 X |
-| `y` | float32 | 相对父 Device 的逻辑 Y |
-| `width` | float32 | 窗口逻辑宽度，必须大于 0 |
-| `height` | float32 | 窗口逻辑高度，必须大于 0 |
-| `zIndex` | uint32 | 同一父 Device 下的合成顺序，越大越靠前 |
+<!-- visual: device-tree — 两台显示器并排（第二台原点 x=3840），第一台上有一个板中板 Window，标出各自的 x/y/width/height -->
 
-Window 可以嵌套 Window。`zIndex` 越大越靠前；出现相同 `zIndex` 时按 `devices` 数组从前到后合成，后项位于前项之上。Window 可以部分越出父区域，宿主负责裁剪不可见部分。
-
-Device 树禁止循环。`parentDeviceGuid` 无法解析或父引用形成循环时，读取器应断开该父引用，把对应 Window 作为仅供本次加载使用的临时根显示面，并报告警告。
+- **DEV-5** Window 可以嵌套 Window，可以部分超出父区域，超出部分由宿主裁剪。
+- **DEV-6** `zIndex` 相同时，后注册的 Window 在上（FILE-13）。
+- **DEV-7** Device 树不得有循环。`parentDeviceGuid` 找不到或形成循环时，读取器断开该引用，把这个 Window 当作临时的根显示区域，并报告警告（FILE-22）。
+- **DEV-8** 不认识的 `deviceType`：当作本次加载临时使用的根显示区域（FILE-21）。
 
 ## 示例
 
@@ -78,12 +77,9 @@ Device 树禁止循环。`parentDeviceGuid` 无法解析或父引用形成循环
   {
     "guid": "11111111-1111-4111-8111-111111111111",
     "deviceType": 0,
-    "name": "Primary Display",
+    "name": "主显示器",
     "x": 0, "y": 0, "width": 3840, "height": 2160,
-    "hardware": {
-      "id": "DISPLAY\\ACR1234",
-      "identifiers": { "serial": "12345678" }
-    }
+    "hardware": { "id": "DISPLAY\\ACR1234", "scaleFactor": 1.5 }
   },
   {
     "guid": "22222222-2222-4222-8222-222222222222",
@@ -96,7 +92,14 @@ Device 树禁止循环。`parentDeviceGuid` 无法解析或父引用形成循环
 ]
 ```
 
-## 相关说明
+## 回退
 
-- [Canvas 块与 viewport](canvas)
-- [墨迹主文件](../file/main)
+| 读取器缺少的能力 | 显示方式 |
+| --- | --- |
+| 多 Device（完整级以下） | 只显示第一个注册 Device 的 Canvas，或由软件让用户选择 |
+| Window 合成（完整级以下） | Window 上的 Canvas 当作独立页面显示，不叠加到父 Device 上 |
+
+## 相关
+
+- [Header Extension 块](headerExtension)
+- [Canvas 块](canvas)

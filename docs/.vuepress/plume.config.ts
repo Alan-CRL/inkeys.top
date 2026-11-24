@@ -104,17 +104,24 @@ export default defineThemeConfig({
         createTime: false, // 自动生成创建时间
         permalink: false, // 自动生成永久链接
       },
+      // UInk 1.1 文档结构；顺序需与 plugins/uinkSpecBundle.ts 的 UINK_V11_PAGES 一致。
+      // 概览（/standard/）由主页子任务加入。
       sidebar: [
-        { text: '规范介绍', link: '/standard/intro', },
-        { text: '规范版本', link: '/standard/version', },
-        { text: '块类型', link: '/standard/type', },
-        { text: '增量写入', link: '/standard/incremental', },
-        { text: '实现一致性与样例', link: '/standard/conformance', },
+        {
+          text: '开始',
+          items: [
+            { text: '规范介绍', link: '/standard/intro', },
+            { text: '快速开始', link: '/standard/quick-start', },
+            { text: '分级与认证', link: '/standard/levels', },
+            { text: '兼容与回退', link: '/standard/compatibility', },
+          ],
+        },
         {
           text: '文件',
           items: [
             { text: '墨迹主文件', link: '/standard/file/main' },
-            { text: '墨迹拓展文件', link: '/standard/intro#墨迹拓展文件' },
+            { text: '保存、追加与恢复', link: '/standard/incremental' },
+            { text: '资源包', link: '/standard/file/extra' },
           ],
         },
         {
@@ -124,16 +131,27 @@ export default defineThemeConfig({
             { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
             { text: 'Device 结构', link: '/standard/blocks/device' },
             { text: 'Canvas 块', link: '/standard/blocks/canvas' },
-            { text: 'Clear 块', link: '/standard/blocks/clear' },
             { text: 'Ink 块', link: '/standard/blocks/ink' },
             { text: 'Shape 块', link: '/standard/blocks/shape' },
             { text: 'Media 块', link: '/standard/blocks/media' },
+            { text: 'Clear 块', link: '/standard/blocks/clear' },
           ],
         },
         {
           text: '公共结构',
           items: [
             { text: 'Color Map', link: '/standard/common/color' },
+            { text: '笔尖与端帽', link: '/standard/common/nib' },
+          ],
+        },
+        {
+          text: '附录',
+          items: [
+            { text: '块类型与编码', link: '/standard/type', },
+            { text: '图形预设注册表', link: '/standard/appendix/shape-presets', },
+            { text: '实现一致性与样例', link: '/standard/conformance', },
+            { text: '版本与变更', link: '/standard/version', },
+            { text: '术语表', link: '/standard/glossary', },
           ],
         },
       ],

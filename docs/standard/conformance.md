@@ -2,71 +2,87 @@
 title: 实现一致性与样例
 ---
 
-本页汇总第三方 UInk 1.0 Beta（`Header.version = 10`）读取器和写入器必须共同遵守的当前草案边界。Beta 规范仍可演进；本文将一个顶层 MessagePack 对象称为“块”，各块页面仍是字段语义和块级容错的权威定义。
+本页说明规范用语的含义、如何自证达到某个等级，并列出用于验证的公开样例。
 
-## 规范性术语
+## 规范用语
 
-- **必须**：实现不满足时不属于当前 UInk 1.0 Beta 的兼容实现。
-- **不得**：禁止行为，与“必须不”具有相同约束力。
-- **应 / 应当**：推荐行为；偏离时需要保证不会造成错误附着、静默丢失或安全风险。
-- **可以**：不影响基础互操作的可选行为。
+| 用语 | 含义 |
+| --- | --- |
+| **必须** | 不满足就不符合该规则所属的等级 |
+| **不得** | 禁止的行为，约束力与“必须”相同 |
+| **应** | 推荐做法；不照做时，要保证不会造成内容错位、静默丢失或安全风险 |
+| **可以** | 可选，不影响互通 |
 
-字段表中的要求列使用以下含义：
+字段表中的“要求”列：
 
-- **Required**：字段必须存在并通过字段校验。
-- **Optional**：字段可以省略；存在时仍须通过字段校验或按页面定义的容错规则处理。
-- **Conditional**：字段是否必需或是否允许出现，由该字段所在页面列出的条件决定。
+| 值 | 含义 |
+| --- | --- |
+| **Required** | 必须写入，并通过字段检查 |
+| **Optional** | 可以省略；写入时仍要通过字段检查 |
+| **Conditional** | 是否必填由该字段的说明决定 |
 
-## 编码检查
+字段表中的“等级”列表示**读取器**从哪一级开始必须理解该字段。Required 字段无论写入器声明哪个等级，都必须写入。
 
-- 首对象必须是 `array(7)` Header，Type ID 为 `0`，version 为 `10`；当前基线注册 Type ID `0`–`6`。
-- 写入器必须使用字段表声明的精确 MessagePack 类型和位宽。
-- 读取器只有在数值不变、目标类型可精确表示且字段范围有效时，才能接受其他 MessagePack 数值编码；完整规则参见[块类型与编码](type#messagepack-编码)。
-- Map 中重复的任一已知键使包含该 Map 的当前完整块无效。未知键可以忽略，但不得改变已知字段的解释。
-- `contentId` 只在当前文件版本的 Canvas 内有效；完整保存后不具备稳定身份。
-- Header 计数是最近一次完整保存快照，实际对象流具有更高优先级。
+## 规则编号
+
+每条规范性规则都有稳定编号，例如 `INK-11`。编号前缀对应页面：
+
+| 前缀 | 页面 | 前缀 | 页面 |
+| --- | --- | --- | --- |
+| VER | [版本与变更](version) | CANVAS | [Canvas 块](blocks/canvas) |
+| TYPE | [块类型与编码](type) | INK | [Ink 块](blocks/ink) |
+| COMPAT | [兼容与回退](compatibility) | SHAPE | [Shape 块](blocks/shape) |
+| FILE | [墨迹主文件](file/main) | MEDIA | [Media 块](blocks/media) |
+| SAVE | [保存、追加与恢复](incremental) | CLEAR | [Clear 块](blocks/clear) |
+| EXTRA | [资源包](file/extra) | COLOR | [Color Map](common/color) |
+| HDR | [Header 块](blocks/header) | NIB | [笔尖与端帽](common/nib) |
+| HEXT | [Header Extension 块](blocks/headerExtension) | PRESET | [图形预设注册表](appendix/shape-presets) |
+| DEV | [Device 结构](blocks/device) | | |
+
+编号发布后不再改变含义，也不会被复用；删除的规则记录在[版本与变更](version)中。
+
+## 自证等级
+
+UInk 不设认证机构，也不提供自动化测试工具。软件按以下步骤自行验证，然后声明等级：
+
+1. 选择目标等级，分别确定读取等级与写入等级。
+2. 逐项核对[分级与认证](levels#检查清单)中该等级及以下各级的检查清单。
+3. 用下方的公开样例验证：读取器打开每个样例，对照 `fixtures.json` 中该等级的期望结果；写入器生成的文件，用另一个已知正确的读取器打开核对。
+4. 在软件说明中声明，例如：`UInk 1.1 读取：标准级 + Inkeys 附加级；写入：基础级`。
 
 ## 读取流程
 
-1. 读取并验证首对象的 Header 固定布局。Header 无效时，拒绝按当前规范解析文件。
-2. 读取紧随 Header 的可选 Header Extension。为缺失或空的 Device/Workspace 注册表分别建立文件内隐式单例。
-3. 从下一个顶层对象开始顺序解码。每遇到 Canvas 就开始新的内容作用域；后续 Ink/Shape/Media/Clear 归属最近的 Canvas。
-4. 未知 Type ID 跳过当前完整对象。能完整解码但字段无效的已知块，按对应块页面的规则跳过或回退；不认识当前已注册 Clear 的早期 reader 不属于当前 version `10` 基线。
-5. EOF 位于最后一个对象内部时，丢弃该不完整对象。解析非末尾对象或对象间字节失败时，停止读取余下字节，不尝试重同步。
-6. 使用有效对象流重算页面与内容状态，并检查 Header 快照差异。Header 计数不得作为不受限内存分配依据。
-
-## 保存边界
-
-1. 增量追加只修改文件尾部，不修改 Header。恢复后的文件必须先截断无效尾部，再允许追加。
-2. 完整保存先确定新主文件引用的资源集合。存在资源时，先准备暂时包含旧、新引用资源并集的临时资源包，再生成并校验临时主文件。
-3. 提交时先替换资源包，最后原子替换主文件。主文件提交后才能清理多余资源。
-4. 完整保存移除已撤回内容，但保留被末尾最新组或后续 Clear 隐藏、仍可通过撤回恢复的有效内容。
-5. 软件自己创建且确认所有对象都能理解的文件可以直接覆盖。外部导入或含未知内容的文件默认另存为；只有用户明确确认可能丢失未知内容后，软件才能覆盖原文件。
+1. 验证首块 Header（VER-3、HDR-2）；不符合时拒绝解析。
+2. 读取可选的 Header Extension，为缺失的注册表建立隐式单例（HEXT-3）。
+3. 依次解码其余对象：遇到 Canvas 开始新的作用域；内容块归属前一个 Canvas（FILE-3）；同一 Canvas 唯一键以最后一次为准（FILE-8）；不认识的 Type ID 跳过（TYPE-9）。
+4. 结尾不完整时丢弃最后一个对象；中间损坏时停止读取，不重新同步（FILE-16、FILE-17）。
+5. 用实际读到的对象重新计算页数等状态，不依赖 Header 中的统计（HDR-5）。
+6. 按自身等级显示，自身等级以外的内容按[兼容与回退](compatibility)处理。
 
 ## 公开样例
 
-所有样例文件及其可读清单均通过 [`fixtures.json`](/standard/uink-v10/fixtures.json) 发布。清单保存用途、十六进制和 SHA-256；`.uink` 条目还保存可完整解码的对象及 `expectedObjects`，`.uink.extra` 条目保存 ZIP `entries`。[`SHA256SUMS.txt`](/standard/uink-v10/SHA256SUMS.txt) 可用于下载后校验。
+1.1 样例由仓库中的生成脚本产生，全部发布在 [`/standard/uink-v11/`](/standard/uink-v11/fixtures.json)。[`fixtures.json`](/standard/uink-v11/fixtures.json) 记录每个样例的用途、覆盖的规则编号、可读的对象内容，以及在各等级下的期望结果；[`SHA256SUMS.txt`](/standard/uink-v11/SHA256SUMS.txt) 用于下载后校验。
 
-| 文件 | 验证目标 |
-| --- | --- |
-| [implicit-single-canvas.uink](/standard/uink-v10/implicit-single-canvas.uink) | 无 Header Extension 的隐式 Device/Workspace 单例 |
-| [explicit-multilayer.uink](/standard/uink-v10/explicit-multilayer.uink) | 显式注册表、多 Device/Workspace、`layerIndex = 0` 的 viewport |
-| [mixed-latest.uink](/standard/uink-v10/mixed-latest.uink) | Ink/Shape/Media 混合顺序与末尾最新组的撤回语义 |
-| [incremental-tail.uink](/standard/uink-v10/incremental-tail.uink) | Header 快照落后于追加页面，读取器重算状态 |
-| [truncated-tail.uink](/standard/uink-v10/truncated-tail.uink) | 最后一个对象被截断，仅丢弃不完整尾块 |
-| [unknown-block.uink](/standard/uink-v10/unknown-block.uink) | 跳过完整未知 Type ID 并继续读取 |
-| [numeric-compat.uink](/standard/uink-v10/numeric-compat.uink) | 读取可无损转换的非规范数值编码 |
-| [media-safe.uink](/standard/uink-v10/media-safe.uink) | 安全 Media 路径和资源引用 |
-| [media-safe.uink.extra](/standard/uink-v10/media-safe.uink.extra) | 包含安全 PNG/SVG 条目的资源包 |
+::: warning Beta
+样例的文件结构已经过独立解码检查，但各等级的期望结果尚未经过读取器实现的验证。Inkeys 适配 1.1 时会逐一验证；发现期望结果与规范不一致时，以规范正文为准，并请反馈。
+:::
 
-## 第三方实现检查表
+| 样例 | 主要等级 | 验证内容 |
+| --- | --- | --- |
+| `core-pages.uink` | 核心 | 多页、Pen 宽度变化、七种基础 Shape、隐式单例 |
+| `core-page-append.uink` | 核心 | 同一页追加新版本，以最后出现的为准；`pageIndex` 暂时重复 |
+| `basic-appearance.uink` | 基础 | 透明度、荧光笔矩形笔尖、端帽、虚线、箭头、圆角、点阵背景 |
+| `standard-ppt.uink` | 标准 | PPT Workspace、`slideId` 绑定、页码绑定、保留页、结束页 |
+| `standard-media.uink` + `.extra` | 标准 | 图片的 `fit` 与 `crop`、Media 受 `viewport` 映射 |
+| `standard-shape-object.uink` | 标准 | 图形对象层：首个部件与后续部件、共享 `undoId` |
+| `full-layers-devices.uink` | 完整 | 多图层、多 Device、嵌套 Workspace |
+| `full-hdr-advanced.uink` | 完整 | HDR 颜色、Advanced Highlighter、`renderOnlyWhenLatest` |
+| `full-shape-preset.uink` | 完整 | 注册预设的 `construction`；不认识的预设退回对象层 |
+| `inkeys-erase-clear.uink` | Inkeys | Erase Ink、橡皮笔尖、Clear 区间 |
+| `compat-v10.uink` | 核心 | 1.1 读取器读取 version 10 文件 |
+| `fallback-unknown.uink` | 核心 | 不认识的块、键与枚举值的回退 |
+| `truncated-tail.uink` | 核心 | 最后一个对象不完整时的恢复 |
+| `corrupt-middle.uink` | 核心 | 中间对象损坏时保留之前的内容并停止读取 |
+| `future-minor.uink` | 核心 | `version = 12` 的文件：跳过不认识的块与键，尽力读取 |
 
-- [ ] 写入精确声明类型，并只容错读取能够无损转换且通过字段校验的数值编码。
-- [ ] 不依赖 Header 计数分配不受限内存。
-- [ ] 能恢复不完整尾块并在再次追加前截断无效字节。
-- [ ] 按 `layerIndex`、Workspace 和 Window Device 规则确定合成顺序。
-- [ ] 只从 `layerIndex = 0` 读取 viewport，并正确处理隐式单例。
-- [ ] 判断 Ink/Shape 末尾最新组时跳过 Media、在 Clear 处停止，并正确执行逐步撤回、Clear 区间和隐藏内容持久化。
-- [ ] 不把 Erase 应用于 Media，不把失配 PPT Canvas 自动附着到 `pageIndex`。
-- [ ] 在读取 ZIP 资源前完成路径、安全和资源预算检查。
-- [ ] 对含未知内容的外部文件默认使用另存为。
+1.0 的样例保留在 [`/standard/uink-v10/`](/standard/uink-v10/fixtures.json)，不再更新。

@@ -2,183 +2,195 @@
 title: Shape 块
 ---
 
-- Type ID: 5
-- Type: Map
+- Type ID：`5`
+- 类型：Map
 
-Shape 表示一个可编辑的参数化图形。它与 Ink、Media 并列存在于 Canvas 内容流中，保存几何、单色填充和单色描边。Shape 不是 Ink 的 `inkType`，也不复用 Ink 的轨迹点。
+**Shape 是一个可以直接画出来的参数化图形**：直线、折线、矩形、正方形、椭圆、圆、多边形。它保存最终几何、单色描边与单色填充，任何支持 Shape 的读取器都能画出相同的外观。复杂图形（箭头、立体图形等）由多个 Shape 部件组成，再用图形对象层 `object` 组合成一个可编辑的整体。
+
+::: tip 等级
+- **核心级**：七种几何（含旋转）、描边颜色与宽度、单色填充；可以忽略透明度。
+- **基础级**：`opacity`、虚线、箭头、圆角、`lineCap` / `lineJoin`。
+- **标准级**：图形对象层 `object`：多个部件作为一个对象选择、移动、删除。
+- **完整级**：对象层中的 `construction` 与注册预设（可跨软件重新编辑）、私有几何、`renderOnlyWhenLatest`。
+:::
+
+## 什么时候用
+
+- 用户画的直线、箭头、矩形、圆、多边形、立体图形等。
+- 手写笔迹被识别为图形后的结果。
+- 曲线（圆弧、抛物线等）写成 Polyline；UInk 1.1 不注册贝塞尔曲线。
 
 ## 字段
 
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `type` | uint16 | Required | 固定为 `5` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media/Clear 共享的连续内容编号 |
-| `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
-| `shapeType` | int32 | Required | 几何类型 |
-| `geometry` | Map | Required | 由 `shapeType` 决定的几何数据 |
-| `stroke` | Map | Conditional | 描边样式；Line/Polyline 必填 |
-| `fill` | Map | Conditional | 闭合 Shape 的填充样式 |
-| `renderOnlyWhenLatest` | bool | Optional | 与 Ink 共用的尾部显示标记，缺失时为 `false` |
-| `extra` | Map | Optional | 软件私有扩展 |
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `type` | uint16 | Required | 核心 | 固定为 `5` |
+| `contentId` | uint32 | Required | 核心 | 与 Ink 共用的内容序号（INK-2） |
+| `undoId` | uint32 | Required | 标准 | 撤回组编号（INK-3） |
+| `shapeType` | int32 | Required | 核心 | 几何类型，见下表 |
+| `geometry` | Map | Required | 核心 | 由 `shapeType` 决定的几何数据 |
+| `stroke` | Map | Conditional | 核心 | 描边；Line、Polyline 必填 |
+| `fill` | Map | Conditional | 核心 | 填充；只用于闭合图形 |
+| `object` | Map | Optional | 标准 | 图形对象层，见[图形对象层](#图形对象层) |
+| `renderOnlyWhenLatest` | bool | Optional | 完整 | 缺省为 `false`，规则同 INK-15 |
+| `extra` | Map | Optional | — | 软件私有字段 |
 
-Shape 至少必须有 `stroke` 或 `fill` 之一。Line/Polyline 必须有 `stroke`，不得有 `fill`。
+### `shapeType`
 
-## `shapeType`
-
-| 值 | 名称 | 语义 |
+| 值 | 名称 | 几何 |
 | --- | --- | --- |
-| `0` | Line | 由两个端点定义的单个线条对象 |
-| `1` | Polyline | 由至少两个点定义的单个折线对象 |
-| `2` | Rectangle | 可非等比缩放的矩形或圆角矩形 |
-| `3` | Square | 保持等比语义的正方形 |
-| `4` | Ellipse | 可非等比缩放的椭圆 |
-| `5` | Circle | 保持等比语义的圆 |
+| `0` | Line | 两个端点 |
+| `1` | Polyline | 至少两个点的折线 |
+| `2` | Rectangle | 矩形或圆角矩形，宽高可以不同 |
+| `3` | Square | 正方形，编辑时保持等比 |
+| `4` | Ellipse | 椭圆，宽高可以不同 |
+| `5` | Circle | 圆，编辑时保持等比 |
 | `6` | Polygon | 至少三个点的闭合多边形 |
-| `7`–`127` | Reserved | UInk 后续版本保留 |
-| `128` 及以上 | Private | 软件私有图形类型 |
+| `7`–`127` | 保留 | — |
+| `128`+ | 私有 | — |
 
-`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。读取器遇到未知 `shapeType` 时，应跳过该完整 Shape，报告警告并继续读取后续内容。不能把未知几何安全地回退为其他几何时，不得伪造一个不同的 Shape。
-
-`shapeType` 只描述底层几何，不描述线条是否连续。Line/Polyline 的实线、虚线、点线等外观由同一个 Stroke Map 的 `dashArray` 控制，始终作为一个 Shape、一个 `contentId` 和一个可整体编辑的对象保存，不得把可见短线拆成多个 Shape。
+<!-- visual: shape-geometry — 七种几何并排：标出 points、centerX/centerY、width/height、size、radius、rotation 与圆角半径 -->
 
 ## 几何
 
-### Point Map
+所有坐标都是 Canvas 绝对坐标（不采用 Ink 的相对位移），单位为 Device 像素，必须是有限数。
 
-Polyline 和 Polygon 的每个点使用 Map：
+### Line、Polyline、Polygon
 
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `x` | float32 | Required | Canvas 绝对 X 坐标 |
-| `y` | float32 | Required | Canvas 绝对 Y 坐标 |
+`geometry.points` 是 `Array<Map>`，每个点为 `{ x: float32, y: float32 }`。
 
-坐标必须是有限数。Shape 点全部使用绝对坐标，不采用 Ink 的首点绝对、后续点相对编码。
-
-### Line、Polyline 与 Polygon
-
-这三种几何使用 `points`：
-
-- Line 必须恰好有两个点；
-- Polyline 至少有两个点；
-- Polygon 至少有三个点，读取器按顺序连接并隐式连接末点与首点；写入器不得重复保存首点。
-
-Polygon 用于三角形等基础多边形，不注册独立 Triangle 类型。Polygon 的填充使用非零环绕规则；软件不得依赖自交多边形获得未定义的填充结果。
+- **SHAPE-1** Line 恰好两个点；Polyline 至少两个点；Polygon 至少三个点。
+- **SHAPE-2** Polygon 按顺序连接各点，并自动连接最后一点与第一点；写入器不得重复写入首点。填充使用非零环绕规则。三角形等基础多边形用 Polygon 表示。
 
 ### Rectangle 与 Ellipse
 
-Rectangle 和 Ellipse 的 `geometry` 字段为：
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `centerX` | float32 | Required | 核心 | 中心 X |
+| `centerY` | float32 | Required | 核心 | 中心 Y |
+| `width` | float32 | Required | 核心 | 宽度，大于 `0` |
+| `height` | float32 | Required | 核心 | 高度，大于 `0` |
+| `rotation` | float32 | Optional | 核心 | 弧度，顺时针为正，缺省为 `0` |
+| `cornerRadiusX` | float32 | Optional | 基础 | 只用于 Rectangle，圆角横向半径，缺省为 `0` |
+| `cornerRadiusY` | float32 | Optional | 基础 | 只用于 Rectangle，圆角纵向半径，缺省为 `0` |
 
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `centerX` | float32 | Required | 几何中心 X |
-| `centerY` | float32 | Required | 几何中心 Y |
-| `width` | float32 | Required | 最终宽度，必须大于 0 |
-| `height` | float32 | Required | 最终高度，必须大于 0 |
-| `rotation` | float32 | Optional | 弧度，Canvas 坐标系正值顺时针，缺失为 `0` |
-| `cornerRadiusX` | float32 | Optional | 仅用于 Rectangle；圆角横向半径，缺失为 `0` |
-| `cornerRadiusY` | float32 | Optional | 仅用于 Rectangle；圆角纵向半径，缺失为 `0` |
-
-Rectangle 和 Ellipse 允许 `width` 与 `height` 不相等。旋转后仍以这组最终 Canvas 几何显示，不使用通用仿射矩阵。
-
-Rectangle 使用 `cornerRadiusX` 与 `cornerRadiusY` 表达圆角。普通矩形的两个值均为 `0`；写入器可以同时省略它们，也可以显式写入两个 `0`。圆角矩形的两个值必须同时大于 `0`，并分别满足 `cornerRadiusX <= width / 2` 与 `cornerRadiusY <= height / 2`。写入器保存任一圆角字段时必须同时保存另一个字段；读取器将两者均缺失视为两个 `0`。当只有一个字段存在，或者两者没有同时为 `0` 或同时为有效正数时，读取器将两者都按 `0` 回退并报告警告。Ellipse 中出现这两个字段时，读取器忽略它们并报告警告。
+- **SHAPE-3** 圆角的两个字段必须同时出现：都为 `0`（直角），或都大于 `0` 且分别不超过 `width / 2`、`height / 2`。只出现一个或取值不合规时，读取器按直角显示并报告警告。Ellipse 上出现圆角字段时忽略。
 
 ### Square
 
-Square 的 `geometry` 字段为：
-
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
-| `centerX` | float32 | Required | 几何中心 X |
-| `centerY` | float32 | Required | 几何中心 Y |
-| `size` | float32 | Required | 正方形边长，必须大于 0 |
-| `rotation` | float32 | Optional | 弧度，缺失为 `0` |
-
-Square 使用独立类型，以便编辑器在缩放时保持宽高比例。
+| `centerX` | float32 | Required | 中心 X |
+| `centerY` | float32 | Required | 中心 Y |
+| `size` | float32 | Required | 边长，大于 `0` |
+| `rotation` | float32 | Optional | 弧度，缺省为 `0` |
 
 ### Circle
-
-Circle 的 `geometry` 字段为：
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
 | `centerX` | float32 | Required | 圆心 X |
 | `centerY` | float32 | Required | 圆心 Y |
-| `radius` | float32 | Required | 半径，必须大于 0 |
+| `radius` | float32 | Required | 半径，大于 `0` |
 
-Circle 不保存 rotation，因为旋转不会改变圆的几何。Circle 使用独立类型，以便编辑器在缩放时保持等比。
+## 描边与填充
 
-## Stroke Map
+### Stroke Map
 
-Stroke 在同一个 Shape 内使用一种颜色、透明度和固定宽度，不支持逐点宽度或颜色。
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `color` | Color Map | Required | 核心 | 描边颜色 |
+| `opacity` | float32 | Required | 基础 | 描边透明度，`0`–`1` |
+| `width` | float32 | Required | 核心 | 描边宽度，大于 `0` |
+| `dashArray` | `Array<float32>` | Optional | 基础 | 虚线的线段与间隔长度，缺失或为空时是实线 |
+| `dashOffset` | float32 | Optional | 基础 | 虚线起点偏移，缺省为 `0` |
+| `lineCap` | int32 | Optional | 基础 | 端帽，缺省为 Round，见[笔尖与端帽](../common/nib) |
+| `lineJoin` | int32 | Optional | 基础 | 拐角，缺省为 Round |
+| `startMarker` | int32 | Optional | 基础 | 起点端头，缺省为 `0` |
+| `endMarker` | int32 | Optional | 基础 | 终点端头，缺省为 `0` |
 
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `color` | Color Map | Required | 描边颜色，支持 SDR/HDR 回退 |
-| `opacity` | float32 | Required | 描边透明度，范围 `0`–`1` |
-| `width` | float32 | Required | 最终可见的 Canvas 描边宽度，必须大于 0 |
-| `dashArray` | `Array<float32>` | Optional | 实际 dash/gap 长度，缺失或空数组为实线 |
-| `dashOffset` | float32 | Optional | dash 起始偏移，缺失为 `0` |
-| `startMarker` | int32 | Optional | 起点端头，缺失为 `0` |
-| `endMarker` | int32 | Optional | 终点端头，缺失为 `0` |
+### Fill Map
 
-`width`、`dashArray` 和 `dashOffset` 使用保存时最终可见的 Canvas 长度。软件缩放 Shape 时可以自行决定是否改变它们，但写入器必须保存换算后的实际结果。读取器不得通过额外几何变换再次缩放这些值。
-
-非空 `dashArray` 必须包含偶数个非负有限值，且总和大于 0。非法 `dashArray` 或非法 `dashOffset` 时，读取器按实线处理。具体线帽、连接处和抗锯齿外观由软件决定，UInk 不注册 `lineCap`、`lineJoin` 或 `miterLimit`。
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `fillType` | int32 | Required | 核心 | `0` Solid；`1`–`127` 保留，`128`+ 私有 |
+| `color` | Color Map | Required | 核心 | 填充颜色 |
+| `opacity` | float32 | Required | 基础 | 填充透明度，`0`–`1` |
 
 ### Marker
 
-| 值 | 名称 | 语义 |
+| 值 | 名称 | 含义 |
 | --- | --- | --- |
 | `0` | None | 无端头 |
-| `1` | OpenArrow | 开放式箭头语义 |
-| `2`–`127` | Reserved | UInk 后续版本保留 |
-| `128` 及以上 | Private | 软件私有端头 |
+| `1` | OpenArrow | 开放式箭头，具体外形由软件决定 |
+| `2`–`127` | 保留 | — |
+| `128`+ | 私有 | — |
 
-Marker 只保存类型编号，不保存 Path、尺寸或固定比例。端头的具体外形由软件自行决定。未知 Marker 必须按 None 回退，不得丢弃主体 Line/Polyline。
+<!-- visual: shape-stroke — 实线、虚线 {16, 8}、点线 {0, 3w}（圆头）、点划线，以及 OpenArrow 端头 -->
 
-`startMarker` 和 `endMarker` 只允许用于 Line/Polyline。闭合 Shape 中出现 Marker 时读取器忽略这些字段并警告。
+### 规则
 
-软件内部可以用主线加两条端头线绘制箭头；写入 UInk 时应归一化为一个 Line/Polyline 及其 Marker。Marker 不产生额外的 Shape、`contentId` 或 `undoId`。
+- **SHAPE-4** 每个 Shape 至少有 `stroke` 或 `fill` 之一。Line、Polyline 必须有 `stroke`，不得有 `fill`。闭合图形可以只有描边、只有填充，或两者都有。
+- **SHAPE-5** 描边在一个 Shape 内使用同一种颜色、透明度与固定宽度。
+- **SHAPE-6** `width`、`dashArray`、`dashOffset` 的单位与坐标相同（Device 像素），是保存时最终可见的长度。软件缩放图形后要保存换算后的结果；读取器不得再额外缩放这些值。
+- **SHAPE-7** 非空 `dashArray` 必须包含偶数个非负有限值，且总和大于 `0`。长度为 `0` 的线段在 Round 端帽下画成圆点（NIB-5）；写入器表达点线时必须使用 Round 或 Square 端帽。`dashArray` 或 `dashOffset` 无效时按实线显示。
+- **SHAPE-8** 线型（实线、虚线、点线）只由 `dashArray` 表达，不得把一条虚线的每一小段拆成单独的 Shape。唯一的例外：为了让闭合图形的虚线在拐角处对称，写入器可以把闭合描边拆成若干条 Polyline 部件（各自带 `dashOffset`），并用图形对象层组合（SHAPE-11）。
+- **SHAPE-9** Marker 只用于 Line、Polyline；闭合图形上出现时忽略并报告警告。箭头写成一个带 Marker 的 Line 或 Polyline，不额外生成 Shape。需要精确控制箭头外形时，可以改用图形对象层，把杆和头写成两个部件。
+- **SHAPE-10** UInk 不注册 `miterLimit`。抗锯齿与 Miter 拐角的截断方式由软件决定。
 
-## Fill Map
+## 图形对象层
 
-Fill 首版只支持单色填充，渐变、纹理和图片填充留待后续版本或私有扩展。
+复杂图形由多个 Shape 部件组成。例如一个立方体是 12 条边（被遮挡的边是虚线），一个圆柱是两个椭圆的可见弧与不可见弧加两条侧边。图形对象层把这些部件标记为同一个对象，让编辑器可以整体选择、移动、删除；完整级编辑器还可以从 `construction` 重新生成它们，继续编辑参数。
+
+<!-- visual: shape-object（交互）— 一个立方体拆成 12 个部件：悬停任一部件高亮整个对象；第一个部件带完整的 object，其余部件只带 ref 与 partIndex -->
+
+### 首个部件的 `object`
+
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `id` | string(36) | Required | 标准 | 对象的 UUID，在文件内唯一，不得全为 0 |
+| `revision` | uint64 | Required | 标准 | 修订号，至少为 `1`；对象内容每次变化都使用新的值 |
+| `preset` | string | Optional | 标准 | 预设名称，例如 `cuboid`、`arrow`，见[图形预设注册表](../appendix/shape-presets)；缺失表示没有预设的普通对象组 |
+| `partCount` | uint32 | Required | 标准 | 部件总数（含辅助部件），至少为 `1` |
+| `transform` | `Array<float32>(6)` | Optional | 标准 | 对象的仿射矩阵，布局与 Media 相同（MEDIA-2），缺省为单位矩阵 |
+| `construction` | Map | Optional | 完整 | 重建对象所需的参数，只在有 `preset` 时使用，由预设定义 |
+| `style` | Map | Optional | 完整 | 编辑用的样式，见[附录](../appendix/shape-presets#style) |
+| `aux` | uint32 | Optional | 完整 | 辅助标记位掩码，见[附录](../appendix/shape-presets#aux) |
+
+### 后续部件的 `object`
 
 | 字段 | 类型 | 要求 | 说明 |
 | --- | --- | --- | --- |
-| `fillType` | int32 | Required | `0` 为 Solid，`1`–`127` 保留，`128+` 私有 |
-| `color` | Color Map | Required | 填充颜色，支持 SDR/HDR 回退 |
-| `opacity` | float32 | Required | 填充透明度，范围 `0`–`1` |
+| `ref` | string(36) | Required | 首个部件的 `id` |
+| `partIndex` | uint32 | Required | 部件序号，从 `1` 到 `partCount − 1` |
 
-未知 `fillType` 时，读取器使用 `color` 和 `opacity` 按 Solid 回退。Line/Polyline 不得保存 Fill；闭合 Shape 可以只保存 Fill、只保存 Stroke 或同时保存两者。
+### 规则
 
-## 内容流、撤回与增量写入
+- **SHAPE-11** 一个对象的全部部件必须在同一个 Canvas 中按 `partIndex` 顺序连续出现，首个部件（`partIndex` 为 `0`）带完整的 `object`，并共享同一个 `undoId`。
+- **SHAPE-12** 每个部件本身都是完整、可直接绘制的 Shape，几何已经是最终结果。读取器不得再把 `transform` 应用到部件上；`transform` 只用于编辑器从 `construction` 重新生成部件。
+- **SHAPE-13** 标准级读取器把一个对象的全部部件当作一个整体选择、移动、删除。编辑后，写入器更新全部部件的几何、使用新的 `revision`，并保持部件连续。没有 `preset` 或 `construction` 的对象，以部件本身为准。
+- **SHAPE-14** 部件缺失、数量与 `partCount` 不符、顺序不连续、`ref` 找不到首个部件，或 `id` 重复时，读取器把相关部件当作独立的 Shape 显示，报告警告；不得拒绝整页。
+- **SHAPE-15** 完整级读取器认识 `preset` 且 `construction` 有效时，可以据此重建对象供编辑；重建结果与文件中的部件不一致时，以文件中的部件为准显示。不认识的预设退回对象层（SHAPE-13）。
 
-Shape 与 Ink、Media、Clear 按顶层对象流中的先后顺序混合处理。四者共享当前 Canvas 的连续 `contentId`；`undoId` 从 0 开始且只允许不递减，对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。Clear 必须独占自己的撤回组。
+## 撤回、追加与擦除
 
-`contentId` 只标识当前文件版本中当前 Canvas 的对象流顺序，完整保存后不得作为稳定外部引用。
+- **SHAPE-16** Shape 与 Ink、Media、Clear 共用 `contentId`，按对象流顺序处理（FILE-14）。
+- **SHAPE-17** 完整的 Shape 可以追加到最后一个 Canvas；修改、移动或删除已有 Shape 时，整页追加新版本或完整保存（SAVE-18）。
+- **SHAPE-18** Inkeys 附加级的 Erase Ink 作用于在它之前的 Shape（INK-11）。
 
-完整 Shape 可以追加到文件末尾最后一个 Canvas。修改、移动、缩放或删除既有 Shape 时必须执行完整保存，不得通过追加重复既有 Shape。完整保存后，写入器重新整理各 Canvas 的 `contentId` 和 `undoId`。
+## 容错
 
-Erase Ink 按对象流顺序作用于同一 Canvas 中位于它之前的 Shape 与 Ink，不作用于 Media；具体裁剪、透明和背景效果由软件决定。读取器不得因为块类型不同而重新排序。
-
-Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器从 Canvas 尾部反向扫描，越过所有 Media，收集连续且标记为 `true` 的 Ink/Shape，直到遇到第一个未标记的 Ink/Shape。只有收集到的末尾最新组显示，其他标记内容隐藏；未标记内容正常显示。该分组不改变 `undoId`。完整算法参见 [Ink 条件渲染与撤回](ink#条件渲染与撤回)。
-
-未标记的形状修正结果存在时，标记原稿隐藏。撤回结果后，原稿成为末尾最新组并重新显示，随后仍按各自 `undoId` 逐步撤回。隐藏但未撤回的原稿必须在完整保存时保留。
-
-## 容错与兼容
-
-- 缺少 `type`、`contentId`、`undoId`、`shapeType`、`geometry` 或必要样式时跳过该 Shape，报告警告并继续读取。
-- 坐标、尺寸、`rotation`、描边 `width`、`dashArray`、`dashOffset` 或 `opacity` 无效时，先使用本页为对应字段明确规定的回退。没有已定义回退时，包含无效字段的几何或样式无效；如果最终无法得到有效几何，或者 Line/Polyline 没有有效 Stroke，或者闭合 Shape 的 Stroke 与 Fill 都无效，则跳过整个 Shape。
-- Shape 的未知 `shapeType`：跳过整块。
-- Stroke 的未知 Marker：按 None 回退并保留主体几何。
-- Fill 的未知 `fillType`：使用 Color Map 和 opacity 按 Solid 回退。
-- 不支持 Shape 的读取器遇到未知 Type ID `5` 时，可以跳过当前完整 MessagePack 对象并继续读取后续块。
-- 外部导入或包含未知块的文件默认另存为；用户明确确认可能丢失未知内容后才允许覆盖源文件。
+- **SHAPE-19** 缺少 `type`、`contentId`、`undoId`、`shapeType`、`geometry` 或必要样式的 Shape，跳过并报告警告。
+- **SHAPE-20** 不认识的 `shapeType`：跳过整个 Shape，不得猜测成其他几何。
+- **SHAPE-21** 不认识的 Marker 按 None 显示，保留线条本身；不认识的 `fillType` 按 Solid 显示。
+- **SHAPE-22** 字段无效且没有对应回退规则时，该几何或样式无效；最终没有有效几何、Line / Polyline 没有有效描边、或闭合图形的描边与填充都无效时，跳过整个 Shape。
+- **SHAPE-23** 有限但越界的 `opacity` 钳制到 `0`–`1`。
 
 ## 示例
 
-### 虚线双向箭头
+::: tabs
+
+@tab 虚线双向箭头（基础级）
 
 ```jsonc
 {
@@ -186,90 +198,76 @@ Shape 与 Ink 共用 `renderOnlyWhenLatest`。读取器从 Canvas 尾部反向�
   "contentId": 2,
   "undoId": 1,
   "shapeType": 0,
-  "geometry": {
-    "points": [
-      { "x": 120.0, "y": 240.0 },
-      { "x": 420.0, "y": 240.0 }
-    ]
-  },
+  "geometry": { "points": [ { "x": 120.0, "y": 240.0 }, { "x": 420.0, "y": 240.0 } ] },
   "stroke": {
     "color": { "fallback": 255 },
     "opacity": 1.0,
     "width": 4.0,
     "dashArray": [16.0, 8.0],
+    "lineCap": 0,
     "startMarker": 1,
     "endMarker": 1
   }
 }
 ```
 
-### 旋转正方形与 HDR 填充
+@tab 圆角矩形（基础级）
 
 ```jsonc
 {
   "type": 5,
   "contentId": 3,
   "undoId": 2,
-  "shapeType": 3,
+  "shapeType": 2,
   "geometry": {
-    "centerX": 320.0,
-    "centerY": 220.0,
-    "size": 180.0,
-    "rotation": 0.3926991
+    "centerX": 360.0, "centerY": 240.0, "width": 240.0, "height": 120.0,
+    "cornerRadiusX": 24.0, "cornerRadiusY": 16.0
   },
-  "stroke": {
-    "color": { "fallback": 255 },
-    "opacity": 1.0,
-    "width": 5.0
-  },
-  "fill": {
-    "fillType": 0,
-    "color": {
-      "fallback": 16763904,
-      "space": "scrgb",
-      "components": [1.8, 0.65, 0.1]
-    },
-    "opacity": 0.5
-  }
+  "stroke": { "color": { "fallback": 255 }, "opacity": 1.0, "width": 4.0 },
+  "fill": { "fillType": 0, "color": { "fallback": 16777215 }, "opacity": 1.0 }
 }
 ```
 
-### 圆角矩形
+@tab 对象的首个与第二个部件（标准级）
 
 ```jsonc
 {
-  "type": 5,
-  "contentId": 4,
-  "undoId": 3,
-  "shapeType": 2,
-  "geometry": {
-    "centerX": 360.0,
-    "centerY": 240.0,
-    "width": 240.0,
-    "height": 120.0,
-    "rotation": 0.0,
-    "cornerRadiusX": 24.0,
-    "cornerRadiusY": 16.0
-  },
-  "stroke": {
-    "color": { "fallback": 255 },
-    "opacity": 1.0,
-    "width": 4.0
-  },
-  "fill": {
-    "fillType": 0,
-    "color": { "fallback": 16777215 },
-    "opacity": 1.0
+  "type": 5, "contentId": 4, "undoId": 3, "shapeType": 0,
+  "geometry": { "points": [ { "x": 100.0, "y": 300.0 }, { "x": 260.0, "y": 300.0 } ] },
+  "stroke": { "color": { "fallback": 0 }, "opacity": 1.0, "width": 3.0 },
+  "object": {
+    "id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    "revision": 2,
+    "preset": "cuboid",
+    "partCount": 12,
+    "transform": [1.0, 0.0, 0.0, 1.0, 0.0, 0.0]
   }
 }
+{
+  "type": 5, "contentId": 5, "undoId": 3, "shapeType": 0,
+  "geometry": { "points": [ { "x": 260.0, "y": 300.0 }, { "x": 260.0, "y": 180.0 } ] },
+  "stroke": { "color": { "fallback": 0 }, "opacity": 1.0, "width": 3.0, "dashArray": [12.0, 18.0] },
+  "object": { "ref": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", "partIndex": 1 }
+}
+// ……其余 10 个部件
 ```
 
-## 相关说明
+:::
 
-- [块类型](../type)
+## 回退
+
+| 读取器缺少的能力 | 显示方式 |
+| --- | --- |
+| `opacity`（核心级） | 按不透明绘制 |
+| 虚线、Marker、圆角（核心级） | 实线、无端头、直角 |
+| `lineCap`、`lineJoin`（核心级） | 圆头、圆角 |
+| 图形对象层（核心级、基础级） | 每个部件当作独立 Shape，外观不变 |
+| `construction`（完整级以下） | 按对象层整体编辑，不能修改参数 |
+| `renderOnlyWhenLatest`（完整级以下） | 忽略标记，全部显示 |
+
+## 相关
+
+- [笔尖与端帽](../common/nib)
+- [图形预设注册表](../appendix/shape-presets)
 - [Color Map](../common/color)
-- [墨迹主文件](../file/main)
-- [Canvas 块](canvas)
 - [Ink 块](ink)
-- [Clear 块](clear)
-- [增量写入](../incremental)

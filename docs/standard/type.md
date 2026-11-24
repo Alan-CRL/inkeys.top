@@ -1,47 +1,50 @@
 ---
-title: 块类型（Type ID）
+title: 块类型与编码
 ---
 
-Type ID 用于识别墨迹主文件中的顶层 MessagePack 对象。本文将一个顶层 MessagePack 对象简称为“块”，将这些对象在文件中的先后顺序称为“对象流顺序”。
+主文件由一个接一个的 MessagePack 对象组成，每个顶层对象叫一个**块**。块的第一个字段 `type`（Header 中是数组第 0 项）就是 Type ID，读取器靠它判断块的种类。
 
-| Type ID（uint16） | 块 | MessagePack 类型 |
-| --- | --- | --- |
-| `0` | [Header 块](blocks/header) | Array |
-| `1` | [Header Extension 块](blocks/headerExtension) | Map |
-| `2` | [Canvas 块](blocks/canvas) | Map |
-| `3` | [Ink 块](blocks/ink) | Map |
-| `4` | [Media 块](blocks/media) | Map |
-| `5` | [Shape 块](blocks/shape) | Map |
-| `6` | [Clear 块](blocks/clear) | Map |
+## Type ID
 
-[Device](blocks/device) 是 Header Extension 注册表中的嵌套 Map，不具有 Type ID，也不出现在顶级对象流中。
+| Type ID（uint16） | 块 | MessagePack 类型 | 读取器从哪一级开始需要支持 |
+| --- | --- | --- | --- |
+| `0` | [Header](blocks/header) | Array | 核心级 |
+| `1` | [Header Extension](blocks/headerExtension) | Map | 核心级 |
+| `2` | [Canvas](blocks/canvas) | Map | 核心级 |
+| `3` | [Ink](blocks/ink) | Map | 核心级 |
+| `4` | [Media](blocks/media) | Map | 标准级 |
+| `5` | [Shape](blocks/shape) | Map | 核心级 |
+| `6` | [Clear](blocks/clear) | Map | Inkeys 附加级 |
 
-## MessagePack 编码
+[Device](blocks/device) 是 Header Extension 注册表里的嵌套 Map，没有 Type ID，也不会作为顶层块出现。
 
-写入器必须遵守以下规则：
-
-1. 使用字段表声明的精确 MessagePack 类型和位宽。例如，`uint16` 不得写成正整数 fixint，`float32` 不得写成 float64。
-2. 对 Header 额外遵守固定数组布局，参见 [Header 块](blocks/header)。
-3. 重新保存读取时容错接受的数值时，将其规范化为字段表声明的类型。
-
-读取器可以容错接受其他 MessagePack 数值编码，但必须依次满足以下条件：
-
-1. 源值是数值，且目标字段也是数值；`bool` 不属于数值编码。
-2. 转换不会改变数值。整数目标要求源值是数学意义上的整数；浮点目标要求源值能由目标浮点类型精确表示。
-3. 转换后的值通过目标类型范围和字段自身的有效性校验。
-
-`bool`、`string`、Array 和 Map 不允许用其他类型代替。Map 中重复出现任一已知键时，包含该 Map 的当前块无效；未知键仍按各块的扩展规则忽略。
+`7` 及以上的 Type ID 保留给后续版本，UInk 不定义私有 Type ID：软件私有数据写在各块的 `extra` 中（TYPE-4）。写入器不得写出未注册的 Type ID；读取器遇到时按 TYPE-9 跳过。
 
 ::: warning `type` 与 `inkType`
-Ink 顶层 `type` 固定为 `3`；块内 `inkType` 才表示擦除、普通笔、荧光笔或高级荧光笔。不存在独立 Eraser 顶层块，也不存在 `penType` 二级字段。
+Ink 块的 `type` 固定为 `3`；笔的种类（擦除、普通笔、荧光笔……）由块内的 `inkType` 区分。不存在独立的 Eraser 块，也没有 `penType` 字段。
 :::
 
-各字段声明的 `128+` 私有编号没有全局厂商命名空间，也不配套 `vendorId`；只有预先约定相同编号语义的实现之间能够互操作。
+## 写入规则
 
-Clear 是 version `10` 当前基线中的标准内容块。只会跳过未知 Type ID、但不理解 Clear 呈现语义的早期 version `10` reader 不属于当前兼容实现，因为忽略 Clear 会错误叠加已经清空的旧内容。
+- **TYPE-1** 写入器必须使用字段表声明的精确 MessagePack 类型与位宽。例如 `uint16` 不得写成正整数 fixint，`float32` 不得写成 float64。
+- **TYPE-2** Header 还要遵守固定数组布局，见 [Header 块](blocks/header)。
+- **TYPE-3** 重新保存时，读取阶段容错接受的数值必须规范化为字段表声明的类型。
+- **TYPE-4** 软件私有字段必须放进所在 Map 的 `extra`，不得作为未注册的顶层键写入。
 
-## 未知对象与保存
+## 读取规则
 
-读取器遇到未知 Type ID 时，如果当前 MessagePack 对象能够完整解码，必须跳过该对象并继续读取下一块，不得仅因一个未知块拒绝整个文件。如果无法确定未知对象的结束边界，则按[损坏恢复规则](incremental#崩溃恢复)停止读取余下字节。
+- **TYPE-5** 数值字段可以容错接受其他 MessagePack 数值编码，但必须同时满足：源值与目标都是数值（`bool` 不算数值）；转换不改变数值（整数目标要求源值是整数，浮点目标要求能被精确表示）；转换后的值通过字段自身的范围检查。
+- **TYPE-6** `bool`、`string`、Array、Map 不允许用其他类型代替。
+- **TYPE-7** 同一个 Map 中重复出现任一已知键时，包含该 Map 的整个块无效。
+- **TYPE-8** 读取器必须忽略不认识的键，且不认识的键不得改变已知字段的含义。
+- **TYPE-9** 遇到不认识的 Type ID 时，如果该对象能完整解码，读取器必须跳过它并继续读取下一块，不得因此拒绝整个文件。无法确定对象结束位置时，按[崩溃恢复规则](incremental#崩溃恢复)停止读取。后续版本的内容块可能占用 `contentId` 编号，因此读取器不得因为 `contentId` 不连续而拒绝文件，绘制顺序仍以对象流顺序为准。
+- **TYPE-10** 遇到自己等级之外但已注册的块（例如标准级以下的读取器遇到 Media），读取器按该块页面的“回退”一节处理。
 
-UInk 不要求写入器原样保留未知对象。软件自己创建且确认所有对象都能理解的文件可以直接覆盖；外部导入或包含未知内容的文件默认应另存为新文件，只有用户明确确认可能丢失未知内容后才可以覆盖原文件。具体流程参见[实现一致性与样例](conformance)。
+## 私有编号
+
+各枚举字段的 `128` 及以上为私有编号，由软件自行定义。UInk 不提供全局厂商命名空间，也没有 `vendorId`；只有事先约定了相同含义的软件之间才能互通。读取器遇到不认识的私有编号时，按对应字段的回退规则处理。
+
+## 保存含未知内容的文件
+
+- **TYPE-11** UInk 不要求写入器原样保留不认识的块或键。
+- **TYPE-12** 软件自己创建、且确认所有内容都能理解的文件，可以直接覆盖保存。外部导入、或含有读取器不认识或不支持内容的文件，默认应另存为新文件；只有用户明确确认可能丢失内容后，才可以覆盖原文件。

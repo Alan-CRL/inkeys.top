@@ -2,118 +2,125 @@
 title: Ink 块
 ---
 
-- Type ID: 3
-- Type: Map
+- Type ID：`3`
+- 类型：Map
 
-Ink 表示一条完整墨迹。擦除、普通笔、荧光笔和高级荧光笔都是 Ink 的渲染类型，不再使用独立的 `penType` 或 Eraser 顶层块。
+**Ink 表示一条完整的笔迹**：从落笔到抬笔的一串点，每个点带一个宽度。普通笔、荧光笔和橡皮都用 Ink 表示，用 `inkType` 区分。
+
+::: tip 等级
+- **核心级**：Pen 的点坐标、每点宽度、`fallback` 颜色；可以忽略透明度，端头一律画成圆头。
+- **基础级**：块级 `opacity`、Highlighter、笔尖描述 `nib`、端帽 `cap`。
+- **完整级**：Advanced Highlighter 的点级样式、`texture`、`renderOnlyWhenLatest`。
+- **Inkeys 附加级**：Erase Ink 与橡皮笔尖形状。
+:::
+
+## 什么时候用
+
+- 用户用笔、荧光笔写下的每一笔。
+- Inkeys 附加级的橡皮擦过的轨迹（Erase Ink）。
+- 直线、矩形等可编辑图形用 [Shape](shape)，不用 Ink。
 
 ## 字段
 
-| 字段 | 类型 | 要求 | 说明 |
+“等级”列表示读取器从哪一级开始必须理解该字段。标为 Required 的字段，无论写入器声明哪个等级都必须写入。
+
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `type` | uint16 | Required | 核心 | 固定为 `3` |
+| `contentId` | uint32 | Required | 核心 | Canvas 内的内容序号，见 INK-2 |
+| `undoId` | uint32 | Required | 标准 | 撤回组编号，见 INK-3 |
+| `inkType` | int32 | Required | 核心 | 笔的种类，见下表 |
+| `color` | [Color Map](../common/color) | Required | 核心 | 块级颜色；核心级只用 `fallback` |
+| `opacity` | float32 | Required | 基础 | 块级透明度，`0`–`1` |
+| `texture` | int32 | Required | 完整 | 纹理编号：`0` 为默认，`1`–`127` 保留，`128`+ 私有 |
+| `points` | `Array<Map>` | Required | 核心 | 至少一个点，见[轨迹点](#轨迹点) |
+| `nib` | Map | Optional | 基础 | 笔尖描述，见[笔尖与端帽](../common/nib) |
+| `cap` | int32 | Optional | 基础 | 端帽；缺省时圆形笔尖为 Round、矩形笔尖为 Butt，见[笔尖与端帽](../common/nib) |
+| `renderOnlyWhenLatest` | bool | Optional | 完整 | 缺省为 `false`，见 INK-15 |
+| `extra` | Map | Optional | — | 软件私有字段 |
+
+### `inkType`
+
+| 值 | 名称 | 等级 | 含义 |
 | --- | --- | --- | --- |
-| `type` | uint16 | Required | 固定为 `3` |
-| `contentId` | uint32 | Required | Canvas 内 Ink/Shape/Media/Clear 共享的连续内容编号 |
-| `undoId` | uint32 | Required | Canvas 内非递减的撤回操作分组编号 |
-| `inkType` | int32 | Required | 墨迹渲染类型 |
-| `color` | Color Map | Required | 块级颜色与 HDR 回退信息 |
-| `opacity` | float32 | Required | 块级透明度，范围 `0`–`1` |
-| `texture` | int32 | Required | 纹理编号 |
-| `points` | `Array<Map>` | Required | 至少一个轨迹点 |
-| `renderOnlyWhenLatest` | bool | Optional | 缺失时为 `false` |
-| `extra` | Map | Optional | 私有扩展 |
+| `0` | Erase | Inkeys | 擦除轨迹 |
+| `1` | Pen | 核心 | 普通笔 |
+| `2` | Highlighter | 基础 | 荧光笔 |
+| `3` | Advanced Highlighter | 完整 | 点上可以带颜色与透明度锚点的荧光笔 |
+| `4`–`127` | 保留 | — | 留给后续版本 |
+| `128`+ | 私有 | — | 软件自定义 |
 
-`contentId` 与 Shape/Media 共用同一编号空间，并严格按照顶层对象流中的先后顺序从 0 连续递增。`undoId` 从 0 开始且只允许不递减；对象流中 `undoId` 相同且连续的内容块构成一次撤回操作。
+### 轨迹点
 
-`contentId` 只标识当前文件版本中当前 Canvas 的对象流顺序。完整保存会重新整理编号，其他文件、外部元数据或后续文件版本不得把它当作稳定对象身份。
+| 字段 | 类型 | 要求 | 等级 | 说明 |
+| --- | --- | --- | --- | --- |
+| `x` | float32 | Required | 核心 | 首点为绝对坐标，之后为相对前一点的位移 |
+| `y` | float32 | Required | 核心 | 同上 |
+| `width` | float32 | Required | 核心 | 该点的笔迹宽度，必须大于 `0` |
+| `color` | Color Map | Conditional | 完整 | Advanced Highlighter 的点级颜色，与 `opacity` 成对出现 |
+| `opacity` | float32 | Conditional | 完整 | Advanced Highlighter 的点级透明度，与 `color` 成对出现 |
 
-## `inkType`
+<!-- visual: ink-points — 一条笔迹的点：首点绝对坐标、后续点的相对位移箭头、每点宽度画成圆 -->
 
-| 值 | 名称 | 语义 |
-| --- | --- | --- |
-| `0` | Erase | 擦除墨迹 |
-| `1` | Pen | 普通笔 |
-| `2` | Highlighter | 荧光笔 |
-| `3` | Advanced Highlighter | 高级荧光笔 |
-| `4`–`127` | Reserved | UInk 后续版本保留 |
-| `128` 及以上 | Private | 软件私有墨迹类型 |
+## 规则
 
-`128+` 私有编号没有全局厂商命名空间，只保证预先约定的实现之间互操作。其他读取器遇到未知或不支持的 `inkType` 时，必须保留基础几何并按 `inkType = 1` 普通笔回退。
+### 编号与撤回
 
-### 四种通用渲染规则
+- **INK-1** Ink 的 `type` 固定为 `3`。笔的种类只由 `inkType` 决定。
+- **INK-2** `contentId` 在同一个 Canvas 内由 Ink、Shape、Media、Clear 共用：按对象流顺序从 `0` 开始连续递增。它只在当前文件版本内有效，完整保存后会重新编号，不能当作稳定的对象身份。
+- **INK-3** `undoId` 从 `0` 开始，只增不减。对象流中 `undoId` 相同且连续的内容块是一个撤回组，一次撤回会把它们一起撤销。
 
-- Erase 保存完整擦除形状，并按对象流顺序作用于同一 Canvas 中位于它之前的 Ink 与 Shape，不作用于 Media。具体裁剪、透明和背景效果由软件决定。
-- Pen 使用块级 `color` 和 `opacity`。笔刷外形、线帽和连接方式仍由软件决定，不以是否支持透明度区分普通笔与荧光笔。
-- Highlighter 使用块级 `color` 和 `opacity`。渲染器必须先把整条笔迹生成一次完整覆盖，再将该覆盖作为一个整体以 alpha source-over 合成到画布；不得逐采样段反复合成而在段间重叠处累加透明度。
-- Advanced Highlighter 使用相同的“整条覆盖后合成一次”规则，但部分点可以提供颜色与透明度锚点；没有任何点级样式时使用块级样式。
+### 几何
 
-## Color Map
+- **INK-4** `points` 至少有一个点。首点是 Canvas 绝对坐标，之后每个点保存相对前一点的位移。读取器应使用 float64 累加位移，避免长笔迹累积误差。
+- **INK-5** `width` 必须大于 `0`。它的含义由 `nib.widthMeaning` 决定；没有 `nib` 时，`width` 是该点处笔迹的直径。
+- **INK-6** 坐标与宽度的单位是 Device 像素。缩放由 Canvas 的 `viewport.scale` 表达，渲染时宽度随之缩放。
+- **INK-7** 读取器必须保持点的顺序、位置与宽度含义。点与点之间的曲线插值、轮廓生成与抗锯齿由软件决定；单点 Ink 按同样的笔尖画成一个点。
+- **INK-8** 读取器必须忽略不认识的点键。1.1 不注册压感、倾斜、时间等输入通道；笔锋效果应直接体现在每点的 `width` 中。
 
-Ink 的颜色字段使用公共 [Color Map](../common/color)，同时提供基础 SDR 回退色和可选 HDR 色彩空间数据。该结构也供 Shape 的填充和描边使用。
+### 绘制
 
-## `texture`
+- **INK-9** Pen 使用块级 `color` 与 `opacity` 绘制。核心级读取器可以忽略 `opacity`，按不透明绘制。
+- **INK-10** Highlighter 必须先生成整条笔迹的完整覆盖区域，再把它作为一个整体以 alpha source-over 合成到画布上；不得逐段合成，以免重叠处颜色变深。
+- **INK-11** Erase 属于 Inkeys 附加级。**未实现 Inkeys 附加级的读取器必须跳过 `inkType = 0` 的 Ink，不得把它当作普通笔画出来。** 实现该级的读取器按对象流顺序，把 Erase 作用于同一 Canvas 中在它之前的 Ink 与 Shape；Erase 不作用于 Media。擦除的具体效果（裁剪、透明）由软件决定。
+- **INK-12** Advanced Highlighter 的点级 `color` 与 `opacity` 必须成对出现，构成样式锚点。第一个锚点之前沿用第一个锚点的样式，最后一个锚点之后沿用最后一个锚点的样式，锚点之间平滑过渡（插值方法由软件决定）。没有任何锚点时使用块级样式。合成方式同 INK-10。
+- **INK-13** 读取器遇到不认识或不支持的 `inkType`（`0` 除外）时，必须保留几何，按 Pen 绘制。
+- **INK-14** 读取器遇到不认识的 `texture` 时，必须按 `0` 绘制，不得丢弃整条 Ink。
 
-| 值 | 语义 |
-| --- | --- |
-| `0` | 默认普通纹理 |
-| `1`–`127` | UInk 标准纹理保留区 |
-| `128` 及以上 | 软件私有纹理 |
+<!-- visual: ink-highlighter-composite — 荧光笔整条合成与逐段合成的对比：后者在折返处出现深色重叠 -->
+<!-- visual: ink-erase-order — Erase 只擦掉对象流中在它之前的笔迹，之后写的笔迹不受影响 -->
 
-读取器不认识某个纹理时必须按 `texture = 0` 回退，不得丢弃整条 Ink。
+### 末尾最新组（完整级）
 
-## 轨迹点
+- **INK-15** `renderOnlyWhenLatest` 用于“形状修正”：先保存原始笔迹并标记为 `true`，再保存修正后的图形；修正结果存在时原稿隐藏，撤回修正结果后原稿重新显示。完整级读取器对每个 Canvas 执行：
+  1. 从最后一个内容块开始向前扫描。
+  2. 遇到 Media 直接越过。
+  3. 遇到 Clear 停止。
+  4. 遇到标记为 `true` 的 Ink 或 Shape，把它加入末尾最新组，继续向前。
+  5. 遇到第一个未标记的 Ink 或 Shape 停止。
+  6. 末尾最新组和所有未标记的内容正常显示；其余标记为 `true` 的内容隐藏。
 
-每个点使用 Map：
+  这条规则只影响显示，不改变 `undoId`；隐藏的原稿仍是有效内容，完整保存时必须保留。低等级读取器忽略该字段。
 
-| 字段 | 类型 | 要求 | 说明 |
-| --- | --- | --- | --- |
-| `x` | float32 | Required | 首点为绝对 X，后续点为相对前一点的 X 位移 |
-| `y` | float32 | Required | 首点为绝对 Y，后续点为相对前一点的 Y 位移 |
-| `width` | float32 | Required | 该点处笔迹的完整直径，必须大于 0 |
-| `color` | Color Map | Conditional | 高级荧光笔的点级颜色 |
-| `opacity` | float32 | Conditional | 高级荧光笔的点级透明度 |
+<!-- visual: ink-render-latest — 原稿（标记）+ 修正结果（未标记）的显示；撤回结果后原稿重新出现 -->
 
-点级 `color` 和 `opacity` 必须成对出现。首个样式锚点之前沿用首个锚点的样式，最后一个锚点之后沿用最后一个锚点的样式；锚点之间必须平滑过渡，但具体插值方法由软件决定。
+### 保存
 
-点列定义有序中心位置和完整直径，不注册唯一曲线、包络、线帽、连接或宽度插值算法。读取器必须保持点顺序、位置和宽度语义，但自由墨迹的最终轮廓可以因实现而不同；单点 Ink 也由软件按同一笔刷语义呈现。
+- **INK-16** 会切断已有笔迹的普通板擦，必须把擦除结果写成剩余的完整片段，并执行完整保存；同一次擦除产生的片段可以共享一个 `undoId`。不得通过追加让旧笔迹和新片段同时存在。
+- **INK-17** Erase Ink 是一条新的完整 Ink，可以直接追加到文件末尾。
 
-UInk 1.0 不注册压力、时间、倾斜、朝向、速度、加速度或预测点。读取器必须忽略不认识的点键，以便后续版本增加可选输入参数。
+### 容错
 
-::: tip float32 范围
-float32 足以覆盖 16K 和多显示器坐标，并保持优于 0.1 px 的精度。首点绝对、后续相对的设计用于减少位移数值范围，同时仍保留亚像素精度。
-:::
-
-## 条件渲染与撤回
-
-Ink 和 Shape 共享 `renderOnlyWhenLatest` 规则。读取器必须对当前 Canvas 执行以下判定：
-
-1. 从最后一个内容块开始反向扫描。
-2. 遇到 Media 时直接越过；Media 不加入末尾最新组，也不终止扫描。
-3. 遇到 Clear 时停止扫描；Clear 之前的内容不属于 Clear 之后区间的末尾最新组。
-4. 遇到 `renderOnlyWhenLatest = true` 的 Ink/Shape 时，将其加入末尾最新组并继续反向扫描。
-5. 遇到第一个未标记或标记为 `false` 的 Ink/Shape 时停止扫描。文件中更早的标记 Ink/Shape 不属于末尾最新组。
-6. 正常显示当前 Clear 区间的末尾最新组和所有未标记 Ink/Shape；更早区间由 Clear 隐藏，不参与当前显示。末尾最新组可以为空。
-
-该机制适用于形状修正：软件先保存多条原始 Ink/Shape，并将它们的 `renderOnlyWhenLatest` 设为 `true`，再保存未标记的结果 Shape。结果 Shape 存在时，反向扫描会在该未标记 Shape 处停止，因此标记原稿隐藏。撤回结果并执行完整保存后，原稿成为末尾最新组并重新显示。
-
-末尾最新组只影响显示，不合并或修改 `undoId`。撤回结果后，用户仍按原稿各自的 `undoId` 逐步撤回。隐藏但未撤回的原稿是当前有效内容，完整保存必须保留；UInk 不承诺在保存并关闭后保留 Redo 历史。
-
-## 擦除模型
-
-### 擦除墨迹
-
-`inkType = 0` 保存完整的擦除轨迹，可以像其他 Ink 一样在抬笔后追加。追加 Erase Ink 不要求修改此前的内容块。读取器按对象流顺序，将 Erase Ink 作用于同一 Canvas 中位于它之前的 Ink 与 Shape；Media 始终不受影响。
-
-### 普通板擦
-
-软件也可以采用会修改或切断既有 Ink/Shape 的普通板擦。写入器必须把擦除结果归一化为当前有效的完整对象，并执行完整保存；不得通过追加使旧对象与新片段同时存在。由同一次擦除产生的多个结果片段可以共享同一个 `undoId`，以便一步撤回全部片段。
+- **INK-18** 有限但越界的 `opacity` 钳制到 `0`–`1`；NaN 与 Infinity 使该字段无效。
+- **INK-19** 没有点、点结构损坏或缺少必填字段的 Ink，读取器跳过它，报告警告，继续读取后续内容。
 
 ## 示例
 
-以下均为 MessagePack Map 的可读伪 JSON 表示。
+以下均为 MessagePack Map 的可读伪 JSON。
 
 ::: tabs
 
-@tab 普通笔
+@tab 普通笔（核心级）
 
 ```jsonc
 {
@@ -121,53 +128,37 @@ Ink 和 Shape 共享 `renderOnlyWhenLatest` 规则。读取器必须对当前 Ca
   "contentId": 0,
   "undoId": 0,
   "inkType": 1,
-  "color": { "fallback": 255 },
-  "opacity": 0.4,
+  "color": { "fallback": 255 },        // 0x0000FF，蓝色
+  "opacity": 1.0,
   "texture": 0,
   "points": [
-    { "x": 120.0, "y": 240.0, "width": 6.0 },
-    { "x": 4.5, "y": 1.0, "width": 6.2 }
+    { "x": 120.0, "y": 240.0, "width": 6.0 },  // 首点：绝对坐标
+    { "x": 4.5, "y": 1.0, "width": 6.2 }       // 相对前一点的位移
   ]
-  // 普通笔使用块级 opacity，此处按 0.4 绘制
 }
 ```
 
-@tab 高级荧光笔与 HDR
+@tab 荧光笔（基础级）
 
 ```jsonc
 {
   "type": 3,
   "contentId": 1,
   "undoId": 1,
-  "inkType": 3,
-  "color": { "fallback": 16776960 },
-  "opacity": 0.35,
+  "inkType": 2,
+  "color": { "fallback": 16776960 },   // 0xFFFF00，黄色
+  "opacity": 0.4,
   "texture": 0,
+  "nib": { "shape": 1, "aspect": 0.125, "orientation": 0, "widthMeaning": 1 },
+  "cap": 2,                            // 平头
   "points": [
-    {
-      "x": 100.0,
-      "y": 100.0,
-      "width": 24.0,
-      "color": {
-        "fallback": 16763904,
-        "space": "scrgb",
-        "components": [1.8, 0.65, 0.1]
-      },
-      "opacity": 0.25
-    },
-    { "x": 12.0, "y": 3.0, "width": 25.0 },
-    {
-      "x": 10.0,
-      "y": 4.0,
-      "width": 26.0,
-      "color": { "fallback": 65535 },
-      "opacity": 0.6
-    }
+    { "x": 100.0, "y": 300.0, "width": 24.0 },  // width 是笔尖高度
+    { "x": 180.0, "y": 0.0, "width": 24.0 }
   ]
 }
 ```
 
-@tab 擦除墨迹
+@tab 矩形橡皮（Inkeys 附加级）
 
 ```jsonc
 {
@@ -178,26 +169,36 @@ Ink 和 Shape 共享 `renderOnlyWhenLatest` 规则。读取器必须对当前 Ca
   "color": { "fallback": 0 },
   "opacity": 1.0,
   "texture": 0,
+  "nib": { "shape": 1, "aspect": 0.6666667, "orientation": 0, "widthMeaning": 2 },
+  "cap": 2,
   "points": [
-    { "x": 320.0, "y": 180.0, "width": 32.0 },
-    { "x": 8.0, "y": -2.0, "width": 32.0 }
+    { "x": 320.0, "y": 180.0, "width": 40.0 },  // width 是等面积圆的直径
+    { "x": 8.0, "y": -2.0, "width": 40.0 }
   ]
 }
 ```
 
 :::
 
-## 容错
+## 回退
 
-- 有限但越界的 `opacity` 应钳制到 `0`–`1`；NaN/Infinity 使对应字段无效。
-- Ink 没有点、点结构损坏或缺少必填字段时，读取器应跳过该 Ink，报告警告并继续读取后续内容。
-- 写入器必须把块级私有字段放入 `extra`；读取器仍应容错忽略未知顶层键。
+| 读取器缺少的能力 | 显示方式 |
+| --- | --- |
+| 块级 `opacity`（核心级） | 按不透明绘制 |
+| Highlighter（核心级） | 按 Pen 绘制，宽度含义不变 |
+| `nib`、`cap`（核心级） | 圆形笔尖、圆头，`width` 当作直径 |
+| Advanced Highlighter 点级样式（基础级、标准级） | 按 Highlighter 绘制，使用块级样式 |
+| `texture`（完整级以下） | 按默认纹理绘制 |
+| `renderOnlyWhenLatest`（完整级以下） | 忽略标记，全部显示 |
+| Erase Ink（未实现 Inkeys 附加级） | 跳过，不显示（INK-11） |
 
-## 相关说明
+导出到低等级时怎么处理 Erase Ink 与 `renderOnlyWhenLatest`，见[兼容导出](../compatibility#兼容导出)。
 
-- [墨迹主文件与混合顺序](../file/main)
-- [增量写入](../incremental)
-- [Canvas 块](canvas)
+## 相关
+
+- [笔尖与端帽](../common/nib)
+- [Color Map](../common/color)
 - [Shape 块](shape)
 - [Clear 块](clear)
-- [Color Map](../common/color)
+- [Canvas 块](canvas)
+- [保存、追加与恢复](../incremental)

@@ -2,92 +2,63 @@
 title: Header 块
 ---
 
-- Type ID: 0
-- Type: Array
+- Type ID：`0`
+- 类型：Array
 
-Header 是墨迹主文件的固定首块，保存文件身份、规范版本以及最近一次完整保存时的统计快照。
+**Header 是文件的第一个块**，记录文件身份、规范版本，以及最近一次完整保存时的统计快照。读取器靠它确认这是一个 UInk 文件。
+
+::: tip 等级
+核心级。所有读取器与写入器都必须支持。
+:::
 
 ## 结构
 
-```text
-Header = array(7)
-```
+Header 是固定长度的数组 `array(7)`：
 
-| 索引 | 字段 | 类型 | MessagePack 类型 | 负载字节长度 |
+| 索引 | 字段 | 类型 | MessagePack 编码 | 负载长度 |
 | --- | --- | --- | --- | --- |
-| 0 | `type` | uint16 | uint16 | 2 bytes |
-| 1 | `version` | uint16 | uint16 | 2 bytes |
-| 2 | `guid` | string(36) | str8 | 36 bytes |
-| 3 | `deviceNum` | uint32 | uint32 | 4 bytes |
-| 4 | `workspaceNum` | uint32 | uint32 | 4 bytes |
-| 5 | `pageNum` | uint32 | uint32 | 4 bytes |
-| 6 | `time` | uint64 | uint64 | 8 bytes |
+| 0 | `type` | uint16 | uint16 | 2 字节 |
+| 1 | `version` | uint16 | uint16 | 2 字节 |
+| 2 | `guid` | string(36) | str8 | 36 字节 |
+| 3 | `deviceNum` | uint32 | uint32 | 4 字节 |
+| 4 | `workspaceNum` | uint32 | uint32 | 4 字节 |
+| 5 | `pageNum` | uint32 | uint32 | 4 字节 |
+| 6 | `time` | uint64 | uint64 | 8 字节 |
 
-::: warning 固定布局
-写入器必须严格保持 `array(7)`、字段顺序、表中声明的数值宽度以及 `guid` 的 str8 编码，不得使用 MessagePack 的最小整数自动编码替代固定宽度类型。
+<!-- visual: header-bytes — Header 的字节布局：数组头 0x97，随后 7 个字段按编码类型分格标注 -->
 
-读取器必须验证数组长度、字段顺序和 36 字符 UUID 字符串。数值字段可以按[公共数值容错规则](../type#messagepack-编码)接受可无损转换的其他 MessagePack 编码。
-:::
+## 字段
 
-## 字段说明
+| 字段 | 说明 |
+| --- | --- |
+| `type` | 固定为 `0` |
+| `version` | 规范版本号，1.1 为 `11`，见[版本与变更](../version) |
+| `guid` | 文件首次创建时生成的 UUID，格式 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `deviceNum` | 最近一次完整保存时的 Device 数量；使用隐式单例时为 `1` |
+| `workspaceNum` | 最近一次完整保存时的 Workspace 数量；使用隐式单例时为 `1` |
+| `pageNum` | 最近一次完整保存时各 Workspace 的页数之和；同一页跨 Device、跨图层只计一次，空白页也计入 |
+| `time` | 最近一次完整保存完成时的 Unix UTC 时间戳，单位秒 |
 
-:::: field-group
+## 规则
 
-::: field type
-@required
-固定为 `0`，参见[块类型](../type)。
-:::
-
-::: field version
-@required
-当前 UInk 1.0 Beta 使用规范版本号 `10`，参见[规范版本](../version)。
-:::
-
-::: field guid
-@required
-UInk 文件首次创建时生成的 36 字符 UUID，格式为 `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`。
-
-`guid` 标识同一个逻辑 UInk 文件。增量写入、完整保存、移动或重命名文件时均不得改变它；“另存为”新的逻辑文件时必须生成新的 UUID。
-:::
-
-::: field deviceNum
-@required
-最近一次完整保存时的 Device 逻辑项总数。显式注册表统计 Display 与 Window；使用隐式默认 Device 时固定为 `1`。
-:::
-
-::: field workspaceNum
-@required
-最近一次完整保存时的 Workspace 逻辑项总数。使用隐式默认 Workspace 时固定为 `1`。
-:::
-
-::: field pageNum
-@required
-最近一次完整保存时各 Workspace 逻辑页数之和。同一 Workspace 中共享 `pageGuid` 的多个设备或图层只计一页；空白页也必须计入。
-:::
-
-::: field time
-@required
-最近一次完整保存完成时的 Unix UTC 时间戳，单位为秒。
-:::
-
-::::
+- **HDR-1** 写入器必须严格按上表写出 `array(7)`：字段顺序、数值位宽与 `guid` 的 str8 编码都不得改变，不得用 MessagePack 的最小整数编码代替固定宽度。
+- **HDR-2** 读取器必须验证数组长度、`type = 0`、`version` 范围（VER-3）与 36 字符的 UUID 格式。数值字段可以按 TYPE-5 接受能无损转换的其他编码。
+- **HDR-3** `guid` 标识一个逻辑文件。增量写入、完整保存、移动、重命名都不得改变它；“另存为”新的逻辑文件时必须生成新的 UUID（VER-7）。
+- **HDR-4** 统计字段是快照。增量写入不得修改 Header（SAVE-20）；完整保存时重新计算全部统计字段。
+- **HDR-5** 读取器以实际读到的对象重新计算状态，不得因快照与实际不符而拒绝文件，也不得按快照中的数量预分配内存。
 
 ## 示例
 
 ```json
-[
-  0,
-  10,
-  "5fe30f46-be92-49b6-b921-a60706febf10",
-  2,
-  1,
-  12,
-  1700000000
-]
+[0, 11, "5fe30f46-be92-49b6-b921-a60706febf10", 2, 1, 12, 1700000000]
 ```
 
-## 快照与实际对象流
+## 回退
 
-增量追加期间不得原地修改 Header。追加新页面后，`pageNum` 和 `time` 可以暂时落后于实际对象流。读取器必须从完整有效的 Header Extension、Canvas 和内容块重算当前状态，并将 Header 统计仅作为快照使用；不得因快照不一致拒绝文件，也不得按 Header 计数进行不受限预分配。
+Header 无效时（HDR-2 任一检查失败），读取器必须拒绝按 UInk 解析该文件，没有回退方式。
 
-完整保存时，写入器必须重新计算所有快照字段，把 Header 与其余对象写入临时主文件，再用临时主文件整体替换目标文件。同一逻辑文件的完整保存不得改变 `Header.guid` 或 `Header.version`。
+## 相关
+
+- [版本与变更](../version)
+- [块类型与编码](../type)
+- [保存、追加与恢复](../incremental)
