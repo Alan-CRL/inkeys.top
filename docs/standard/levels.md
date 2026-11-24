@@ -113,6 +113,14 @@ UInk 1.1 读取：标准级 + Inkeys 附加级；写入：基础级
 - [ ] 按注册预设的 `construction` 重建可编辑图形。（SHAPE-15、PRESET-1–PRESET-23）
 - [ ] 执行 `renderOnlyWhenLatest` 规则。（INK-15）
 
+写入：
+
+- [ ] 写入 HDR 颜色时，同时写出代表 SDR 外观的 `fallback`。（COLOR-1）
+- [ ] Advanced Highlighter 的点级 `color` 与 `opacity` 成对写出。（INK-12）
+- [ ] 形状修正时，先写标记 `renderOnlyWhenLatest` 的原稿，再写未标记的修正结果。（INK-15）
+- [ ] 预设对象的部件写成 `construction` 经 `transform` 变换后的最终几何；编辑后用重建结果替换全部部件并使用新的 `revision`；闭合虚线按 PRESET-23 拆段。（SHAPE-12、SHAPE-13、PRESET-1、PRESET-2、PRESET-23）
+- [ ] 多 Device 与 Window 组成的 Device 树不得有循环。（DEV-7）
+
 ### Inkeys 附加级
 
 读取：
