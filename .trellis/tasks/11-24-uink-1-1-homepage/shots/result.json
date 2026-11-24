@@ -1,0 +1,51 @@
+{
+  "desktopInitial": "playing",
+  "navbarLink": 1,
+  "sidebarOverview": 1,
+  "offscreen": "paused",
+  "backInView": "playing",
+  "userPaused": "paused",
+  "toggleLabel": "播放动画",
+  "tabsToControl": 2,
+  "focusedLabel": "核心",
+  "keyboard": [
+    [
+      "ArrowRight",
+      "basic",
+      "基础"
+    ],
+    [
+      "ArrowRight",
+      "standard",
+      "标准"
+    ],
+    [
+      "ArrowLeft",
+      "basic",
+      "基础"
+    ],
+    [
+      "End",
+      "inkeys",
+      "+Inkeys"
+    ],
+    [
+      "Home",
+      "core",
+      "核心"
+    ],
+    [
+      "ArrowLeft",
+      "inkeys",
+      "+Inkeys"
+    ]
+  ],
+  "desktopOverflow": 0,
+  "darkTheme": "dark",
+  "mobileState": "playing",
+  "mobileOverflow": 0,
+  "reducedState": "static",
+  "reducedToggle": 0,
+  "reducedAnimations": 0,
+  "errors": []
+}
