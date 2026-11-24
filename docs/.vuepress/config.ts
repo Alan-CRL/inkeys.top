@@ -3,23 +3,19 @@ import { defineUserConfig } from 'vuepress'
 import type { HeadConfig } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
-import { existsSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
+import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ASSET_BASES, PROBE_PATH } from './cdn/bases'
 import { createAssetRuntimeScript } from './cdn/runtime'
 
 const isProd = process.env.NODE_ENV === 'production'
 const siteBase = '/'
+// public 文件清单交给运行时脚本：只有清单里的路径才会在通道之间切换，页面链接和外部资源不受影响。
 const publicDir = fileURLToPath(new URL('./public/', import.meta.url))
-// public 中出现的扩展名；构建时只改写 public 里真实存在的文件，其余路径（页面、外链）保持不变。
-const publicAssetPattern = /^\/[^?#]*\.(?:png|jpe?g|gif|webp|avif|svg|uink|extra|json|txt)(?:[?#].*)?$/u
-const toPrimaryAsset = (url: string) => {
-  const path = decodeURI(url.replace(/[?#].*$/u, ''))
-  // 站点图标兼探测文件留在本地：head 配置也会被打进 JS 一起替换，探测脚本里的路径不能被改写。
-  if (path === PROBE_PATH)
-    return ''
-  return existsSync(publicDir + path.slice(1)) ? `${ASSET_BASES[0]}${url}` : ''
-}
+const publicFiles = (readdirSync(publicDir, { recursive: true, withFileTypes: true }))
+  .filter(entry => entry.isFile())
+  .map(entry => `/${relative(publicDir, join(entry.parentPath, entry.name)).split(sep).join('/')}`)
+  .sort()
 
 export default defineUserConfig({
   base: siteBase,
@@ -60,8 +56,8 @@ export default defineUserConfig({
       },
     ],
     [ "link", { rel: "shortcut icon", href: "/Inkeys.svg" } ],
-    // 生产站点：public 资源优先走远程地址，失败时依次换备用地址，最后退回本地（见 cdn/runtime.ts）。
-    ...(isProd ? [[ "script", {}, createAssetRuntimeScript(siteBase) ] as HeadConfig] : []),
+    // 生产站点：public 资源默认走本站，单个文件失败或通道卡顿时换到 123 云盘备用地址（见 cdn/runtime.ts）。
+    ...(isProd ? [[ "script", {}, createAssetRuntimeScript(siteBase, publicFiles) ] as HeadConfig] : []),
   ],
 
   bundler: viteBundler(),
@@ -203,9 +199,8 @@ export default defineUserConfig({
      * 资源链接替换
      * @see https://theme-plume.vuejs.press/guide/features/replace-assets/
      */
-    replaceAssets: isProd
-      ? { rules: { find: publicAssetPattern, replacement: toPrimaryAsset } }
-      : false,
+    // 不在构建时替换资源地址：默认走本站，备用通道由运行时脚本切换。
+    replaceAssets: false,
     
     /**
      * 加密功能
