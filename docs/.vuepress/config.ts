@@ -90,11 +90,9 @@ export default defineUserConfig({
      * 为 markdown 文件自动添加 frontmatter 配置
      * @see https://theme-plume.vuejs.press/config/basic/#autofrontmatter
      */
-    //autoFrontmatter: {
-      //   permalink: true, // 是否生成永久链接
-      //   createTime: true, // 是否生成创建时间
-      //   title: true,      // 是否生成标题
-    //},
+    // Plume rc.219 起会给不属于任何集合的页面自动写入随机 permalink 和 createTime，改掉现有网址，这里全局关闭；
+    // 集合内的页面仍按各自 collections[].autoFrontmatter 配置处理。
+    autoFrontmatter: false,
 
     /* 本地搜索, 默认启用 */
     search: {
@@ -238,6 +236,17 @@ export default defineUserConfig({
     }),
     // 构建后生成 UInk 单文件规范与规范索引（见 plugins/uinkSpecBundle.ts）
     uinkSpecBundlePlugin(),
+    // 版本文章没有写 createTime，Plume rc.219 按时间排序时会退回文件名升序（旧版本在前）。
+    // 这里只在内存中按文件名 YYYYMMDD + 字母 补上时间，同日多个版本按字母先后错开一分钟，不写回源文件。
+    {
+      name: 'inkeys-changelog-time',
+      extendsPage(page) {
+        const match = page.filePathRelative?.match(/^version\/changelog\/(\d{4})(\d{2})(\d{2})([a-z])\.md$/)
+        if (!match || page.frontmatter.createTime) return
+        const minute = String(match[4].charCodeAt(0) - 97).padStart(2, '0')
+        page.frontmatter.createTime = `${match[1]}/${match[2]}/${match[3]} 00:${minute}:00`
+      },
+    },
   ],
 
 });
