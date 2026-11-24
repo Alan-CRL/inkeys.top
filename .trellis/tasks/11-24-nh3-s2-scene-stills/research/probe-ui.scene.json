@@ -1,0 +1,6 @@
+{"version":"inkeys.scene/1","canvas":{"width":1600,"height":900,"dpi":96},"fps":30,"durationMs":1000,
+"elements":[
+{"type":"ui","id":"bar","startMs":0,"surface":"mainBar","initial":{"theme":"light","locale":"en-US","pen":"softPen","color":"#E5484D"}},
+{"type":"ui","id":"shape","startMs":0,"surface":"shapeAttributes","initial":{"theme":"light","locale":"en-US"}},
+{"type":"ui","id":"wb","startMs":0,"surface":"whiteboardPageControl","initial":{"theme":"light","locale":"en-US","page":{"index":1,"count":3}}}
+]}

@@ -1,0 +1,4 @@
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"评审清单与构建验证边界"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"核对组件风格、响应式与无障碍"}
+{"file":".trellis/spec/frontend/native-media-guidelines.md","reason":"核对界面素材的透明度与边缘"}
+{"file":".trellis/tasks/11-16-new-index3-content-plan/content-plan.md","reason":"核对画面是否符合首页媒体约束"}

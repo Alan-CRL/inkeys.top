@@ -1,0 +1,6 @@
+{"file":".trellis/spec/frontend/index.md","reason":"前端规范入口与快速检查项"}
+{"file":".trellis/spec/frontend/component-guidelines.md","reason":"Vue 组件风格、CSS 与无障碍约定"}
+{"file":".trellis/spec/frontend/directory-structure.md","reason":"public 资源、主题组件与生成物的目录边界"}
+{"file":".trellis/spec/frontend/quality-guidelines.md","reason":"格式约定、构建验证与 123pan 上传提醒"}
+{"file":".trellis/spec/frontend/native-media-guidelines.md","reason":"原生界面素材的直通 alpha、主体矩形与检查要求"}
+{"file":".trellis/tasks/11-16-new-index3-content-plan/content-plan.md","reason":"S2 三张卡片的内容、媒体约束与交互原则"}

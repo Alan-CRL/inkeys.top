@@ -38,3 +38,18 @@ Wrong: crop toolbar to nonzero alpha and set the PNG bottom to the taskbar. Corr
 For the settings homepage, run `python media/nh3-craft/settings/export.py <native-repository>` with the bundled media Python. The adapter uses the product home, navigation, fonts and translucent palette in a windowless WARP render. Verify the output of each language/theme pair, including stable frames, fully transparent exterior corners, translucent shell pixels (alpha 204 in this palette), and opaque text/icons. The home banner uses alpha 179 over the shell. Inspect localized glyphs and compare the output hashes with the capture manifest.
 
 A WARP texture contains window content. Windows composites the desktop blur separately. On the website, sample the actual wallpaper under the window, clip that sample to its outline and place the straight-alpha PNG above it. For preblurred fallbacks, reuse the full panel's wallpaper size, position and crop. Check the boundary on both sides of a responsive breakpoint and after switching themes. Compare the finished composite at the same wallpaper coordinates, including the area behind the banner: testing the blur with the foreground hidden misses excessive material opacity. Blurring the exported PNG softens the text and leaves the wallpaper sharp.
+
+## Layered scene stills (new-index3 S2)
+
+The three S2 scene cards are static compositions assembled in the page, not videos. Source: `media/nh3-scenes/build.py` (run with `python3`; `--only <card> --light --preview --reuse` while iterating). Output: `docs/.vuepress/public/new-index3/s2/<card>-<layer>-<light|dark>.webp`, listed with hashes in `media/nh3-scenes/manifest.json`. Page side: `STAGES` in `SectionScenes.vue`.
+
+Contracts:
+- The panel design size is 1600x1000. Every position in `STAGES` is a percentage of it and must equal the pixel values in `CARDS` in `build.py`; a UI layer's width is its image width / 1600. Change both files together.
+- Ink layers have exactly the content layer's pixel size and are stretched over it. They appear with `data-nh3-item="fade"` (no translation) so they stay registered with the content.
+- Ink is rendered by InkeysRenderer. Text uses `text` elements. Every other line (figures, straight and dashed lines, underlines, arrow shafts, brackets) uses raw `stroke` samples from `pace()`: curvature-based speed, deceleration to 0.15 of peak, then about 130 ms of repeated end-point samples before pen-up, which removes the tail taper. Only arrowheads, annotation loops and check marks end while moving. Do not use `path` for these lines: its pen-up always happens while moving, and the dwell option is internal to the renderer.
+- `plan` covers `text` and `path` only. For `stroke` elements compare the last sample time with the frame time yourself (`render()` does this).
+- UI layers are cropped to the union of the light and dark alpha bounds. Cropping each theme to its own bounds yields different sizes and shifts the layer when the site theme changes.
+- Content sheets (report page, slide) are drawn by the same script, so ink positions are computed from measured text widths and chart geometry instead of typed in by eye. Numbers shown in the artwork must be self-consistent; recheck sums and ratios when data changes.
+- UI is en-US for all three site languages until the renderer supports the other locales.
+
+Required checks: preview composite per card and theme, a 3x crop of line ends (blunt, no taper), `npx vuepress build docs`, headless screenshots of the three cards in both themes at desktop and narrow widths (`verify-stage.cjs` in the archived task `11-24-nh3-s2-scene-stills`). Remind the user to upload `public/new-index3/s2/` to 123pan.
