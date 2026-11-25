@@ -48,6 +48,11 @@ Plain CSS is the current project pattern. Most component styles use `<style scop
 
 Reuse Plume variables such as `--vp-c-brand`, `--vp-c-text-1`, `--vp-c-divider`, and `--vp-c-bg-soft`. Keep responsive behavior near the affected styles with explicit media queries; current components commonly use `640px` or `768px` breakpoints.
 
+### Buttons and theme images in Markdown pages
+
+- Buttons in page content reuse the site button classes inside a `doc-actions` row (`site.css`; add `doc-actions--center` to center it). Internal targets use `<RouteLink to="/zh-tw/download" class="nh3-btn nh3-btn-primary">` so navigation stays in the SPA; external targets use `<a class="nh3-btn nh3-btn-primary no-icon" target="_blank" rel="noopener noreferrer">`. `no-icon` removes Plume's external-link arrow, and `.vp-doc a.nh3-btn` removes the body-link underline. Examples: `docs/version/inkeys3.md`, `docs/version/introduction/win7.md`.
+- Light/dark image pairs use the markdown-image mark syntax enabled in `config.ts`: `![alt](/showcase/x-light.webp#light)` and `![alt](/showcase/x-dark.webp#dark)` on consecutive lines of the same paragraph; this renders plain `<img>` tags with `data-mode` and no figure caption.
+
 ## Accessibility and Browser Behavior
 
 Preserve the accessibility patterns already present: meaningful image `alt` text, `aria-label` and `aria-expanded` for custom controls, `aria-hidden` for non-visual analytics markup, and `rel="noopener noreferrer"` for new-tab links. Browser-only setup belongs in mounted hooks, event handlers, or an explicit SSR guard.

@@ -30,9 +30,11 @@ docs/
 
 - Put authored pages in `docs/`. Existing content groups define their scope: releases in `docs/version/`, user guides in `docs/wiki/`, technical articles in `docs/tutorial/`, the UInk specification in `docs/standard/`, and terms in `docs/tos.md`. zh-TW and en-US translations live in `docs/zh-tw/` and `docs/en-us/` at the same relative path; untranslated pages are mirrored at build time (see [i18n Guidelines](./i18n-guidelines.md)).
 - Put VuePress and Plume configuration in `docs/.vuepress/`. Navigation and sidebar data are already separated into `navbar.ts` and `sidebar.ts`.
+  - Sidebar spacing comes from Plume's grouping, not CSS. `getSidebarGroups` merges consecutive plain links into one untitled group, and every item with `items` becomes a group of its own (24px gap between groups). To separate links, wrap the later ones in an untitled `{ items: [...] }` group, as the download sidebars do after “使用条款”. Do not add separator lines or margin CSS for this.
 - Put custom Vue components in `docs/.vuepress/theme/components/`. Examples include `DownloadCard.vue`, `AsideNav.vue`, and `SiteVisitTracker.vue`.
 - Put site-wide theme overrides in `docs/.vuepress/theme/styles/custom.css`. Page-specific CSS may stay in its Markdown page, as in `docs/community.md`.
 - Put root-served static files in `docs/.vuepress/public/`. Content-specific subdirectories mirror page areas, such as `public/wiki/start/` and `public/tutorial/pptx-video-processing/`; reference them with root-relative URLs such as `/Inkeys.svg`.
+  - Never name a public directory after a page path or shortcut (`public/version/inkeys3/`, `public/inkeys3/`, `public/win7/`): static servers then treat `/x` as the folder, as `public/download/` already does for `/download`. The Inkeys3 page images live in `public/showcase/` for this reason.
 - Put local VuePress plugins in `docs/.vuepress/plugins/` and register them in the `plugins` array of `config.ts`. `uinkSpecBundle.ts` is the current example.
 - Put repository scripts outside `docs/` in `scripts/`. UInk sample generation lives in `scripts/uink-fixtures/`; see [UInk Spec Guidelines](./uink-spec-guidelines.md).
 
