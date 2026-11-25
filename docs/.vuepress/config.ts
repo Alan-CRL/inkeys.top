@@ -1,6 +1,6 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defineUserConfig } from 'vuepress'
-import type { HeadConfig } from 'vuepress'
+import type { HeadConfig, Page } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
 import { readdirSync } from 'node:fs'
@@ -12,6 +12,9 @@ import { uinkSpecBundlePlugin } from './plugins/uinkSpecBundle'
 
 const isProd = process.env.NODE_ENV === 'production'
 const siteBase = '/'
+const siteHostname = 'https://www.inkeys.top'
+// 各语言的主页（/、/zh-tw/、/en-us/）：路径正好是语言前缀。
+const isLocaleHome = (page: Page) => page.path === page.pathLocale
 // public 文件清单交给运行时脚本：只有清单里的路径才会在通道之间切换，页面链接和外部资源不受影响。
 const publicDir = fileURLToPath(new URL('./public/', import.meta.url))
 const publicFiles = (readdirSync(publicDir, { recursive: true, withFileTypes: true }))
@@ -24,24 +27,24 @@ export default defineUserConfig({
   lang: "zh-CN",
   title: "智绘教Inkeys",
   description:
-    "将你的创意随心所欲地书写在屏幕的任意角落。智绘教Inkeys 拥有丝滑流畅的高性能画笔、丰富强大的功能，以及众多贴心小设计，全面提升你的效率与使用体验。",
+    "智绘教Inkeys 是一款免费开源的 Windows 屏幕批注软件，桌面批注、自由白板、PPT 演示批注，一个软件就够了。书写流畅、界面精致，鼠标、触摸、屏幕笔和数位板都能用。",
 
   // 三种语言：简体中文在根路径（现有网址不变），繁中、英文带前缀；繁中与英文的品牌名只写 Inkeys。
   locales: {
     '/': {
       lang: 'zh-CN',
       title: '智绘教Inkeys',
-      description: '将你的创意随心所欲地书写在屏幕的任意角落。智绘教Inkeys 拥有丝滑流畅的高性能画笔、丰富强大的功能，以及众多贴心小设计，全面提升你的效率与使用体验。',
+      description: '智绘教Inkeys 是一款免费开源的 Windows 屏幕批注软件，桌面批注、自由白板、PPT 演示批注，一个软件就够了。书写流畅、界面精致，鼠标、触摸、屏幕笔和数位板都能用。',
     },
     '/zh-tw/': {
       lang: 'zh-TW',
       title: 'Inkeys',
-      description: '將你的創意隨心所欲地書寫在螢幕的任意角落。Inkeys 擁有反應靈敏、書寫流暢的畫筆、豐富強大的功能，以及眾多貼心小設計，全面提升你的效率與使用體驗。',
+      description: 'Inkeys 是一款免費開源的 Windows 螢幕批註軟體，桌面批註、自由白板、PPT 簡報批註，一個軟體就夠了。書寫流暢、介面精緻，滑鼠、觸控、螢幕筆和數位板都能用。',
     },
     '/en-us/': {
       lang: 'en-US',
       title: 'Inkeys',
-      description: 'Write your ideas anywhere on your screen. Inkeys gives you smooth, responsive pens, powerful features and thoughtful details that help you work more efficiently.',
+      description: 'Inkeys is a free, open-source screen annotation app for Windows. Draw on your desktop, use a whiteboard or annotate PowerPoint slideshows with smooth, responsive ink, using a mouse, touch, a screen pen or a pen tablet.',
     },
   },
 
@@ -86,7 +89,7 @@ export default defineUserConfig({
 
   theme: plumeTheme({
     /* 添加您的部署域名, 有助于 SEO, 生成 sitemap */
-    hostname: "https://www.inkeys.top",
+    hostname: siteHostname,
 
     /* 文档仓库配置，用于 editLink */
     docsRepo: "https://github.com/Alan-CRL/inkeys.top",
@@ -250,6 +253,47 @@ export default defineUserConfig({
           '.feature-page-media',
         ],
         scrollToClose: false, // 是否在滚动时关闭当前图片
+      },
+      // SEO（Plume 只在生产构建启用）。镜像页在本插件之后才生成，不经过这里，自带 noindex 与指向简体原页的 canonical。
+      seo: {
+        // 主页是产品介绍，不按文章处理：og:type 为 website，JSON-LD 不再是缺图、缺作者的 Article。
+        isArticle: page => Boolean(page.filePathRelative) && !page.frontmatter.home && !isLocaleHome(page),
+        // 每个收录页声明自己的规范网址，404 页除外。
+        canonical: page => page.frontmatter.layout === 'NotFound' ? null : `${siteHostname}${page.path}`,
+        ogp: (ogp, page, app) => {
+          // 主页没有页面标题，部分页面没有摘要，分享卡片退回到该语言的站点名与站点描述。
+          const locale = app.siteData.locales[page.pathLocale] ?? {}
+          ogp['og:title'] ||= locale.title || app.siteData.title
+          ogp['og:description'] ||= locale.description || app.siteData.description
+          return ogp
+        },
+        jsonLd: (jsonLd, page, app) => {
+          if (!isLocaleHome(page)) {
+            // 没有配图、没有署名的文章，插件会写出 image: [""] 与 author: []，结构化数据检查会报错，去掉空值。
+            if (Array.isArray(jsonLd.image) && !jsonLd.image.some(Boolean))
+              delete jsonLd.image
+            if (Array.isArray(jsonLd.author) && !jsonLd.author.length)
+              delete jsonLd.author
+            return jsonLd
+          }
+          const locale = app.siteData.locales[page.pathLocale] ?? {}
+          return {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            'name': locale.title || app.siteData.title,
+            'url': `${siteHostname}${page.path}`,
+            'description': locale.description || app.siteData.description,
+            'inLanguage': page.lang,
+          }
+        },
+        customHead: (head, page) => {
+          // 插件生成的 hreflang 只列出其他语言；按 Google 的要求补上自身，并以简体页作为 x-default。
+          if (!head.some(([tag, attrs]) => tag === 'link' && attrs.rel === 'alternate' && attrs.hreflang))
+            return
+          const rootPath = `/${page.path.slice(page.pathLocale.length)}`
+          head.push(['link', { rel: 'alternate', hreflang: page.lang.toLowerCase(), href: `${siteHostname}${page.path}` }])
+          head.push(['link', { rel: 'alternate', hreflang: 'x-default', href: `${siteHostname}${rootPath}` }])
+        },
       },
     },
   }),

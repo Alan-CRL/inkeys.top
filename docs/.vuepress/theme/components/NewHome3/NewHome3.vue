@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, useId, watch } from 'vue'
 import { useDarkMode, VPLink } from 'vuepress-theme-plume/client'
+import { useSiteLocaleData } from 'vuepress/client'
 import { computeLayout, createActiveClock, createPainter, createScene } from './softPen'
 import type { Painter } from './softPen'
 import { createPlayback } from './playback'
@@ -20,6 +21,8 @@ const scene = createScene()
 const downloadHref = '/download'
 const starHref = 'https://github.com/Alan-CRL/Inkeys'
 const { locale, copy } = useCopy()
+// 主视觉里的 Inkeys 字样是装饰图形，另放一个只给搜索引擎与读屏读取的 h1（各语言的站点名）。
+const siteLocale = useSiteLocaleData()
 const root = ref<HTMLDivElement>()
 const plane = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
@@ -517,6 +520,7 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div ref="heroCopy" class="nh3-copy" :style="copyStyle">
+      <h1 class="nh3-sr-only">{{ siteLocale.title }}</h1>
       <p class="nh3-tagline" :style="entranceStyles[1]"><span v-for="clause in copy.hero.tagline" :key="clause" class="nh3-clause">{{ clause }}</span></p>
       <div class="nh3-actions" :style="entranceStyles[2]">
         <VPLink class="nh3-btn nh3-btn-primary" :href="downloadHref" target="_blank" no-icon>{{ copy.hero.download }}</VPLink>
