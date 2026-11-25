@@ -12,7 +12,7 @@
   --uink-line: rgba(0, 0, 0, 0.1);
   /* 线稿：比分隔线深一档，1.5px 时仍清楚 */
   --uink-stroke: #9a9a9a;
-  --uink-accent: #006a63;
+  --uink-accent: #121212;
   --uink-paper: #ffffff;
 
   /* 只有墨迹是彩色的 */
@@ -40,7 +40,7 @@
   --uink-text3: #8a8a8a;
   --uink-line: rgba(255, 255, 255, 0.12);
   --uink-stroke: #6b6b6b;
-  --uink-accent: #58ffec;
+  --uink-accent: #f2f2f2;
   --uink-paper: #161616;
 
   /* 深色底上提亮墨迹，保持可辨 */

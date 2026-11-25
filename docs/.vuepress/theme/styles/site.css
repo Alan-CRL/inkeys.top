@@ -14,8 +14,12 @@
   --nh3-text2: #5c5c5c;
   --nh3-text3: #757575;
   --nh3-line: rgba(0, 0, 0, 0.1);
-  --nh3-accent: #006a63;
-  --nh3-on-accent: #ffffff;
+  /*
+   * 网页只用黑白灰（参照 OpenAI 官网）：强调色就是正文色，靠字重、下划线和灰阶层次区分，
+   * 不再使用软件里的青绿。深色模式随 --nh3-text 自动切换，不用另写。
+   */
+  --nh3-accent: var(--nh3-text);
+  --nh3-on-accent: var(--nh3-bg);
 
   --nh3-r-card: 24px;
   --nh3-r-media: 16px;
@@ -38,8 +42,6 @@
   --nh3-text2: #a6a6a6;
   --nh3-text3: #8a8a8a;
   --nh3-line: rgba(255, 255, 255, 0.12);
-  --nh3-accent: #58ffec;
-  --nh3-on-accent: #00201d;
 }
 
 /* ---------- Plume 变量指向令牌 ---------- */
@@ -63,11 +65,17 @@
   --vp-c-divider: var(--nh3-line);
   --vp-c-gutter: var(--nh3-line);
 
-  /* 品牌色即首页强调色；brand-2 用于悬停，brand-3 用于实心按钮底。 */
+  /*
+   * 品牌色即强调色（黑 / 白）；brand-2 用于悬停，与首页主按钮悬停同样淡一档，brand-3 用于实心按钮底。
+   * 链接、侧边栏选中项、提示框、徽标、内联代码都从这里取色，因此全站一起变为黑白灰。
+   */
   --vp-c-brand-1: var(--nh3-accent);
-  --vp-c-brand-2: #00877e;
+  --vp-c-brand-2: var(--nh3-text2);
+  --vp-c-brand-2: color-mix(in srgb, var(--nh3-text) 72%, var(--nh3-bg));
   --vp-c-brand-3: var(--nh3-accent);
-  --vp-c-brand-soft: rgba(0, 106, 99, 0.12);
+  --vp-c-brand-soft: rgba(0, 0, 0, 0.06);
+  /* 内联代码默认用品牌色写字；改为正文色，只靠表面色底区分。 */
+  --vp-code-color: var(--nh3-text);
   --vp-button-brand-text: var(--nh3-on-accent);
   --vp-button-brand-hover-text: var(--nh3-on-accent);
   --vp-button-brand-active-text: var(--nh3-on-accent);
@@ -84,8 +92,7 @@
 }
 
 [data-theme='dark'] {
-  --vp-c-brand-2: #9dfff4;
-  --vp-c-brand-soft: rgba(88, 255, 236, 0.14);
+  --vp-c-brand-soft: rgba(255, 255, 255, 0.1);
   /* 深色浮层（下拉、搜索弹窗）比底色亮一档，才能从页面上浮起来。 */
   --vp-c-bg-elv: var(--nh3-surface);
 }
@@ -314,6 +321,39 @@
   height: 38px;
   padding: 0 16px;
   font-size: 14px;
+}
+
+/*
+ * ---------- 正文链接：参照 OpenAI，下划线与文字同色、略粗、离文字稍远 ----------
+ * 链接与正文同色，只靠下划线识别，所以下划线要足够明显。
+ * Plume 悬停时会把下划线从 2px 拉到 5px，这里常态就是 5px，悬停只靠文字和下划线一起变淡，不跳动。
+ */
+.theme-plume .vp-doc a {
+  text-decoration-color: currentColor;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
+}
+
+.theme-plume .vp-doc a:hover {
+  text-underline-offset: 5px;
+}
+
+/*
+ * 提示框（tip）的图标是写死颜色的 SVG 背景图，改成以图标为遮罩、填正文色。
+ * warning / danger 保留黄、红：它们表达的是警示语义，不是品牌色。
+ */
+.theme-plume .vp-doc .hint-container:where(.tip, .hint) .hint-container-title::before {
+  background-color: currentColor;
+  background-image: none;
+  -webkit-mask: var(--vp-hint-container-icon) no-repeat center / 100%;
+  mask: var(--vp-hint-container-icon) no-repeat center / 100%;
+}
+
+/* 文章标签：Plume 按标签名自动分配彩色，统一改为灰色胶囊。 */
+.theme-plume .tag[class*='vp-tag-'] {
+  --vp-tag-color: var(--nh3-text2);
+  --vp-tag-hover-color: var(--nh3-text);
+  --vp-tag-bg: var(--vp-c-brand-soft);
 }
 
 /* ---------- 版本列表：底色与内容区相同后，用表面色卡片区分每一篇 ---------- */
