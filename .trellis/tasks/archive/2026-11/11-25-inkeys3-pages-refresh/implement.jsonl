@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "frontend spec index"}
+{"file": ".trellis/spec/frontend/i18n-guidelines.md", "reason": "zh-CN only now; locale links, mirrors, ASCII-in-markdown gotcha"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "formatting, build checks, 123pan reminder for public assets"}
+{"file": ".trellis/tasks/11-25-inkeys3-pages-refresh/research/kb2670838.md", "reason": "facts behind win7 troubleshooting copy"}
