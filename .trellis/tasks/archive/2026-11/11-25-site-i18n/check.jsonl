@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Build verification and release checks"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "Accessibility and styling checks for the language switch and translated components"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Data flow across build-time plugin, head script, router and components"}
+{"file": ".trellis/tasks/11-25-site-i18n/research/i18n-mechanisms.md", "reason": "Reference behavior for verifying redirects and switcher links"}

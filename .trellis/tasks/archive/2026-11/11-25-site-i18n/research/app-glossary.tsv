@@ -1,0 +1,103 @@
+UI.Bar.Components.ClassIslandSettingsLabel	CI设置	CI設定	CI settings
+SettingsUI.DesktopShortcut.PresetWhiteboard	Inkeys白板	Inkeys白板	Inkeys Whiteboard
+SettingsUI.PlugIn.PPTHelper.N	PPT演示助手 3 Lite	PPT簡報小幫手 3 Lite	PPT Presentation Helper 3 Lite
+SettingsUI.Regular.Appearance.BarZoom.N	主栏 UI 缩放	主欄 UI 縮放	Bar UI Scale
+SettingsUI.Regular.Appearance.Theme.N	主栏主题	主欄主題	Bar Theme
+SettingsUI.Regular.Appearance.ContentOpacity.N	主栏内容透明度	主欄內容透明度	Bar content opacity
+SettingsUI.Regular.ToolbarIconOrder.N	主栏图标顺序	主欄圖示順序	Main toolbar icon order
+SettingsUI.Regular.ToolbarExpansionDirection.N	主栏展开方向调整	主欄展開方向調整	Main toolbar expansion direction
+SettingsUI.Regular.Appearance.BackgroundOpacity.N	主栏背景透明度	主欄背景透明度	Bar background opacity
+SettingsUI.Design.Preferences	偏好设置	偏好設定	Preferences
+SettingsUI.HotKey.ToggleAnnotationN	全局批注切换	全域批註切換	Global annotation toggle
+UI.Bar.MainButtons.CloseWhiteboardLabel	关闭白板	關閉白板	Close
+UI.Bar.MainButtons.GeometryLabel	几何	幾何	Shapes
+SettingsUI.HotKey.FreezeE	切换屏幕定格。	切換螢幕定格。	Toggle screen freeze.
+UI.Bar.DrawAttributes.BrushLabel	刷子	筆刷	Brush
+SettingsUI.Draw.Eraser.PalmEraser.Enabled	启用手掌橡皮	啟用手掌橡皮	Enable palm eraser
+SettingsUI.Draw.Eraser.Automatic	启用笔速橡皮	啟用筆速橡皮	Enable speed-sensitive eraser
+SettingsUI.Draw.Eraser.SpeedEraser.BasicSettings	基本设置	基本設定	Basic settings
+SettingsUI.Draw.General.MultiTouch.N	多指绘图	多指繪圖	Multi-finger drawing
+UI.Bar.MainButtons.FreezeLabel	定格	定格	Freeze
+SettingsUI.HotKey.FreezeN	定格	定格	Freeze
+UI.Operate.Freeze	定格	定格	Freeze
+SettingsUI.Position.TypeBottomBar	居中底栏	置中底列	Centered bottom bar
+SettingsUI.Preset.StartupPlacement.CenteredBottomBar	居中底栏	置中底欄	Centered bottom bar
+SettingsUI.Design.CommonSettings	常用设置	常用設定	Common settings
+SettingsUI.Performance.LowLevelSection	底层设置	底層設定	Low-level settings
+UI.Bar.BottomDock.Mode	底栏模式	底欄模式	Bottom bar mode
+SettingsUI.Position.StateBottom	底栏状态	底列狀態	Bottom bar state
+SettingsUI.Position.StateBottomFolded	底栏状态（折叠）	底列狀態（摺疊）	Bottom bar state (collapsed)
+SettingsUI.PlugIn.PPTHelper.WidgetScale.State.BottomSideMiddle	底部主栏控件缩放	底部主欄控制項縮放	Bottom toolbar control scale
+SettingsUI.Draw.Eraser.PalmEraser.SizeMethodShapeNote	当前形状：{}	目前形狀：{}	Current shape: {}
+SettingsUI.Draw.Eraser.PalmEraser.N	手掌橡皮	手掌橡皮	Palm eraser
+SettingsUI.Draw.Eraser.PalmEraser.SizeSection	手掌橡皮大小	手掌橡皮大小	Palm eraser size
+SettingsUI.Draw.Eraser.PalmEraser.Shape	手掌橡皮形状	手掌橡皮形狀	Palm eraser shape
+SettingsUI.HotKey.HookReady	批注快捷键已就绪	批註快捷鍵已就緒	Annotation shortcuts are ready
+SettingsUI.Design.ShortcutEditingSection	批注编辑	註解編輯	Annotation editing
+SettingsUI.Draw.Cursor.Devices	按设备设置	依裝置設定	By device
+SettingsUI.PlugIn.PPTHelper.Tentative.AutoTakeOver	接管放映批注	接管放映批註	Take over presentation ink annotations
+SettingsUI.Design.Explore	推荐设置	推薦設定	Recommended settings
+SettingsUI.Regular.AutoCollapse.Erasing	擦除时收起主栏	擦除時收起主欄	Collapse the toolbar when erasing
+UI.Bar.StatusIndicator.Slideshow	放映模式	放映模式	Slideshow
+SettingsUI.StatusIndicator.TypeSlideshow	放映模式	放映模式	Slideshow
+SettingsUI.PlugIn.PPTHelper.WidgetDisplay.BottomMiddle	显示底部主栏控件	顯示底部主欄控制項	Show controls on the bottom toolbar
+UI.Bar.MainButtons.MinimizeWhiteboardLabel	最小化白板	最小化白板	Minimize whiteboard
+UI.Centre.Eraser	橡皮	橡皮擦	Eraser
+SettingsUI.Performance.Dashboard.Dimension.Eraser	橡皮	橡皮擦	Eraser
+SettingsUI.Draw.General.MultiTouch.Eraser	橡皮	橡皮擦	Eraser
+SettingsUI.Draw.Cursor.Eraser.N	橡皮光标	橡皮游標	Eraser cursor
+SettingsUI.Draw.Eraser.N	橡皮擦	橡皮擦	Eraser
+UI.Bar.EraserAttributes.ClearCanvasHint	清空当前画布批注	清空目前畫布註記	Clear annotations on this canvas
+UI.Bar.MainButtons.LaserLabel	激光笔	雷射筆	Laser
+UI.Bar.DrawAttributes.LaserLabel	激光笔	雷射筆	Laser Pen
+SettingsUI.Performance.Dashboard.Dimension.Laser	激光笔	雷射筆	Laser pointer
+SettingsUI.Draw.General.MultiTouch.Laser	激光笔	雷射筆	Laser Pen
+SettingsUI.Draw.Laser.ClickWave.N	激光笔点击光波	雷射筆點擊光波	Laser pointer click ripple
+SettingsUI.Draw.Laser.Particles.Dissolve	激光笔粒子飘散	雷射筆粒子飄散	Laser pointer dissolve
+SettingsUI.Draw.Laser.Particles.Trail	激光笔行进粒子	雷射筆行進粒子	Laser pointer trail particles
+UI.Pen.Pen	画笔	畫筆	Pen
+SettingsUI.Draw.Cursor.Style.Pen	画笔	畫筆	Pen
+UI.Centre.Pen	画笔	畫筆	Pen
+SettingsUI.Draw.Cursor.PenOpacity	画笔光标透明度	畫筆游標不透明度	Pen cursor opacity
+SettingsUI.Draw.Cursor.Style.HighlightPen	画笔（高亮）	畫筆（高亮）	Pen (highlighted)
+SettingsUI.Draw.WhiteboardSection	白板	白板	Whiteboard
+SettingsUI.DesktopShortcut.WhiteboardSection	白板	白板	Whiteboard
+UI.Bar.MainButtons.WhiteboardLabel	白板	白板	Board
+SettingsUI.Position.WhiteboardSection	白板场景	白板場景	Whiteboard
+SettingsUI.Draw.General.CanvasPanInertia.N	白板拖动惯性	白板拖曳慣性	Whiteboard drag inertia
+UI.Bar.DrawAttributes.HardPenLabel	硬笔	硬筆	Hard Pen
+UI.Bar.MainButtons.HardPenLabel	硬笔	硬筆	Hard Pen
+SettingsUI.Design.DrawDescription	笔迹与橡皮	筆跡與橡皮	Ink and eraser options
+SettingsUI.Draw.Eraser.Kind.Speed	笔速橡皮	筆速橡皮	Speed-sensitive eraser
+UI.Bar.MainButtons.EndPresentationLabel	结束放映	結束放映	End show
+SettingsUI.Regular.AutoCollapse.Drawing	绘制时收起主栏	繪製時收起主欄	Collapse the toolbar when drawing
+SettingsUI.Draw.Effect.N	绘图环境	繪圖環境	Drawing environment
+UI.Bar.MainButtons.HighlighterLabel	荧光笔	螢光筆	Highlight
+UI.Bar.DrawAttributes.HighlighterLabel	荧光笔	螢光筆	Highlighter
+SettingsUI.Draw.General.MultiTouch.Highlighter	荧光笔	螢光筆	Highlighter
+UI.Pen.Highlighter	荧光笔	螢光筆	Highlighter
+SettingsUI.Performance.Dashboard.Dimension.Highlighter	荧光笔	螢光筆	Highlighter
+SettingsUI.Design.NavigationTitle	设置	設定	Settings
+UI.Bar.MainButtons.SettingsLabel	设置	設定	Settings
+SettingsUI.Regular.Appearance.SettingTheme.N	设置主题	設定主題	Settings theme
+SettingsUI.DebugSoftware.PerformancePreview.Previous	设置变更前	設定變更前	Before settings change
+SettingsUI.Performance.Dashboard.PreviousTag	设置变更前	設定變更前	Before settings change
+SettingsUI.Regular.StartUp.SettingEntryAnimation.N	设置界面开屏动画	設定介面開屏動畫	Settings opening animation
+UI.Bar.StatusIndicator.SuperTop	超级置顶	超級置頂	SuperTop
+SettingsUI.PlugIn.SuperTop.Capability.SuperTop	超级置顶	超級置頂	Enable SuperTop
+SettingsUI.PlugIn.SuperTop.N	超级置顶	超級置頂	SuperTop
+SettingsUI.StatusIndicator.TypeSuperTop	超级置顶	超級置頂	SuperTop
+UI.Bar.MainButtons.SoftPenLabel	软笔	軟筆	Soft Pen
+UI.Bar.DrawAttributes.SoftPenLabel	软笔	軟筆	Soft Pen
+UI.Bar.MainButtons.ReturnToShowLabel	返回放映	返回放映	To show
+UI.Bar.MainButtons.ResumeWhiteboardLabel	返回白板	返回白板	To board
+UI.Bar.MainButtons.SelectLabel	选择	選擇	Select
+UI.Centre.Select	选择	選擇	Select
+UI.Centre.SelectClean	选择(清空)	選擇(清空)	Select (Clear)
+UI.Bar.MainButtons.SelectClearLabel	选择(清空)	選擇(清空)	Select
+(Clear)
+SettingsUI.Regular.SelectAndClickThrough.N	选择与穿透	選擇與穿透	Select and Click-through
+SettingsUI.Draw.Effect.Device.N	选择交互模式	選擇互動模式	Choose an interaction mode
+SettingsUI.Language.UI.Select	选择语言	選擇語言	Select Language
+SettingsUI.Regular.AutoCollapse.NonBottom	非底栏模式时	非底欄模式時	When not bottom-docked
+SettingsUI.Performance.AdvancedSection	高级设置	進階設定	Advanced settings
