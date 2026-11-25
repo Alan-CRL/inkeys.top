@@ -19,14 +19,16 @@ docs/
 |       |-- shim.d.ts
 |       `-- styles/custom.css
 |-- standard/
-|-- tos/
+|-- tos.md
+|-- zh-tw/
+|-- en-us/
 |-- tutorial/
 |-- version/
 |-- wiki/
 `-- *.md
 ```
 
-- Put authored pages in `docs/`. Existing content groups define their scope: releases in `docs/version/`, user guides in `docs/wiki/`, technical articles in `docs/tutorial/`, the UInk specification in `docs/standard/`, and terms in `docs/tos/`.
+- Put authored pages in `docs/`. Existing content groups define their scope: releases in `docs/version/`, user guides in `docs/wiki/`, technical articles in `docs/tutorial/`, the UInk specification in `docs/standard/`, and terms in `docs/tos.md`. zh-TW and en-US translations live in `docs/zh-tw/` and `docs/en-us/` at the same relative path; untranslated pages are mirrored at build time (see [i18n Guidelines](./i18n-guidelines.md)).
 - Put VuePress and Plume configuration in `docs/.vuepress/`. Navigation and sidebar data are already separated into `navbar.ts` and `sidebar.ts`.
 - Put custom Vue components in `docs/.vuepress/theme/components/`. Examples include `DownloadCard.vue`, `AsideNav.vue`, and `SiteVisitTracker.vue`.
 - Put site-wide theme overrides in `docs/.vuepress/theme/styles/custom.css`. Page-specific CSS may stay in its Markdown page, as in `docs/community.md`.
