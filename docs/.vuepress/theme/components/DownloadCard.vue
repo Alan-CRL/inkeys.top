@@ -52,8 +52,34 @@ const downloadLinks = {
 
 const year = new Date().getFullYear()
 
-// “谁可以使用”的提示（i）是否展开
+// “谁可以使用”的提示（i）：悬停或聚焦时显示浮窗，不占页面布局
 const showRiskNote = ref(false)
+const tipX = ref(0)
+let tipEl = null
+const setTipEl = (el) => {
+  tipEl = el
+}
+
+const openRiskNote = () => {
+  // 浮窗相对整段文字定位：左边缘尽量对齐图标，放不下时向左收，不超出段落
+  const lead = tipEl?.closest('.dl-lead')
+  const box = tipEl?.querySelector('.dl-tip__box')
+  if (lead && box) {
+    const room = lead.clientWidth - box.offsetWidth
+    const wanted = tipEl.getBoundingClientRect().left - lead.getBoundingClientRect().left - 16
+    tipX.value = Math.max(0, Math.min(wanted, room))
+  }
+  showRiskNote.value = true
+}
+
+const closeRiskNote = () => {
+  showRiskNote.value = false
+}
+
+// 触屏上没有“移开”，点到浮窗以外的地方时收起
+const onDocPointerDown = (event) => {
+  if (showRiskNote.value && tipEl && !tipEl.contains(event.target)) closeRiskNote()
+}
 
 const openDropdown = ref(null)
 
@@ -328,9 +354,9 @@ const closeDropdown = (name) => {
 }
 
 /*
- * 插图里的彩色墨迹：进入视口后按时间画出一次（不读取滚动进度）。
+ * 插图里的彩色墨迹（InkeysRenderer 渲染的图片）：进入视口后按时间从左到右显出一次（不读取滚动进度）。
  * static：服务端渲染、无 JS 或系统开启“减少动态效果”时直接显示画好的样子。
- * armed：已挂载、等待进入视口（墨迹隐藏）；play：开始绘制。
+ * armed：已挂载、等待进入视口（墨迹隐藏）；play：开始显现。
  */
 const galleries = reactive({ who: 'static', devices: 'static', inputs: 'static' })
 const galleryEls = {}
@@ -360,6 +386,7 @@ const armGalleries = () => {
 
 onMounted(async () => {
   armGalleries()
+  document.addEventListener('pointerdown', onDocPointerDown)
 
   try {
     releaseInfo.value = await fetchReleaseInfo()
@@ -376,6 +403,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocPointerDown)
   galleryObserver?.disconnect()
   galleryObserver = null
 })
@@ -517,62 +545,81 @@ onBeforeUnmount(() => {
     <!-- ---------- 谁可以使用 ---------- -->
     <section class="dl-section" aria-labelledby="dl-who-title">
       <h2 id="dl-who-title" class="dl-h2">谁可以使用</h2>
-      <p class="dl-lead">
-        任何人都可以免费使用：个人、学校、企业，用于学习、教学还是商业用途都可以。<button
-          type="button"
-          class="dl-i"
-          :aria-expanded="showRiskNote"
-          aria-controls="dl-risk-note"
-          aria-label="使用范围说明"
-          @click="showRiskNote = !showRiskNote"
-        >i</button>
+      <!-- 提示图标与末尾几个字包在不换行的片段里，图标不会单独掉到下一行 -->
+      <p class="dl-lead dl-lead--tip">
+        任何人都可以免费使用：个人、学校、企业，用于学习、教学还是商业用途<span class="dl-nowrap">都可以。<span
+          :ref="setTipEl"
+          class="dl-tip"
+          :class="{ 'is-open': showRiskNote }"
+          @mouseenter="openRiskNote"
+          @mouseleave="closeRiskNote"
+          @focusin="openRiskNote"
+          @focusout="closeRiskNote"
+          @keydown.esc="closeRiskNote"
+        ><button
+            type="button"
+            class="dl-i"
+            :aria-expanded="showRiskNote"
+            aria-describedby="dl-risk-note"
+            aria-label="使用范围说明"
+            @click="openRiskNote"
+          ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 7.2 V11.6 M8 4.4 V4.5" /></svg></button><span class="dl-tip__pop" :style="{ '--tip-x': tipX + 'px' }"><span id="dl-risk-note" class="dl-tip__box" role="tooltip">
+            智绘教Inkeys 并非为特定行业或监管领域专门设计或认证。在高风险场景中使用前，请自行评估是否适用，并自行承担相应风险。详见<a :href="downloadLinks.tosService" class="no-icon">使用条款 · 服务说明</a>。
+          </span></span></span></span>
       </p>
-
-      <div id="dl-risk-note" class="dl-note" :class="{ 'is-open': showRiskNote }">
-        <div class="dl-note__clip">
-          <p class="dl-note__box">
-            智绘教Inkeys 并非为特定行业或监管领域专门设计或认证。在航空航天、医疗等高风险场景中使用前，请自行评估是否适用，并自行承担相应风险。详见<a :href="downloadLinks.tosService" class="no-icon">使用条款 · 服务说明</a>。
-          </p>
-        </div>
-      </div>
 
       <ul :ref="setGalleryEl('who')" class="dl-grid" data-gallery="who" :data-anim="galleries.who">
         <li class="dl-tile" style="--i: 0">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <circle class="dl-art" cx="80" cy="44" r="14" />
-            <path class="dl-art" d="M50 100 Q50 72 80 72 Q110 72 110 100" />
-            <path class="dl-ink dl-ink--blue" pathLength="1" d="M110 40 L118 48 L132 28" />
+            <circle class="dl-art" cx="42" cy="46" r="13" />
+            <path class="dl-art" d="M16 102 Q16 72 42 72 Q68 72 68 102" />
+            <rect class="dl-art" x="82" y="18" width="62" height="84" rx="4" />
+            <path class="dl-art" d="M92 68 H134 M92 79 H134 M92 90 H118" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/person-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/person-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">个人</h3>
-          <p class="dl-tile__desc">自学、记笔记，也适合直播和创作</p>
+          <p class="dl-tile__desc">自学、备考、记笔记</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="22" y="20" width="116" height="74" rx="4" />
-            <path class="dl-art" d="M44 94 L38 110 M116 94 L122 110" />
-            <path class="dl-ink dl-ink--green" pathLength="1" d="M38 44 L46 56 L54 44 M46 56 V68 M62 54 H74 M62 60 H74 M84 44 L100 68 M100 44 L84 68 M106 40 Q110 34 114 40 L106 48 H115" />
-            <path class="dl-ink dl-ink--red" pathLength="1" d="M36 80 Q80 74 122 78" />
+            <rect class="dl-art" x="18" y="14" width="124" height="74" rx="4" />
+            <rect class="dl-art" x="58" y="88" width="44" height="5" rx="2.5" />
+            <path class="dl-art" d="M42 88 L34 110 M118 88 L126 110" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/school-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/school-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">教育</h3>
           <p class="dl-tile__desc">课堂教学、培训和讲座</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <path class="dl-ink dl-ink--highlighter" pathLength="1" d="M52 55 H108" />
-            <rect class="dl-art" x="46" y="16" width="68" height="94" rx="3" />
-            <path class="dl-art" d="M58 30 H70 V40 H58 Z M74 30 H86 V40 H74 Z M90 30 H102 V40 H90 Z M58 50 H70 V60 H58 Z M74 50 H86 V60 H74 Z M90 50 H102 V60 H90 Z M58 70 H70 V80 H58 Z M90 70 H102 V80 H90 Z M74 110 V92 H86 V110" />
+            <path class="dl-art" d="M12 106 H148" />
+            <rect class="dl-art" x="20" y="26" width="46" height="80" rx="3" />
+            <path class="dl-art" d="M29 36 H37 V44 H29 Z M49 36 H57 V44 H49 Z M29 52 H37 V60 H29 Z M49 52 H57 V60 H49 Z M29 68 H37 V76 H29 Z M49 68 H57 V76 H49 Z M38 106 V90 H48 V106" />
+            <rect class="dl-art" x="82" y="82" width="12" height="24" rx="2" />
+            <rect class="dl-art" x="100" y="68" width="12" height="38" rx="2" />
+            <rect class="dl-art" x="118" y="52" width="12" height="54" rx="2" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/business-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/business-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">企业</h3>
-          <p class="dl-tile__desc">会议、汇报和内部培训</p>
+          <h3 class="dl-tile__name">企业与商业</h3>
+          <p class="dl-tile__desc">会议、汇报和商业用途，同样免费</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <path class="dl-art" d="M28 20 V100 H136" />
-            <path class="dl-art" d="M44 100 V76 H58 V100 M68 100 V64 H82 V100 M92 100 V52 H106 V100 M116 100 V38 H130 V100" />
-            <path class="dl-ink dl-ink--red" pathLength="1" d="M40 70 Q66 64 84 46 Q102 28 128 22 M118 18 L128 22 L122 31" />
+            <rect class="dl-art" x="18" y="16" width="124" height="80" rx="6" />
+            <circle class="dl-art dl-art--dot" cx="30" cy="28" r="2.5" />
+            <path class="dl-art" d="M37 28 H50 M30 86 H130" />
+            <circle class="dl-art dl-art--solid" cx="62" cy="86" r="2.5" />
+            <circle class="dl-art" cx="118" cy="58" r="14" />
+            <circle class="dl-art" cx="118" cy="54" r="4.5" />
+            <path class="dl-art" d="M109 68.5 Q110 61.5 118 61.5 Q126 61.5 127 68.5" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/live-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/live-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">商业</h3>
-          <p class="dl-tile__desc">可以用于商业用途，同样免费</p>
+          <h3 class="dl-tile__name">创作与直播</h3>
+          <p class="dl-tile__desc">录课、直播和视频讲解</p>
         </li>
       </ul>
     </section>
@@ -587,42 +634,64 @@ onBeforeUnmount(() => {
       <ul :ref="setGalleryEl('devices')" class="dl-grid" data-gallery="devices" :data-anim="galleries.devices">
         <li class="dl-tile" style="--i: 0">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="30" y="20" width="100" height="66" rx="5" />
-            <path class="dl-art" d="M18 90 H142 L136 100 H24 Z" />
-            <path class="dl-ink dl-ink--blue" pathLength="1" d="M44 64 C52 40 64 40 64 56 C64 70 78 70 84 54 C88 44 98 44 104 58" />
-            <path class="dl-ink dl-ink--green dl-ink--thin" pathLength="1" d="M44 76 Q80 72 114 75" />
+            <rect class="dl-art" x="12" y="8" width="96" height="62" rx="4" />
+            <path class="dl-art" d="M52 70 V84 M68 70 V84 M40 84 H80" />
+            <rect class="dl-art dl-art--solid" x="72" y="46" width="72" height="48" rx="4" />
+            <path class="dl-art dl-art--solid" d="M62 94 H154 V97 Q154 103 148 103 H68 Q62 103 62 97 Z" />
+            <path class="dl-art" d="M100 94 Q100 97 103 97 H113 Q116 97 116 94" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/computer-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/computer-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">笔记本电脑</h3>
-          <p class="dl-tile__desc">随身携带，打开就能写</p>
+          <h3 class="dl-tile__name">笔记本和台式电脑</h3>
+          <p class="dl-tile__desc">搭配鼠标、触控板或数位板使用</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="34" y="12" width="92" height="66" rx="6" />
-            <path class="dl-art" d="M30 90 H130 L126 104 H34 Z M44 97 H116" />
-            <path class="dl-ink dl-ink--red" pathLength="1" d="M58 46 C58 32 100 30 104 44 C107 56 66 62 60 50 C58 44 66 38 76 37" />
+            <rect class="dl-art" x="10" y="8" width="140" height="82" rx="4" />
+            <rect class="dl-art" x="15" y="13" width="130" height="66" rx="1.5" />
+            <circle class="dl-art dl-art--dot" cx="80" cy="84.5" r="1.2" />
+            <path class="dl-art" d="M130 84.5 H140 M52 90 L44 107 M108 90 L116 107 M49 99 H111" />
+            <circle class="dl-art" cx="44" cy="110" r="2.5" />
+            <circle class="dl-art" cx="116" cy="110" r="2.5" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/panel-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/panel-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">二合一平板</h3>
-          <p class="dl-tile__desc">拆下键盘，直接用笔写</p>
+          <h3 class="dl-tile__name">大屏一体机</h3>
+          <p class="dl-tile__desc">教室和会议室里的触控大屏</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="12" y="12" width="136" height="78" rx="4" />
-            <path class="dl-art" d="M60 90 L54 110 M100 90 L106 110 M46 110 H64 M96 110 H114" />
-            <path class="dl-ink dl-ink--blue" pathLength="1" d="M28 50 C34 32 44 32 44 46 C44 60 56 60 60 44 C64 30 74 32 76 46 C78 58 88 58 92 44" />
-            <path class="dl-ink dl-ink--green" pathLength="1" d="M26 72 Q70 66 98 70" />
-            <path class="dl-ink dl-ink--red" pathLength="1" d="M106 42 L114 52 L130 30" />
+            <rect class="dl-art" x="22" y="6" width="116" height="6" rx="3" />
+            <path class="dl-art" d="M28 12 V74 H132 V12 M80 74 V79" />
+            <circle class="dl-art" cx="80" cy="81" r="2" />
+            <path class="dl-art" d="M38 26 H86 M38 40 H96 M38 52 H92 M38 64 H72" />
+            <path class="dl-art dl-art--dash" d="M62 92 L30 76 M98 92 L130 76" />
+            <rect class="dl-art dl-art--solid" x="54" y="92" width="52" height="20" rx="5" />
+            <circle class="dl-art" cx="70" cy="102" r="6" />
+            <circle class="dl-art" cx="70" cy="102" r="2.5" />
+            <path class="dl-art" d="M86 98 H98 M86 102 H98 M86 106 H98 M62 112 V115 M98 112 V115" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/projector-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/projector-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">一体机</h3>
-          <p class="dl-tile__desc">教室和会议室里的触控大屏</p>
+          <h3 class="dl-tile__name">投影仪</h3>
+          <p class="dl-tile__desc">投到幕布或墙上，边讲边批注</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <path class="dl-ink dl-ink--highlighter" pathLength="1" d="M42 50 H104" />
-            <rect class="dl-art" x="30" y="14" width="100" height="68" rx="4" />
-            <path class="dl-art" d="M44 36 H112 M44 50 H104 M44 64 H88 M80 82 V98 M58 102 H102" />
+            <rect class="dl-art" x="34" y="8" width="92" height="62" rx="5" />
+            <rect class="dl-art" x="39" y="13" width="82" height="52" rx="1.5" />
+            <path class="dl-art" d="M30 82 H130 L140 110 H20 Z M68 82 V78 M92 82 V78" />
+            <path class="dl-art dl-art--keys" d="M35 89 H125 M33 95.5 H127" />
+            <path class="dl-art" d="M31 102.5 H50 M56 102.5 H104 M110 102.5 H129" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/detachable-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/detachable-dark.webp" width="160" height="120" />
+            <g transform="translate(100 50) rotate(45)">
+              <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-46 Q-3.5 -50 0 -50 Q3.5 -50 3.5 -46 V-9 Z" />
+              <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
+            </g>
           </svg>
-          <h3 class="dl-tile__name">台式电脑</h3>
-          <p class="dl-tile__desc">搭配鼠标或数位板使用</p>
+          <h3 class="dl-tile__name">二合一平板</h3>
+          <p class="dl-tile__desc">拆下键盘，直接用笔写</p>
         </li>
       </ul>
 
@@ -632,37 +701,55 @@ onBeforeUnmount(() => {
       <ul :ref="setGalleryEl('inputs')" class="dl-grid" data-gallery="inputs" :data-anim="galleries.inputs">
         <li class="dl-tile" style="--i: 0">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <path class="dl-ink dl-ink--blue" pathLength="1" d="M20 94 C30 62 50 60 54 78 C58 94 74 92 84 66" />
-            <rect class="dl-art dl-art--solid" x="96" y="48" width="36" height="56" rx="18" />
-            <path class="dl-art" d="M114 48 V66 M114 48 C114 36 126 34 128 18" />
+            <rect class="dl-art" x="98" y="50" width="38" height="58" rx="19" />
+            <path class="dl-art" d="M98 74 H136 M117 50 V74 M117 50 C117 38 130 36 132 18" />
+            <rect class="dl-art dl-art--solid" x="114.5" y="57" width="5" height="11" rx="2.5" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/mouse-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/mouse-dark.webp" width="160" height="120" />
+            <path class="dl-art dl-art--solid" d="M78 84 V101 L82.5 97 L85.5 104 L88.5 102.7 L85.5 96 H91 Z" />
           </svg>
           <h3 class="dl-tile__name">鼠标</h3>
           <p class="dl-tile__desc">按住拖动就能写</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <path class="dl-ink dl-ink--green" pathLength="1" d="M24 74 C38 42 58 40 62 60 C66 80 86 78 106 46" />
-            <path class="dl-art dl-art--solid" d="M96 120 V58 Q96 44 108 44 Q120 44 120 58 V120" />
-            <path class="dl-art" d="M102 56 Q108 50 114 56" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/touch-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/touch-dark.webp" width="160" height="120" />
+            <path class="dl-art dl-art--solid" d="M96 120 L88.5 102 L71.7 81.5 A5.5 5.5 0 0 1 80.3 74.5 L90 86.3 V50 A6 6 0 0 1 102 50 V68 A5.5 5.5 0 0 1 113 68 V71 A5.5 5.5 0 0 1 124 71 V75 A5.5 5.5 0 0 1 135 75 V98 Q135 110 128 120" />
+            <path class="dl-art" d="M102 68 V82 M113 71 V84 M124 75 V86 M93 52 Q96 49 99 52" />
           </svg>
           <h3 class="dl-tile__name">触摸</h3>
           <p class="dl-tile__desc">手指直接在屏幕上写</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="16" y="44" width="128" height="66" rx="8" />
-            <rect class="dl-art dl-art--dash" x="34" y="54" width="92" height="46" rx="3" />
-            <path class="dl-ink dl-ink--red" pathLength="1" d="M42 90 C52 72 62 70 66 82 C70 94 80 88 87 62" />
-            <path class="dl-art dl-art--solid" d="M126 10 L134 18 L94 58 L86 62 L90 54 Z" />
+            <rect class="dl-art" x="14" y="6" width="84" height="54" rx="4" />
+            <path class="dl-art" d="M56 60 V68 M42 68 H70" />
+            <rect class="dl-art dl-art--solid" x="48" y="76" width="102" height="38" rx="5" />
+            <rect class="dl-art dl-art--dash" x="56" y="82" width="72" height="26" rx="2" />
+            <circle class="dl-art" cx="139" cy="87" r="2" />
+            <circle class="dl-art" cx="139" cy="95" r="2" />
+            <circle class="dl-art" cx="139" cy="103" r="2" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/tablet-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/tablet-dark.webp" width="160" height="120" />
+            <g transform="translate(96 98) rotate(40)">
+              <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-42 Q-3.5 -46 0 -46 Q3.5 -46 3.5 -42 V-9 Z" />
+              <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
+            </g>
           </svg>
           <h3 class="dl-tile__name">数位板</h3>
           <p class="dl-tile__desc">连上电脑就能写</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <rect class="dl-art" x="14" y="16" width="108" height="82" rx="5" />
-            <path class="dl-ink dl-ink--blue" pathLength="1" d="M28 72 C36 46 48 46 50 60 C52 74 66 74 70 58 C74 46 86 50 95 74" />
-            <path class="dl-art dl-art--solid" d="M138 22 L146 30 L104 72 L95 76 L98 67 Z" />
+            <rect class="dl-art" x="12" y="14" width="112" height="84" rx="6" />
+            <rect class="dl-art" x="17" y="19" width="102" height="74" rx="2" />
+            <image class="dl-ink dl-ink--light" href="/download/ink/pen-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/download/ink/pen-dark.webp" width="160" height="120" />
+            <g transform="translate(96 68) rotate(45)">
+              <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-50 Q-3.5 -54 0 -54 Q3.5 -54 3.5 -50 V-9 Z" />
+              <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
+            </g>
           </svg>
           <h3 class="dl-tile__name">屏幕笔</h3>
           <p class="dl-tile__desc">像在纸上一样书写</p>
@@ -693,10 +780,6 @@ onBeforeUnmount(() => {
 .dl {
   /* 插图用色：线稿比分隔线深一档；只有墨迹是彩色的（与 UInk 主页一致） */
   --dl-stroke: #9a9a9a;
-  --dl-ink-blue: #2563eb;
-  --dl-ink-red: #e5484d;
-  --dl-ink-green: #2f9e44;
-  --dl-ink-yellow: #ffd43b;
 
   container-type: inline-size;
   color: var(--nh3-text);
@@ -704,9 +787,6 @@ onBeforeUnmount(() => {
 
 [data-theme='dark'] .dl {
   --dl-stroke: #6b6b6b;
-  --dl-ink-blue: #5b8cff;
-  --dl-ink-red: #ff6b70;
-  --dl-ink-green: #4cc265;
 }
 
 /* ---------- 下载 ---------- */
@@ -806,7 +886,8 @@ onBeforeUnmount(() => {
 .dl-info {
   display: grid;
   grid-template-rows: 0fr;
-  max-width: 560px;
+  /* 宽度要放得下一整行 64 位的 SHA256 */
+  max-width: 720px;
   margin: 0 auto;
   opacity: 0;
   /* 收起时 visibility: hidden，里面的按钮不会被 Tab 选中；等收起动画结束再隐藏 */
@@ -899,12 +980,10 @@ onBeforeUnmount(() => {
   word-break: break-all;
 }
 
+/* 窄屏放不下一行时折行，始终显示完整的校验值 */
 .dl-info__hash {
   flex: 1;
-  overflow: hidden;
   font-family: var(--vp-font-family-mono);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .dl-info__case {
@@ -1098,14 +1177,12 @@ onBeforeUnmount(() => {
 }
 
 .dl-legal a,
-.dl-note a,
 .dl-lead a {
   color: var(--nh3-text2);
   font-weight: 400;
 }
 
 .dl-legal a:hover,
-.dl-note a:hover,
 .dl-lead a:hover {
   color: var(--nh3-text);
 }
@@ -1148,60 +1225,78 @@ onBeforeUnmount(() => {
   text-wrap: pretty;
 }
 
-/* 提示按钮（i）：与文字同高的小圆圈 */
+/* 提示（i）：行内的小圆钮，悬停或聚焦时在段落下方浮出说明 */
+.dl-lead--tip {
+  position: relative;
+}
+
+.dl-nowrap {
+  white-space: nowrap;
+}
+
 .dl-i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-left: 6px;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
   padding: 0;
-  border: 1.5px solid currentColor;
+  border: 0;
   border-radius: 50%;
-  background: transparent;
-  color: var(--nh3-text3);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 12px;
-  font-style: italic;
-  font-weight: 700;
-  line-height: 1;
+  background: var(--nh3-surface-hover);
+  color: var(--nh3-text2);
   vertical-align: -3px;
-  cursor: pointer;
+  cursor: help;
   transition: color var(--nh3-dur) var(--nh3-ease), background-color var(--nh3-dur) var(--nh3-ease);
 }
 
-.dl-i:hover,
-.dl-i[aria-expanded='true'] {
-  color: var(--nh3-text);
+.dl-i svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
 }
 
-.dl-note {
-  display: grid;
-  grid-template-rows: 0fr;
+.dl-tip.is-open .dl-i {
+  background: var(--nh3-text);
+  color: var(--vp-c-bg);
+}
+
+/* 浮窗的定位层与段落同宽、紧贴段落下沿；上方的内边距让鼠标从图标移到浮窗时不会中途收起 */
+.dl-tip__pop {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 10;
+  display: block;
+  padding-top: 8px;
+  white-space: normal;
   opacity: 0;
   visibility: hidden;
-  transition: grid-template-rows var(--nh3-dur-slow) var(--nh3-ease), opacity var(--nh3-dur-slow) var(--nh3-ease), margin-top var(--nh3-dur-slow) var(--nh3-ease), visibility 0s linear var(--nh3-dur-slow);
+  transform: translateY(-4px);
+  transition: opacity var(--nh3-dur) var(--nh3-ease), transform var(--nh3-dur) var(--nh3-ease), visibility 0s linear var(--nh3-dur);
 }
 
-.dl-note.is-open {
-  grid-template-rows: 1fr;
-  margin-top: 16px;
+.dl-tip.is-open .dl-tip__pop {
   opacity: 1;
   visibility: visible;
+  transform: none;
   transition-delay: 0s;
 }
 
-.dl-note__clip {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.dl-note__box {
-  margin: 0;
-  padding: 14px 18px;
-  border-radius: var(--nh3-r-media);
-  background: var(--nh3-surface);
+.dl-tip__box {
+  display: block;
+  width: min(440px, 100%);
+  box-sizing: border-box;
+  margin-left: var(--tip-x, 0px);
+  padding: 12px 16px;
+  border-radius: var(--nh3-r-control);
+  background: var(--vp-c-bg-elv);
+  box-shadow: 0 0 0 1px var(--nh3-line), 0 12px 32px rgba(0, 0, 0, 0.12);
   color: var(--nh3-text2);
   font-size: 14px;
   line-height: 1.8;
@@ -1272,57 +1367,37 @@ onBeforeUnmount(() => {
   stroke-dasharray: 3 4;
 }
 
-.dl-ink {
-  fill: none;
-  stroke-width: 3.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+/* 圆点：实心的小标记（录制灯、指示灯） */
+.dl-art--dot {
+  fill: var(--dl-stroke);
 }
 
-.dl-ink--thin {
-  stroke-width: 2.4;
-}
-
-.dl-ink--blue {
-  stroke: var(--dl-ink-blue);
-}
-
-.dl-ink--red {
-  stroke: var(--dl-ink-red);
-}
-
-.dl-ink--green {
-  stroke: var(--dl-ink-green);
-}
-
-/* 荧光笔：平头、半透明，压在线稿下面 */
-.dl-ink--highlighter {
-  stroke: var(--dl-ink-yellow);
-  stroke-width: 11;
+/* 键盘的按键行 */
+.dl-art--keys {
+  stroke-dasharray: 5 3.2;
   stroke-linecap: butt;
-  opacity: 0.45;
 }
 
-/*
- * 墨迹绘制：pathLength=1，用虚线偏移画出整条路径。
- * 隐藏时同时把透明度设为 0，避免圆头端点在长度为 0 时留下一个点。
- */
-.dl-grid[data-anim] .dl-ink {
-  stroke-dasharray: 1 2;
+/* 墨迹图：深浅各一套，随主题切换 */
+.dl-ink--dark,
+[data-theme='dark'] .dl-ink--light {
+  display: none;
 }
 
+[data-theme='dark'] .dl-ink--dark {
+  display: inline;
+}
+
+/* 墨迹显现：从左到右揭开；同时切换透明度，不支持 clip-path 的浏览器也能正常显示 */
 .dl-grid[data-anim='armed'] .dl-ink {
-  stroke-dashoffset: 1;
   opacity: 0;
+  clip-path: inset(0 100% 0 0);
 }
 
 .dl-grid[data-anim='play'] .dl-ink {
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 900ms var(--nh3-ease-out) calc(var(--i, 0) * 120ms + 150ms), opacity 0s linear calc(var(--i, 0) * 120ms + 150ms);
-}
-
-.dl-grid[data-anim='play'] .dl-ink--highlighter {
-  opacity: 0.45;
+  opacity: 1;
+  clip-path: inset(0 0 0 0);
+  transition: clip-path 1100ms var(--nh3-ease-out) calc(var(--i, 0) * 120ms + 150ms), opacity 0s linear calc(var(--i, 0) * 120ms + 150ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1331,7 +1406,7 @@ onBeforeUnmount(() => {
   }
 
   .dl-info,
-  .dl-note,
+  .dl-tip__pop,
   .dl-drop__menu {
     transition: none;
   }
