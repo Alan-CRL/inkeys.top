@@ -4,7 +4,8 @@ import { useRoute } from 'vuepress/client'
 
 const route = useRoute()
 
-const isHomePage = computed(() => route.path === '/' || route.path === '/index.html')
+// 三种语言的首页：/、/zh-tw/、/en-us/
+const isHomePage = computed(() => /^\/(?:(?:zh-tw|en-us)\/)?(?:index\.html)?$/.test(route.path))
 
 const BUSUANZI_SCRIPT_ID = 'busuanzi-script'
 const BUSUANZI_SCRIPT_SRC = 'https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'

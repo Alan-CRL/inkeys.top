@@ -1,53 +1,123 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
+import { useLocale } from '../../../i18n/useLocale'
+import type { Locale } from '../../../i18n/locales'
 import './uink.css'
 
-interface Level {
-  key: string
+interface LevelText {
   label: string
   name: string
   text: string
 }
 
-// 每级的显示效果按 compatibility.md 的读取回退表与 media.md 的回退规则。
-const LEVELS: Level[] = [
-  {
-    key: 'core',
-    label: '核心',
-    name: '核心级',
-    text: '多页的笔迹和基础图形都画在原处。荧光笔按普通笔画成不透明的圆头线，虚线变成实线，箭头没有端头，圆角变成直角；图片、PDF 和橡皮被跳过。',
+const LEVELS = [{ key: 'core' }, { key: 'basic' }, { key: 'standard' }, { key: 'full' }, { key: 'inkeys' }] as const
+type LevelKey = typeof LEVELS[number]['key']
+
+// 每级的显示效果按 compatibility.md 的读取回退表与 media.md 的回退规则；等级英文名与 levels.md 一致。
+const COPY: Record<Locale, { group: string, describe: (name: string, text: string) => string, levels: Record<LevelKey, LevelText> }> = {
+  'zh-CN': {
+    group: '读取器等级',
+    describe: (name, text) => `同一页课堂板书在${name}读取器中的显示效果：${text}`,
+    levels: {
+      core: {
+        label: '核心',
+        name: '核心级',
+        text: '多页的笔迹和基础图形都画在原处。荧光笔按普通笔画成不透明的圆头线，虚线变成实线，箭头没有端头，圆角变成直角；图片、PDF 和橡皮被跳过。',
+      },
+      basic: {
+        label: '基础',
+        name: '基础级',
+        text: '笔迹和图形的外观正确：荧光笔半透明、平头，虚线、箭头和圆角都画出来，页面显示点阵背景。',
+      },
+      standard: {
+        label: '标准',
+        name: '标准级',
+        text: '插入的图片出现在原来的位置。PDF 讲义页保留位置，显示为占位框。',
+      },
+      full: {
+        label: '完整',
+        name: '完整级',
+        text: 'PDF 讲义页也显示出来。除了 Inkeys 特有的橡皮与 Clear，文件里的内容都能完整呈现。',
+      },
+      inkeys: {
+        label: '+Inkeys',
+        name: 'Inkeys 附加级',
+        text: '橡皮生效，擦过的笔迹留出空白；不支持时橡皮必须被跳过，笔迹保持原样。附加级可以叠加在任一等级上，这里叠加在完整级上。',
+      },
+    },
   },
-  {
-    key: 'basic',
-    label: '基础',
-    name: '基础级',
-    text: '笔迹和图形的外观正确：荧光笔半透明、平头，虚线、箭头和圆角都画出来，页面显示点阵背景。',
+  'zh-TW': {
+    group: '讀取器等級',
+    describe: (name, text) => `同一頁課堂板書在${name}讀取器中的顯示效果：${text}`,
+    levels: {
+      core: {
+        label: '核心',
+        name: '核心級',
+        text: '多頁的筆跡和基礎圖形都畫在原處。螢光筆按一般的筆畫成不透明的圓頭線，虛線變成實線，箭頭沒有端頭，圓角變成直角；圖片、PDF 和橡皮擦被略過。',
+      },
+      basic: {
+        label: '基礎',
+        name: '基礎級',
+        text: '筆跡和圖形的外觀正確：螢光筆半透明、平頭，虛線、箭頭和圓角都畫出來，頁面顯示點陣背景。',
+      },
+      standard: {
+        label: '標準',
+        name: '標準級',
+        text: '插入的圖片出現在原來的位置。PDF 講義頁保留位置，顯示為預留框。',
+      },
+      full: {
+        label: '完整',
+        name: '完整級',
+        text: 'PDF 講義頁也顯示出來。除了 Inkeys 特有的橡皮擦與 Clear，檔案裡的內容都能完整呈現。',
+      },
+      inkeys: {
+        label: '+Inkeys',
+        name: 'Inkeys 附加級',
+        text: '橡皮擦生效，擦過的筆跡留出空白；不支援時必須略過橡皮擦，筆跡保持原樣。附加級可以疊加在任一等級上，這裡疊加在完整級上。',
+      },
+    },
   },
-  {
-    key: 'standard',
-    label: '标准',
-    name: '标准级',
-    text: '插入的图片出现在原来的位置。PDF 讲义页保留位置，显示为占位框。',
+  'en-US': {
+    group: 'Reader level',
+    describe: (name, text) => `How the same page of classroom notes is displayed (${name}): ${text}`,
+    levels: {
+      core: {
+        label: 'Core',
+        name: 'Core',
+        text: 'Strokes and basic shapes on every page are drawn in place. The highlighter is drawn as an opaque, round-capped line like a normal pen, dashed lines become solid, arrows lose their heads and rounded corners become square; images, PDFs and erasers are skipped.',
+      },
+      basic: {
+        label: 'Basic',
+        name: 'Basic',
+        text: 'Strokes and shapes look right: the highlighter is translucent with flat ends, dashes, arrows and rounded corners are all drawn, and the page shows its dot grid.',
+      },
+      standard: {
+        label: 'Standard',
+        name: 'Standard',
+        text: 'Inserted images appear where they were placed. PDF handout pages appear as placeholder boxes in their original positions.',
+      },
+      full: {
+        label: 'Full',
+        name: 'Full',
+        text: 'PDF handout pages are shown too. Everything in the file is displayed, except the Inkeys-specific eraser and Clear.',
+      },
+      inkeys: {
+        label: '+Inkeys',
+        name: 'Inkeys extension',
+        text: 'The eraser takes effect and erased strokes leave gaps; readers that do not support it must skip the eraser and leave strokes as they are. The extension can be added on top of any level; here it is added to Full.',
+      },
+    },
   },
-  {
-    key: 'full',
-    label: '完整',
-    name: '完整级',
-    text: 'PDF 讲义页也显示出来。除了 Inkeys 特有的橡皮与 Clear，文件里的内容都能完整呈现。',
-  },
-  {
-    key: 'inkeys',
-    label: '+Inkeys',
-    name: 'Inkeys 附加级',
-    text: '橡皮生效，擦过的笔迹留出空白；不支持时橡皮必须被跳过，笔迹保持原样。附加级可以叠加在任一等级上，这里叠加在完整级上。',
-  },
-]
+}
+
+const locale = useLocale()
+const t = computed(() => COPY[locale.value])
 
 const uid = useId()
 // 默认显示“完整”，先让读者看到全部内容，再切到低等级对比回退效果
 const level = ref(LEVELS.findIndex(l => l.key === 'full'))
 const buttons = ref<HTMLButtonElement[]>([])
-const current = computed(() => LEVELS[level.value])
+const current = computed(() => ({ key: LEVELS[level.value].key, ...t.value.levels[LEVELS[level.value].key] }))
 
 const select = async (index: number, focus = false) => {
   level.value = (index + LEVELS.length) % LEVELS.length
@@ -75,7 +145,7 @@ const onKeydown = (event: KeyboardEvent) => {
 
 <template>
   <figure class="uink-c uink-tier" :data-level="current.key">
-    <div class="uink-tier__control" role="radiogroup" aria-label="读取器等级" @keydown="onKeydown">
+    <div class="uink-tier__control" role="radiogroup" :aria-label="t.group" @keydown="onKeydown">
       <button
         v-for="(item, index) in LEVELS"
         :key="item.key"
@@ -88,7 +158,7 @@ const onKeydown = (event: KeyboardEvent) => {
         :tabindex="index === level ? 0 : -1"
         @click="select(index)"
       >
-        {{ item.label }}
+        {{ t.levels[item.key].label }}
       </button>
     </div>
 
@@ -96,7 +166,7 @@ const onKeydown = (event: KeyboardEvent) => {
       <svg
         viewBox="0 0 960 540"
         role="img"
-        :aria-label="`同一页课堂板书在${current.name}读取器中的显示效果：${current.text}`"
+        :aria-label="t.describe(current.name, current.text)"
       >
         <defs>
           <pattern :id="`${uid}-dots`" width="30" height="30" patternUnits="userSpaceOnUse">

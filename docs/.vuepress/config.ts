@@ -7,6 +7,7 @@ import { readdirSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createAssetRuntimeScript } from './cdn/runtime'
+import { i18nPlugin } from './i18n/plugin'
 import { uinkSpecBundlePlugin } from './plugins/uinkSpecBundle'
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -24,6 +25,25 @@ export default defineUserConfig({
   title: "智绘教Inkeys",
   description:
     "将你的创意随心所欲地书写在屏幕的任意角落。智绘教Inkeys 拥有丝滑流畅的高性能画笔、丰富强大的功能，以及众多贴心小设计，全面提升你的效率与使用体验。",
+
+  // 三种语言：简体中文在根路径（现有网址不变），繁中、英文带前缀；繁中与英文的品牌名只写 Inkeys。
+  locales: {
+    '/': {
+      lang: 'zh-CN',
+      title: '智绘教Inkeys',
+      description: '将你的创意随心所欲地书写在屏幕的任意角落。智绘教Inkeys 拥有丝滑流畅的高性能画笔、丰富强大的功能，以及众多贴心小设计，全面提升你的效率与使用体验。',
+    },
+    '/zh-tw/': {
+      lang: 'zh-TW',
+      title: 'Inkeys',
+      description: '將你的創意隨心所欲地書寫在螢幕的任意角落。Inkeys 擁有反應靈敏、書寫流暢的畫筆、豐富強大的功能，以及眾多貼心小設計，全面提升你的效率與使用體驗。',
+    },
+    '/en-us/': {
+      lang: 'en-US',
+      title: 'Inkeys',
+      description: 'Write your ideas anywhere on your screen. Inkeys gives you smooth, responsive pens, powerful features and thoughtful details that help you work more efficiently.',
+    },
+  },
 
   head: [
     [
@@ -221,13 +241,12 @@ export default defineUserConfig({
   }),
 
   plugins: [
+    // 整页加载时按语言跳转，并生成快捷入口的跳转页（见 i18n/plugin.ts）
+    i18nPlugin(),
     redirectPlugin({
       config: {
         // key 是旧路径，value 是新路径
-        '/inkeys3': '/version/inkeys3',
-        '/inkeys3.html': '/version/inkeys3.html',
-        '/win7': '/version/introduction/win7',
-        '/win7.html': '/version/introduction/win7.html',
+        // /inkeys3、/win7、/tos/zh-cn、/tos/en-us 需要按语言跳转，由 i18nPlugin 生成（见 i18n/plugin.ts）。
         '/version/pptcom3': '/version/introduction/pptcom3',
         '/version/pptcom3.html': '/version/introduction/pptcom3.html',
         '/pptx-video-processing': '/tutorial/pptx-video-processing',
@@ -241,7 +260,7 @@ export default defineUserConfig({
     {
       name: 'inkeys-changelog-time',
       extendsPage(page) {
-        const match = page.filePathRelative?.match(/^version\/changelog\/(\d{4})(\d{2})(\d{2})([a-z])\.md$/)
+        const match = page.filePathRelative?.match(/^(?:(?:zh-tw|en-us)\/)?version\/changelog\/(\d{4})(\d{2})(\d{2})([a-z])\.md$/)
         if (!match || page.frontmatter.createTime) return
         const minute = String(match[4].charCodeAt(0) - 97).padStart(2, '0')
         page.frontmatter.createTime = `${match[1]}/${match[2]}/${match[3]} 00:${minute}:00`

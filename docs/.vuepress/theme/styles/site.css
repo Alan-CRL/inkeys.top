@@ -157,6 +157,8 @@
 .theme-plume .vp-navbar .content-body .translations,
 .theme-plume .vp-navbar .content-body .vp-menu-badge,
 .theme-plume .vp-navbar .content-body .navbar-menu-link[href^='/download'],
+.theme-plume .vp-navbar .content-body .navbar-menu-link[href^='/zh-tw/download'],
+.theme-plume .vp-navbar .content-body .navbar-menu-link[href^='/en-us/download'],
 .theme-plume .vp-navbar .content-body .appearance {
   display: none;
 }
@@ -171,6 +173,18 @@
 .theme-plume .vp-navbar .navbar-menu-link:hover,
 .theme-plume .vp-navbar .navbar-menu-link.active {
   color: var(--nh3-text);
+}
+
+/*
+ * 语言切换只保留 LocaleSwitch.vue 一个入口（切换时会记住选择）。
+ * Plume rc.219 自带三处：顶栏 VPNavBarTranslations（.vp-navbar-translations，上面已随 .translations 隐藏）、
+ * 顶栏“更多”浮层里的 .group.translations、手机菜单里的 VPNavScreenTranslations（.vp-nav-screen-translations）。
+ * 升级 Plume 后如果又出现第二个语言入口，先核对这些类名。
+ */
+.theme-plume .vp-navbar-translations,
+.theme-plume .vp-navbar-extra .group.translations,
+.theme-plume .vp-nav-screen .vp-nav-screen-translations {
+  display: none;
 }
 
 /* ---------- 搜索按钮：与首页按钮同一风格（表面色底、无边框） ---------- */
@@ -252,6 +266,13 @@
 
   .theme-plume .vp-navbar .nh3-nav-actions {
     margin-left: 8px;
+  }
+}
+
+/* 英文栏目名更长，960px 附近（侧边栏出现后）会超出约 24px，链接间距再收一档。 */
+@media (min-width: 960px) and (max-width: 1099px) {
+  html:lang(en) .theme-plume .vp-navbar .navbar-menu-link {
+    padding: 0 7px;
   }
 }
 

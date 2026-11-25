@@ -185,6 +185,12 @@
   display: inline-block;
 }
 
+/* 英文分句排在同一行时需要词间空格（inline-block 会吞掉末尾空格），中文不需要。 */
+.nh3-root:lang(en) .nh3-clause:not(:last-child),
+.nh3-main:lang(en) .nh3-clause:not(:last-child) {
+  margin-inline-end: 0.28em;
+}
+
 /* ---------- 区块容器 ---------- */
 
 .nh3-wrap {

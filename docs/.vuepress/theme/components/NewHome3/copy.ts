@@ -1,6 +1,8 @@
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import type { Locale } from '../../../i18n/locales'
+import { useLocale } from '../../../i18n/useLocale'
 
-export type Locale = 'zh-CN' | 'zh-TW' | 'en-US'
+export type { Locale }
 
 // S2 三张场景卡片的锚点，顺序与 s1.cards、s2.scenes 一致。
 export const SCENE_IDS = ['nh3-scene-screen', 'nh3-scene-slides', 'nh3-scene-board'] as const
@@ -10,6 +12,7 @@ const zhCN = {
     download: '立即下载',
     theme: '切换深浅色',
     more: '更多链接',
+    language: '切换语言',
     links: { github: 'GitHub', gitcode: 'GitCode', forum: '智教联盟论坛', bilibili: '哔哩哔哩', qq: 'QQ 群' },
   },
   hero: {
@@ -97,12 +100,13 @@ const zhCN = {
 
 export type Copy = typeof zhCN
 
-// 繁中和英文是测试版式用的临时文案，不是定稿译文。
+// 繁中、英文译文的术语以软件语言包（Inkeys/src/i18n）为准；品牌名均写作 Inkeys。
 const zhTW: Copy = {
   nav: {
     download: '立即下載',
     theme: '切換深淺色',
     more: '更多連結',
+    language: '切換語言',
     links: { github: 'GitHub', gitcode: 'GitCode', forum: '智教聯盟論壇', bilibili: '嗶哩嗶哩', qq: 'QQ 群' },
   },
   hero: {
@@ -116,7 +120,7 @@ const zhTW: Copy = {
     sizeGroup: '粗細',
     pause: '暫停動畫',
     resume: '繼續動畫',
-    pens: { eraser: '橡皮擦', hard: '硬筆', soft: '軟筆', highlighter: '螢光筆', laser: '雷射筆', brush: '刷子' },
+    pens: { eraser: '橡皮擦', hard: '硬筆', soft: '軟筆', highlighter: '螢光筆', laser: '雷射筆', brush: '筆刷' },
     colors: { rainbow: '彩虹色', neutral: '中性色', red: '紅色', amber: '琥珀色', green: '綠色', cyan: '青色', blue: '藍色', purple: '紫色' },
     sizes: { thin: '細', medium: '中', thick: '粗' },
   },
@@ -137,7 +141,7 @@ const zhTW: Copy = {
         name: '螢幕示範',
         media: '螢幕示範的輪播畫面',
         tagline: ['抓住每一個想法，', '在任何畫面上寫下來。'],
-        text: '從 PDF、Word 文件到網頁，隨手圈畫標註，筆鋒自然流暢。畫面在動？按下定格，背景立刻停住，用螢光筆、雷射筆從容講解；取消定格後切回選取，墨跡原地不動，背景照常操作。',
+        text: '從 PDF、Word 文件到網頁，隨手圈畫標註，筆鋒自然流暢。畫面在動？按下定格，背景立刻停住，用螢光筆、雷射筆從容講解；解除定格並切回「選擇」後，就能照常操作背景，墨跡仍留在原位。',
         note: '',
       },
       {
@@ -165,7 +169,7 @@ const zhTW: Copy = {
   },
   s5b: {
     title: ['精心打磨的介面，', '在任何裝置上都順手。'],
-    text: '主欄輕巧靈動，按下有回彈，光影隨指標流動；設定介面通透簡潔，20 種語言隨時切換。滑鼠、觸控、螢幕筆、繪圖板，從筆電到教室大螢幕，新舊 Windows 都能流暢使用。',
+    text: '主欄輕巧靈動，按下有回彈，光影隨游標流動；設定介面通透簡潔，20 種語言隨時切換。滑鼠、觸控、螢幕筆、數位板，從筆電到教室大螢幕，新舊 Windows 都能流暢使用。',
     window: '設定介面',
     bar: '主欄',
   },
@@ -183,10 +187,11 @@ const enUS: Copy = {
     download: 'Download',
     theme: 'Switch between light and dark',
     more: 'More links',
+    language: 'Change language',
     links: { github: 'GitHub', gitcode: 'GitCode', forum: 'Community forum', bilibili: 'Bilibili', qq: 'QQ group' },
   },
   hero: {
-    tagline: ['Writing on screen that simply flows,', 'in an app that is a pleasure to use.'],
+    tagline: ['Fluid ink. Beautiful motion.', 'Screen annotation that feels as good as it looks.'],
     download: 'Download',
     star: 'Star on GitHub',
     stylePanel: 'Writing style',
@@ -196,16 +201,16 @@ const enUS: Copy = {
     sizeGroup: 'Thickness',
     pause: 'Pause animation',
     resume: 'Resume animation',
-    pens: { eraser: 'Eraser', hard: 'Pen', soft: 'Brush pen', highlighter: 'Highlighter', laser: 'Laser', brush: 'Brush' },
+    pens: { eraser: 'Eraser', hard: 'Hard Pen', soft: 'Soft Pen', highlighter: 'Highlighter', laser: 'Laser pointer', brush: 'Brush' },
     colors: { rainbow: 'Rainbow', neutral: 'Neutral', red: 'Red', amber: 'Amber', green: 'Green', cyan: 'Cyan', blue: 'Blue', purple: 'Purple' },
     sizes: { thin: 'Thin', medium: 'Medium', thick: 'Thick' },
   },
   s1: {
     title: 'Write, mark up and explain, right on your screen',
-    lead: 'Screen annotation, a whiteboard and slide shows, all in one app',
+    lead: 'Screen annotation, a whiteboard and PPT slideshows, all in one app',
     cards: [
       { name: 'Screen annotation', text: 'Write directly over anything on your screen.', media: 'Short loop showing screen annotation' },
-      { name: 'Slide shows', text: 'Follows your slides, so you can write as you present.', media: 'Short loop showing slide show annotation' },
+      { name: 'PPT slideshows', text: 'Follows your slides, so you can write as you present.', media: 'Short loop showing slideshow annotation' },
       { name: 'Whiteboard', text: 'Plenty of room to work things out.', media: 'Short loop showing the whiteboard' },
     ],
   },
@@ -216,42 +221,42 @@ const enUS: Copy = {
       {
         name: 'Screen demos',
         media: 'Looping demo of annotating the screen',
-        tagline: ['Catch every idea,', 'and write it over anything on screen.'],
-        text: 'From PDFs and Word documents to web pages, circle and mark up as you go, with strokes that taper naturally. Is the picture moving? Freeze it and the background stops at once, so you can explain with the highlighter and the laser pointer. Unfreeze, switch back to Select, and your ink stays put while the background works as usual.',
+        tagline: ['Capture every idea,', 'right on your screen.'],
+        text: 'From PDFs and Word documents to web pages, circle and mark up as you go, with strokes that taper naturally. Need to pause what’s on screen? Press Freeze and the background stops at once, so you can explain with the highlighter and the laser pointer. Turn off Freeze and switch back to Select: your ink stays in place while you use the app underneath.',
         note: '',
       },
       {
         name: 'Meetings and talks',
-        media: 'Looping demo of annotating a slide show',
+        media: 'Looping demo of annotating a slideshow',
         tagline: ['Annotate as you present,', 'and make your point clearer.'],
-        text: 'Write straight on your slides during a slide show. Move to the next slide and the ink switches with it; go back and your earlier notes are still there. Page buttons sit on the bottom bar and at both sides of the screen, so you can turn pages while writing, and they fade when idle so they never cover your content.',
+        text: 'Write straight on your slides during a slideshow. Move to the next slide and the ink switches with it; go back and your earlier notes are still there. Use the page buttons on the bottom bar or on either side of the screen to turn pages while writing. They fade when idle to stay out of the way.',
         note: '',
       },
       {
         name: 'Classroom and whiteboard',
         media: 'Looping demo of teaching on the whiteboard',
-        tagline: ['Notes, working and worked examples,', 'one whiteboard is enough.'],
-        text: 'A large bottom bar with text labels makes every action easier. A rich set of shapes lets you draw squares, triangles and pyramids with ease, ready for construction lines in solid geometry. In two-person mode, one person erases with a palm while the other keeps writing. Turn on Safe Teaching mode and the app comes back by itself even if something goes wrong.*',
+        tagline: ['Notes, step-by-step working and examples,', 'all on one whiteboard.'],
+        text: 'A large bottom bar with text labels makes every action easier. Draw squares, triangles and pyramids with ease, then add guide lines to explain 3D geometry. When two people write together, one can erase with a palm while the other keeps writing. Turn on Safe Teaching mode and the app comes back by itself even if something goes wrong.*',
         note: '* Automatic note recovery will arrive in a later version.',
       },
     ],
   },
   s5a: {
-    title: 'Every stroke keeps up with your thinking',
-    lead: ['A new drawing engine, powered by C++ and Direct3D', 'Quick sketches never break, careful writing keeps its taper'],
+    title: 'Ink that keeps up with you',
+    lead: ['A new drawing engine, powered by C++ and Direct3D', 'Smooth lines for quick sketches, tapered strokes for careful writing'],
     media: 'Handwriting demo',
     play: 'Play',
     pause: 'Pause',
   },
   s5b: {
     title: ['A carefully crafted interface,', 'at home on any device.'],
-    text: 'The main bar is light and lively: it springs back when pressed, and light follows your pointer. Settings are clear and uncluttered, with 20 languages to switch between at any time. Mouse, touch, screen pen or drawing tablet, from a laptop to a classroom display, it runs smoothly on Windows old and new.',
+    text: 'The main toolbar is light and lively: it springs back when pressed, and its lighting follows your pointer. Settings are clear and uncluttered, with 20 languages to switch between at any time. Use a mouse, touch, a screen pen or a pen tablet, on anything from a laptop to a classroom display. Inkeys runs smoothly on Windows old and new.',
     window: 'Settings window',
-    bar: 'Main bar',
+    bar: 'Main toolbar',
   },
   s6: {
-    title: 'Write your first stroke on your screen, right now',
-    lead: 'Free and open source. Download and start',
+    title: 'Make your first stroke right on your screen',
+    lead: 'Free and open source. Download to get started',
     download: 'Download',
     requirement: 'Requires Windows 7 SP1 or later',
   },
@@ -260,16 +265,9 @@ const enUS: Copy = {
 
 const dictionaries: Record<Locale, Copy> = { 'zh-CN': zhCN, 'zh-TW': zhTW, 'en-US': enUS }
 
-// 目前只有简体中文有访问路径；服务端渲染始终输出简体中文。
-const locale = ref<Locale>('zh-CN')
-const copy = computed(() => dictionaries[locale.value])
-
-/** 仅在浏览器端调用：地址里的 ?lang=zh-TW / ?lang=en-US 用来预览其他语言的版式，上线前去掉。 */
-export function previewLocaleFromQuery() {
-  const query = new URLSearchParams(window.location.search).get('lang')
-  locale.value = query && query in dictionaries ? query as Locale : 'zh-CN'
-}
-
+/** 语言由当前路由所在的 locale 决定（/、/zh-tw/、/en-us/），服务端渲染直接输出对应语言。须在 setup 中调用。 */
 export function useCopy() {
+  const locale = useLocale()
+  const copy = computed(() => dictionaries[locale.value])
   return { locale, copy }
 }

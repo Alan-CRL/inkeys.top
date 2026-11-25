@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useDarkMode, VPLink } from 'vuepress-theme-plume/client'
+import { LOCALE_PREFIX } from '../../../i18n/locales'
+import LocaleSwitch from '../LocaleSwitch.vue'
 import { useCopy } from './copy'
 
-// 全站顶栏右侧：下载按钮、深浅色切换、更多链接。窄屏只留下载按钮，其余在主题的手机菜单里。
-const { copy } = useCopy()
+// 全站顶栏右侧：下载按钮、语言切换、深浅色切换、更多链接。窄屏只留下载和语言按钮，其余在主题的手机菜单里。
+const { locale, copy } = useCopy()
+// 下载按钮去当前语言的下载页。
+const downloadHref = computed(() => `${LOCALE_PREFIX[locale.value]}download`)
 const isDark = useDarkMode()
 const more = ref<HTMLDivElement>()
 const open = ref(false)
@@ -62,7 +66,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="nh3-nav-actions">
-    <VPLink class="nh3-btn nh3-btn-primary nh3-btn-small" href="/download" no-icon>{{ copy.nav.download }}</VPLink>
+    <VPLink class="nh3-btn nh3-btn-primary nh3-btn-small" :href="downloadHref" no-icon>{{ copy.nav.download }}</VPLink>
+    <LocaleSwitch />
     <!-- 两个图标都输出，由 data-theme 决定显示哪个：服务端不知道访客的主题，按状态渲染会造成水合不一致。 -->
     <button class="nh3-nav-round nh3-nav-theme" type="button" :aria-label="copy.nav.theme" :title="copy.nav.theme" @click="toggleTheme">
       <svg class="is-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 14.4A8.5 8.5 0 0 1 9.6 3.6a8.5 8.5 0 1 0 10.8 10.8Z" /></svg>
@@ -209,7 +214,7 @@ onBeforeUnmount(() => {
   outline-offset: -2px;
 }
 
-/* 手机宽度下主题改用汉堡菜单，深浅色和这些链接都在菜单里。 */
+/* 手机宽度下主题改用汉堡菜单，深浅色和这些链接都在菜单里；语言按钮仍保留在顶栏。 */
 @media (max-width: 767px) {
   .nh3-nav-actions {
     margin-left: 4px;

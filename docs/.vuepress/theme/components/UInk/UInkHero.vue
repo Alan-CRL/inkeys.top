@@ -1,7 +1,69 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, useId } from 'vue'
 import { VPLink } from 'vuepress-theme-plume/client'
+import { useLocale } from '../../../i18n/useLocale'
+import type { Locale } from '../../../i18n/locales'
+import { LOCALE_PREFIX } from '../../../i18n/locales'
 import './uink.css'
+
+// 文案按语言取值；规范正文只有简体中文，繁中 / 英文按钮指向同语言的镜像页（见 i18n/mirror.ts）。
+const COPY: Record<Locale, {
+  title: [string, string]
+  leadBefore: string
+  leadAfter: string
+  read: string
+  samples: string
+  scene: string
+  whiteboard: string
+  slide: string
+  image: string
+  play: string
+  pause: string
+}> = {
+  'zh-CN': {
+    title: ['一份墨迹，', '处处可读。'],
+    leadBefore: 'UInk 是开放的墨迹文件规范。一整块白板、一整份 PPT 的批注，只需要一个 ',
+    leadAfter: '：多页、多屏、图片与 PDF 都收在里面。换一款软件打开，每一笔都在原处。',
+    read: '阅读规范',
+    samples: '下载样例',
+    scene: '一个 .uink 文件展开成四页：白板页、带批注的 PPT 幻灯片、图片和 PDF 讲义页，随后又收回成一个文件。',
+    whiteboard: '白板页',
+    slide: 'PPT 幻灯片',
+    image: '图片',
+    play: '播放动画',
+    pause: '暂停动画',
+  },
+  'zh-TW': {
+    title: ['一份墨跡，', '處處可讀。'],
+    leadBefore: 'UInk 是開放的墨跡檔案規範。一整塊白板、一整份 PPT 的批註，只需要一個 ',
+    leadAfter: '：多頁、多螢幕、圖片與 PDF 都收在裡面。換一款軟體開啟，每一筆都在原處。',
+    read: '閱讀規範',
+    samples: '下載範例',
+    scene: '一個 .uink 檔案展開成四頁：白板頁、帶批註的 PPT 投影片、圖片和 PDF 講義頁，隨後又收回成一個檔案。',
+    whiteboard: '白板頁',
+    slide: 'PPT 投影片',
+    image: '圖片',
+    play: '播放動畫',
+    pause: '暫停動畫',
+  },
+  'en-US': {
+    title: ['One ink file,', 'readable anywhere.'],
+    leadBefore: 'UInk is an open file format for digital ink. All the pages of a whiteboard, or all the annotations on a PowerPoint deck, fit in a single ',
+    leadAfter: ' file, with multiple pages, multiple screens, images and PDFs all inside. Open it in another app and every stroke is right where you left it.',
+    read: 'Read the spec',
+    samples: 'Get samples',
+    scene: 'A .uink file unfolds into four pages: a whiteboard page, an annotated PowerPoint slide, an image and a PDF handout page, then folds back into one file.',
+    whiteboard: 'Whiteboard',
+    slide: 'PowerPoint slide',
+    image: 'Image',
+    play: 'Play animation',
+    pause: 'Pause animation',
+  },
+}
+
+const locale = useLocale()
+const t = computed(() => COPY[locale.value])
+const prefix = computed(() => LOCALE_PREFIX[locale.value])
 
 const uid = useId()
 const stage = ref<HTMLElement | null>(null)
@@ -55,14 +117,14 @@ const toggle = () => {
     <div class="uink-hero__grid">
       <div class="uink-hero__text">
         <h1 class="uink-hero__title">
-          <span class="uink-hero__clause">一份墨迹，</span><span class="uink-hero__clause">处处可读。</span>
+          <span class="uink-hero__clause">{{ t.title[0] }}</span><span class="uink-hero__clause">{{ t.title[1] }}</span>
         </h1>
         <p class="uink-hero__lead">
-          UInk 是开放的墨迹文件规范。一整块白板、一整份 PPT 的批注，只需要一个 <code>.uink</code>：多页、多屏、图片与 PDF 都收在里面。换一款软件打开，每一笔都在原处。
+          {{ t.leadBefore }}<code>.uink</code>{{ t.leadAfter }}
         </p>
         <div class="uink-hero__actions">
-          <VPLink class="uink-btn uink-btn--primary" href="/standard/intro" no-icon>阅读规范</VPLink>
-          <VPLink class="uink-btn uink-btn--secondary" href="/standard/conformance#公开样例" no-icon>下载样例</VPLink>
+          <VPLink class="uink-btn uink-btn--primary" :href="`${prefix}standard/intro`" no-icon>{{ t.read }}</VPLink>
+          <VPLink class="uink-btn uink-btn--secondary" :href="`${prefix}standard/conformance#公开样例`" no-icon>{{ t.samples }}</VPLink>
         </div>
       </div>
 
@@ -70,11 +132,11 @@ const toggle = () => {
         <div
           class="uink-hero__scene"
           role="img"
-          aria-label="一个 .uink 文件展开成四页：白板页、带批注的 PPT 幻灯片、图片和 PDF 讲义页，随后又收回成一个文件。"
+          :aria-label="t.scene"
         >
           <!-- 白板页：点阵背景与几笔手写 -->
           <div class="uink-page" style="--i: 0; --fx: -22.5cqw; --fy: -17cqw; --r: -5deg">
-            <span class="uink-page__label">白板页</span>
+            <span class="uink-page__label">{{ t.whiteboard }}</span>
             <svg viewBox="0 0 160 120" aria-hidden="true">
               <defs>
                 <pattern :id="`${uid}-dots`" width="12" height="12" patternUnits="userSpaceOnUse">
@@ -90,7 +152,7 @@ const toggle = () => {
 
           <!-- PPT 幻灯片：标题与要点，红笔圈出重点 -->
           <div class="uink-page" style="--i: 1; --fx: 22.5cqw; --fy: -18cqw; --r: 4deg">
-            <span class="uink-page__label uink-page__label--end">PPT 幻灯片</span>
+            <span class="uink-page__label uink-page__label--end">{{ t.slide }}</span>
             <svg viewBox="0 0 160 120" aria-hidden="true">
               <path class="art art--bold" d="M20 30 H92" />
               <circle class="art-fill" cx="22" cy="54" r="2" />
@@ -105,7 +167,7 @@ const toggle = () => {
 
           <!-- 图片：风景线稿，蓝笔箭头批注 -->
           <div class="uink-page" style="--i: 2; --fx: -23cqw; --fy: 17cqw; --r: 3deg">
-            <span class="uink-page__label">图片</span>
+            <span class="uink-page__label">{{ t.image }}</span>
             <svg viewBox="0 0 160 120" aria-hidden="true">
               <rect class="art" x="16" y="30" width="128" height="78" rx="4" />
               <path class="art" d="M16 98 L54 64 L76 82 L100 58 L144 98" />
@@ -139,7 +201,7 @@ const toggle = () => {
           v-if="mounted && !reduced"
           type="button"
           class="uink-hero__toggle"
-          :aria-label="userPaused ? '播放动画' : '暂停动画'"
+          :aria-label="userPaused ? t.play : t.pause"
           :aria-pressed="userPaused"
           @click="toggle"
         >

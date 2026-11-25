@@ -1,63 +1,92 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useLocale } from '../../../i18n/useLocale'
+import type { Locale } from '../../../i18n/locales'
 import './uink.css'
 
 interface Node {
-  name: string
   tag: string
-  desc: string
   icon: string
 }
 
 // 图标是静态的线稿，只有“内容”一项带墨迹颜色；字符串为本文件内的常量。
 const NODES: Node[] = [
   {
-    name: '一个文件',
     tag: '.uink',
-    desc: '全部页面与笔迹',
     icon: '<path class="art" d="M10 4 H26 L34 12 V36 Q34 38 32 38 H10 Q8 38 8 36 V6 Q8 4 10 4 Z M26 4 V12 H34" />',
   },
   {
-    name: '场景',
     tag: 'Workspace',
-    desc: '白板、PPT、屏幕批注',
     icon: '<rect class="art" x="4" y="8" width="24" height="17" rx="2" /><rect class="art" x="14" y="17" width="24" height="17" rx="2" /><path class="art" d="M18 22 H30 M18 27 H26" />',
   },
   {
-    name: '页面',
     tag: 'pageGuid',
-    desc: '白板的每一页、PPT 的每张幻灯片',
     icon: '<rect class="art" x="12" y="4" width="22" height="28" rx="2" /><path class="art" d="M8 9 V34 Q8 36 10 36 H28" /><path class="art" d="M4 14 V38 Q4 40 6 40 H22" />',
   },
   {
-    name: '屏幕',
     tag: 'Device',
-    desc: '每块屏幕各存一份',
     icon: '<rect class="art" x="3" y="8" width="20" height="14" rx="1.5" /><rect class="art" x="21" y="14" width="18" height="13" rx="1.5" /><path class="art" d="M10 27 H16 M13 22 V27 M27 32 H33 M30 27 V32" />',
   },
   {
-    name: '图层',
     tag: 'layerIndex',
-    desc: '从下往上叠加',
     icon: '<path class="art" d="M21 6 L37 14 L21 22 L5 14 Z" /><path class="art" d="M5 21 L21 29 L37 21" /><path class="art" d="M5 28 L21 36 L37 28" />',
   },
   {
-    name: '内容',
     tag: 'Ink · Shape · Media',
-    desc: '笔迹、图形、图片与 PDF',
     icon: '<rect class="art" x="22" y="6" width="16" height="12" rx="1.5" /><path class="art" d="M24 16 L29 11 L32 14 L34 12 L38 16" /><path class="ink ink--blue" d="M4 30 C8 20 12 20 12 28 C12 34 18 34 20 26" /><rect class="ink ink--green" x="24" y="25" width="13" height="11" rx="2" /><path class="ink ink--yellow" d="M3 38 H20" />',
   },
 ]
+
+// 每层的名称与说明，顺序与 NODES 一致。
+const COPY: Record<Locale, { label: string, nodes: [string, string][] }> = {
+  'zh-CN': {
+    label: '一个 .uink 文件的结构：文件、场景、页面、屏幕、图层、内容，逐层展开',
+    nodes: [
+      ['一个文件', '全部页面与笔迹'],
+      ['场景', '白板、PPT、屏幕批注'],
+      ['页面', '白板的每一页、PPT 的每张幻灯片'],
+      ['屏幕', '每块屏幕各存一份'],
+      ['图层', '从下往上叠加'],
+      ['内容', '笔迹、图形、图片与 PDF'],
+    ],
+  },
+  'zh-TW': {
+    label: '一個 .uink 檔案的結構：檔案、場景、頁面、螢幕、圖層、內容，逐層展開',
+    nodes: [
+      ['一個檔案', '全部頁面與筆跡'],
+      ['場景', '白板、PPT、螢幕批註'],
+      ['頁面', '白板的每一頁、PPT 的每張投影片'],
+      ['螢幕', '每塊螢幕各存一份'],
+      ['圖層', '由下往上疊加'],
+      ['內容', '筆跡、圖形、圖片與 PDF'],
+    ],
+  },
+  'en-US': {
+    label: 'Structure of a .uink file, level by level: file, workspace, page, screen, layer, content',
+    nodes: [
+      ['One file', 'All pages and strokes'],
+      ['Workspace', 'Whiteboard, PowerPoint, screen annotation'],
+      ['Page', 'Each whiteboard page, each PowerPoint slide'],
+      ['Screen', 'Stored separately for each screen'],
+      ['Layer', 'Stacked from bottom to top'],
+      ['Content', 'Strokes, shapes, images and PDFs'],
+    ],
+  },
+}
+
+const locale = useLocale()
+const t = computed(() => COPY[locale.value])
 </script>
 
 <template>
   <figure class="uink-c uink-structure">
-    <ol class="uink-structure__list" aria-label="一个 .uink 文件的结构：文件、场景、页面、屏幕、图层、内容，逐层展开">
-      <li v-for="node in NODES" :key="node.name" class="uink-structure__node">
+    <ol class="uink-structure__list" :aria-label="t.label">
+      <li v-for="(node, index) in NODES" :key="node.tag" class="uink-structure__node">
         <svg class="uink-structure__icon" viewBox="0 0 42 42" aria-hidden="true" v-html="node.icon" />
         <span class="uink-structure__text">
-          <span class="uink-structure__name">{{ node.name }}</span>
+          <span class="uink-structure__name">{{ t.nodes[index][0] }}</span>
           <code class="uink-structure__tag">{{ node.tag }}</code>
-          <span class="uink-structure__desc">{{ node.desc }}</span>
+          <span class="uink-structure__desc">{{ t.nodes[index][1] }}</span>
         </span>
       </li>
     </ol>

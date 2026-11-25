@@ -10,7 +10,7 @@ import SectionAbilities from './SectionAbilities.vue'
 import SectionScenes from './SectionScenes.vue'
 import SectionCraft from './SectionCraft.vue'
 import SectionDownload from './SectionDownload.vue'
-import { previewLocaleFromQuery, useCopy } from './copy'
+import { useCopy } from './copy'
 import './home.css'
 import { toolIcons } from './toolIcons'
 import { PEN_ORDER, resolveSolidColor } from './styles'
@@ -428,7 +428,6 @@ onMounted(() => {
   if (!node || !root.value) return
   mounted = true
   reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  previewLocaleFromQuery()
   painter = createPainter(scene, node)
   // 能力检测而非 UA：旧 WebKit 不可靠地刷新 HTML 引用的 SVG 遮罩。
   cssCanvasMask.value = typeof (document as CSSCanvasDocument).getCSSCanvasContext === 'function'

@@ -1,5 +1,199 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue'
+import { useLocale } from '../../i18n/useLocale'
+
+// 页面文案按语言取值；语言由路由决定，服务端渲染与客户端一致。
+// tiles 的顺序与模板里各组插图一一对应。
+const COPY = {
+  'zh-CN': {
+    brand: '智绘教Inkeys',
+    icon: '智绘教Inkeys 图标',
+    latest: '最新版本',
+    loading: '正在获取下载地址…',
+    loadError: '暂时无法获取下载地址，请使用下方的其他下载方式',
+    downloadFailed: '下载没有开始，请换用下方的其他下载方式',
+    buttons: { Win64: '下载 64 位', Win32: '32 位', Arm64: 'ARM64' },
+    hint: '不确定选哪个？大多数电脑选 64 位即可。',
+    started: '已开始下载',
+    close: '关闭',
+    file: '文件',
+    toggleCase: '切换大小写',
+    mirror: '从河南省教育科研网镜像站下载',
+    moreDownloads: '显示更多下载地址',
+    pan123: '从 123 云盘下载',
+    github: '从 GitHub Release 下载',
+    changelog: '更新日志',
+    moreHistory: '显示历史版本',
+    history: '历史版本',
+    tosBefore: '下载前请阅读 ',
+    tosLink: '智绘教Inkeys 使用条款',
+    tosAfter: '，下载并使用即表示你同意其中的全部内容。',
+    licenseBefore: '智绘教Inkeys 遵循 ',
+    licenseAfter: ' 开源协议',
+    copyright: 'AlanCRL(陈润林) 工作室',
+    whoTitle: '谁可以使用',
+    whoLead: '任何人都可以免费使用：个人、学校、企业，用于学习、教学还是商业用途',
+    whoLeadEnd: '都可以。',
+    riskLabel: '使用范围说明',
+    riskNote: '智绘教Inkeys 并非为特定行业或监管领域专门设计或认证。在高风险场景中使用前，请自行评估是否适用，并自行承担相应风险。详见',
+    riskLink: '使用条款 · 服务说明',
+    riskEnd: '。',
+    who: [
+      ['个人', '自学、备考、记笔记'],
+      ['教育', '课堂教学、培训和讲座'],
+      ['企业与商业', '会议、汇报和商业用途，同样免费'],
+      ['创作与直播', '录课、直播和视频讲解'],
+    ],
+    deviceTitle: '在什么设备上使用',
+    deviceLead: 'Windows 8 及以上可直接使用；Windows 7 需要 SP1，并安装 KB2670838 更新（',
+    deviceLink: '详细说明',
+    deviceLeadEnd: '）',
+    arch: '支持 x86、x64 和原生 ARM64',
+    devices: [
+      ['笔记本和台式电脑', '搭配鼠标、触控板或数位板使用'],
+      ['大屏一体机', '教室和会议室里的触控大屏'],
+      ['投影仪', '投到幕布或墙上，边讲边批注'],
+      ['二合一平板', '拆下键盘，直接用笔写'],
+    ],
+    inputTitle: '用什么书写',
+    inputLead: '鼠标、手指、数位板和屏幕笔都可以。',
+    inputs: [
+      ['鼠标', '按住拖动就能写'],
+      ['触摸', '手指直接在屏幕上写'],
+      ['数位板', '连上电脑就能写'],
+      ['屏幕笔', '像在纸上一样书写'],
+    ],
+  },
+  'zh-TW': {
+    brand: 'Inkeys',
+    icon: 'Inkeys 圖示',
+    latest: '最新版本',
+    loading: '正在取得下載位址…',
+    loadError: '暫時無法取得下載位址，請使用下方的其他下載方式',
+    downloadFailed: '下載沒有開始，請改用下方的其他下載方式',
+    buttons: { Win64: '下載 64 位元', Win32: '32 位元', Arm64: 'ARM64' },
+    hint: '不確定選哪個？大多數電腦選 64 位元即可。',
+    started: '已開始下載',
+    close: '關閉',
+    file: '檔案',
+    toggleCase: '切換大小寫',
+    mirror: '從河南省教育科研網鏡像站下載',
+    moreDownloads: '顯示更多下載位址',
+    pan123: '從 123 雲端硬碟下載',
+    github: '從 GitHub Release 下載',
+    changelog: '更新日誌',
+    moreHistory: '顯示歷史版本',
+    history: '歷史版本',
+    tosBefore: '下載前請閱讀 ',
+    tosLink: 'Inkeys 使用條款',
+    tosAfter: '，下載並使用即表示你同意其中的全部內容。',
+    licenseBefore: 'Inkeys 採用 ',
+    licenseAfter: ' 開源授權',
+    copyright: 'AlanCRL(陳潤林) 工作室',
+    whoTitle: '誰可以使用',
+    whoLead: '個人、學校與企業都能免費使用，無論是學習、教學或商業',
+    whoLeadEnd: '用途。',
+    riskLabel: '使用範圍說明',
+    riskNote: 'Inkeys 並非為特定產業或監管領域專門設計或認證。在高風險情境中使用前，請自行評估是否適用，並自行承擔相應風險。詳見',
+    riskLink: '使用條款 · 服務說明',
+    riskEnd: '。',
+    who: [
+      ['個人', '自學、準備考試、記筆記'],
+      ['教育', '課堂教學、訓練與講座'],
+      ['企業與商業', '會議、簡報和商業用途，同樣免費'],
+      ['創作與直播', '錄課、直播和影片講解'],
+    ],
+    deviceTitle: '在什麼裝置上使用',
+    deviceLead: 'Windows 8 及以上可直接使用；Windows 7 需要 SP1，並安裝 KB2670838 更新（',
+    deviceLink: '詳細說明',
+    deviceLeadEnd: '）',
+    arch: '支援 x86、x64 和原生 ARM64',
+    devices: [
+      ['筆電和桌上型電腦', '搭配滑鼠、觸控板或數位板使用'],
+      ['大型觸控顯示器', '教室和會議室裡的觸控大螢幕'],
+      ['投影機', '投到布幕或牆上，邊講邊批註'],
+      ['二合一平板', '拆下鍵盤，直接用筆寫'],
+    ],
+    inputTitle: '用什麼書寫',
+    inputLead: '滑鼠、手指、數位板和螢幕筆都可以。',
+    inputs: [
+      ['滑鼠', '按住拖曳就能寫'],
+      ['觸控', '手指直接在螢幕上寫'],
+      ['數位板', '接上電腦就能寫'],
+      ['螢幕筆', '像在紙上一樣書寫'],
+    ],
+  },
+  'en-US': {
+    brand: 'Inkeys',
+    icon: 'Inkeys icon',
+    latest: 'Latest version',
+    loading: 'Getting download links…',
+    loadError: 'Download links are unavailable right now. Please use one of the other download options below.',
+    downloadFailed: 'The download didn’t start. Please try one of the other download options below.',
+    buttons: { Win64: 'Download 64-bit', Win32: '32-bit', Arm64: 'ARM64' },
+    hint: 'Not sure which one? 64-bit is right for most computers.',
+    started: 'Download started',
+    close: 'Close',
+    file: 'File',
+    toggleCase: 'Toggle letter case',
+    mirror: 'Download from the HERNET mirror',
+    moreDownloads: 'Show more download options',
+    pan123: 'Download from 123pan',
+    github: 'Download from GitHub Releases',
+    changelog: 'Release notes',
+    moreHistory: 'Show earlier versions',
+    history: 'Earlier versions',
+    tosBefore: 'Please read the ',
+    tosLink: 'Inkeys Terms of Use',
+    tosAfter: ' before downloading. By downloading and using Inkeys, you agree to all of its terms.',
+    licenseBefore: 'Inkeys is licensed under the ',
+    licenseAfter: ' open-source license',
+    copyright: 'AlanCRL (Chen Runlin / Chen Yunlam) Studio',
+    whoTitle: 'Who can use it',
+    whoLead: 'Anyone can use it for free: individuals, schools and businesses, for learning, teaching or',
+    whoLeadEnd: ' commercial use.',
+    riskLabel: 'About intended use',
+    riskNote: 'Inkeys is not specifically designed or certified for any particular industry or regulated field. Before using it in a high-risk setting, assess whether it is suitable; you assume the risks of using it there. See ',
+    riskLink: 'Terms of Use · Service Description',
+    riskEnd: '.',
+    who: [
+      ['Individuals', 'Self-study, exam prep and note-taking'],
+      ['Education', 'Classes, training and lectures'],
+      ['Business', 'Meetings, presentations and commercial use, also free'],
+      ['Creators and streamers', 'Recorded lessons, live streams and video explainers'],
+    ],
+    deviceTitle: 'What devices it runs on',
+    deviceLead: 'Works out of the box on Windows 8 and later. Windows 7 needs SP1 and the KB2670838 update (',
+    deviceLink: 'details',
+    deviceLeadEnd: ')',
+    arch: 'Supports x86, x64 and native ARM64',
+    devices: [
+      ['Laptops and desktops', 'With a mouse, touchpad or pen tablet'],
+      ['Interactive displays', 'Large touch screens in classrooms and meeting rooms'],
+      ['Projectors', 'Project onto a screen or wall and annotate as you talk'],
+      ['2-in-1 tablets', 'Detach the keyboard and write with a pen'],
+    ],
+    inputTitle: 'What you can write with',
+    inputLead: 'A mouse, your finger, a pen tablet or a screen pen.',
+    inputs: [
+      ['Mouse', 'Hold and drag to write'],
+      ['Touch', 'Write on the screen with your finger'],
+      ['Pen tablet', 'Plug it in and start writing'],
+      ['Screen pen', 'Write just like on paper'],
+    ],
+  },
+}
+
+// 各语言的站内链接：条款与说明页去对应语言的版本，锚点取各语言版本的标题。
+const LOCALE_LINKS = {
+  'zh-CN': { tos: '/tos', tosService: '/tos#一、服务说明', win7: '/win7', version: '/version/' },
+  'zh-TW': { tos: '/zh-tw/tos', tosService: '/zh-tw/tos#一、服務說明', win7: '/zh-tw/version/introduction/win7', version: '/zh-tw/version/' },
+  'en-US': { tos: '/en-us/tos', tosService: '/en-us/tos#i-service-description', win7: '/en-us/version/introduction/win7', version: '/en-us/version/' },
+}
+
+const locale = useLocale()
+const t = computed(() => COPY[locale.value])
+const localeLinks = computed(() => LOCALE_LINKS[locale.value])
 
 // 定义响应式数据
 const loading = ref(true)
@@ -33,9 +227,9 @@ const ARCHITECTURES = ['Win32', 'Win64', 'Arm64']
 
 // 64 位放在最前并作为主按钮：绝大多数电脑选它
 const DOWNLOAD_BUTTONS = [
-  { arch: 'Win64', label: '下载 64 位', primary: true },
-  { arch: 'Win32', label: '32 位', primary: false },
-  { arch: 'Arm64', label: 'ARM64', primary: false }
+  { arch: 'Win64', primary: true },
+  { arch: 'Win32', primary: false },
+  { arch: 'Arm64', primary: false }
 ]
 
 const downloadLinks = {
@@ -43,11 +237,7 @@ const downloadLinks = {
   pan123: 'https://www.123pan.com/s/duk9-n4dAd.html',
   githubRelease: 'https://github.com/Alan-CRL/Inkeys/releases',
   history: 'https://www.123pan.com/s/duk9-GJ9Ad.html',
-  version: '/version/',
-  tos: '/tos/zh-cn',
-  tosService: '/tos/zh-cn#一、服务说明',
-  license: 'https://github.com/Alan-CRL/Inkeys/blob/main/LICENSE',
-  win7: '/win7'
+  license: 'https://github.com/Alan-CRL/Inkeys/blob/main/LICENSE'
 }
 
 const year = new Date().getFullYear()
@@ -330,7 +520,7 @@ const handleDownload = async (arch, event) => {
   closeDownloadTab(downloadTab)
   showDownloadInfo.value = false
   currentSupplier.value = ''
-  downloadErrorMessage.value = '下载没有开始，请换用下方的其他下载方式'
+  downloadErrorMessage.value = t.value.downloadFailed
 }
 
 // 关闭信息块
@@ -413,23 +603,23 @@ onBeforeUnmount(() => {
   <div class="dl">
     <!-- ---------- 下载 ---------- -->
     <section class="dl-hero">
-      <div class="dl-icon" role="img" aria-label="智绘教Inkeys 图标"></div>
+      <div class="dl-icon" role="img" :aria-label="t.icon"></div>
 
-      <h1 class="dl-title">智绘教Inkeys</h1>
+      <h1 class="dl-title">{{ t.brand }}</h1>
       <p class="dl-version">
-        <template v-if="releaseInfo.version">最新版本 {{ releaseInfo.version }}</template>
+        <template v-if="releaseInfo.version">{{ t.latest }} {{ releaseInfo.version }}</template>
         <template v-else>&nbsp;</template>
       </p>
 
       <!-- 加载中 -->
       <div v-if="loading" class="dl-status">
         <span class="dl-spinner" aria-hidden="true"></span>
-        <span>正在获取下载地址…</span>
+        <span>{{ t.loading }}</span>
       </div>
 
       <!-- 出错 -->
       <div v-else-if="hasError" class="dl-status dl-status--error">
-        暂时无法获取下载地址，请使用下方的其他下载方式
+        {{ t.loadError }}
       </div>
 
       <!-- 下载区域 -->
@@ -446,10 +636,10 @@ onBeforeUnmount(() => {
             :class="item.primary ? 'nh3-btn-primary' : 'nh3-btn-secondary'"
             @click="handleDownload(item.arch, $event)"
           >
-            {{ item.label }}
+            {{ t.buttons[item.arch] }}
           </a>
         </div>
-        <p class="dl-hint">不确定选哪个？大多数电脑选 64 位即可。</p>
+        <p class="dl-hint">{{ t.hint }}</p>
 
         <p v-if="downloadErrorMessage" class="dl-status dl-status--error">
           {{ downloadErrorMessage }}
@@ -460,20 +650,20 @@ onBeforeUnmount(() => {
           <div class="dl-info__clip">
             <div class="dl-info__box">
               <div class="dl-info__head">
-                <span class="dl-info__title">已开始下载</span>
-                <button type="button" class="dl-info__close" aria-label="关闭" @click="closeInfo">
+                <span class="dl-info__title">{{ t.started }}</span>
+                <button type="button" class="dl-info__close" :aria-label="t.close" @click="closeInfo">
                   <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" /></svg>
                 </button>
               </div>
               <div class="dl-info__row">
-                <span class="dl-info__label">文件</span>
+                <span class="dl-info__label">{{ t.file }}</span>
                 <span class="dl-info__value">{{ currentFileName }}</span>
               </div>
               <div class="dl-info__row">
                 <span class="dl-info__label">SHA256</span>
                 <span class="dl-info__value dl-info__hash">{{ displayHash }}</span>
                 <!-- Aa 切换按钮 -->
-                <button type="button" class="dl-info__case" title="切换大小写" @click="toggleCase">Aa</button>
+                <button type="button" class="dl-info__case" :title="t.toggleCase" @click="toggleCase">Aa</button>
               </div>
               <p v-if="currentSupplier" class="dl-info__supplier">{{ currentSupplier }}</p>
             </div>
@@ -490,21 +680,21 @@ onBeforeUnmount(() => {
         >
           <div class="dl-drop__split">
             <a :href="downloadLinks.haeduMirror" class="dl-drop__main no-icon" target="_blank" rel="noopener noreferrer">
-              从河南省教育科研网镜像站下载
+              {{ t.mirror }}
             </a>
             <button
               type="button"
               class="dl-drop__toggle"
               :aria-expanded="openDropdown === 'download'"
-              aria-label="显示更多下载地址"
+              :aria-label="t.moreDownloads"
               @click.stop="toggleDropdown('download')"
             >
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
             </button>
           </div>
           <div class="dl-drop__menu">
-            <a :href="downloadLinks.pan123" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">从 123 云盘下载</a>
-            <a :href="downloadLinks.githubRelease" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">从 GitHub Release 下载</a>
+            <a :href="downloadLinks.pan123" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">{{ t.pan123 }}</a>
+            <a :href="downloadLinks.githubRelease" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">{{ t.github }}</a>
           </div>
         </div>
 
@@ -514,19 +704,19 @@ onBeforeUnmount(() => {
           @mouseleave="closeDropdown('history')"
         >
           <div class="dl-drop__split">
-            <a :href="downloadLinks.version" class="dl-drop__main no-icon">更新日志</a>
+            <a :href="localeLinks.version" class="dl-drop__main no-icon">{{ t.changelog }}</a>
             <button
               type="button"
               class="dl-drop__toggle"
               :aria-expanded="openDropdown === 'history'"
-              aria-label="显示历史版本"
+              :aria-label="t.moreHistory"
               @click.stop="toggleDropdown('history')"
             >
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
             </button>
           </div>
           <div class="dl-drop__menu">
-            <a :href="downloadLinks.history" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">历史版本</a>
+            <a :href="downloadLinks.history" class="dl-drop__item no-icon" target="_blank" rel="noopener noreferrer">{{ t.history }}</a>
           </div>
         </div>
       </div>
@@ -534,20 +724,20 @@ onBeforeUnmount(() => {
       <!-- 使用条款、开源协议与版权 -->
       <div class="dl-legal">
         <p>
-          下载前请阅读 <a :href="downloadLinks.tos" class="no-icon">智绘教Inkeys 使用条款</a>，下载并使用即表示你同意其中的全部内容。
+          {{ t.tosBefore }}<a :href="localeLinks.tos" class="no-icon">{{ t.tosLink }}</a>{{ t.tosAfter }}
         </p>
         <p>
-          智绘教Inkeys 遵循 <a :href="downloadLinks.license" class="no-icon" target="_blank" rel="noopener noreferrer">GNU GPLv3</a> 开源协议<span class="dl-legal__sep" aria-hidden="true">·</span>Copyright © 2023–{{ year }} AlanCRL(陈润林) 工作室
+          {{ t.licenseBefore }}<a :href="downloadLinks.license" class="no-icon" target="_blank" rel="noopener noreferrer">GNU GPLv3</a>{{ t.licenseAfter }}<span class="dl-legal__sep" aria-hidden="true">·</span>Copyright © 2023–{{ year }} {{ t.copyright }}
         </p>
       </div>
     </section>
 
     <!-- ---------- 谁可以使用 ---------- -->
     <section class="dl-section" aria-labelledby="dl-who-title">
-      <h2 id="dl-who-title" class="dl-h2">谁可以使用</h2>
+      <h2 id="dl-who-title" class="dl-h2">{{ t.whoTitle }}</h2>
       <!-- 提示图标与末尾几个字包在不换行的片段里，图标不会单独掉到下一行 -->
       <p class="dl-lead dl-lead--tip">
-        任何人都可以免费使用：个人、学校、企业，用于学习、教学还是商业用途<span class="dl-nowrap">都可以。<span
+        {{ t.whoLead }}<span class="dl-nowrap">{{ t.whoLeadEnd }}<span
           :ref="setTipEl"
           class="dl-tip"
           :class="{ 'is-open': showRiskNote }"
@@ -561,10 +751,10 @@ onBeforeUnmount(() => {
             class="dl-i"
             :aria-expanded="showRiskNote"
             aria-describedby="dl-risk-note"
-            aria-label="使用范围说明"
+            :aria-label="t.riskLabel"
             @click="openRiskNote"
           ><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 7.2 V11.6 M8 4.4 V4.5" /></svg></button><span class="dl-tip__pop" :style="{ '--tip-x': tipX + 'px' }"><span id="dl-risk-note" class="dl-tip__box" role="tooltip">
-            智绘教Inkeys 并非为特定行业或监管领域专门设计或认证。在高风险场景中使用前，请自行评估是否适用，并自行承担相应风险。详见<a :href="downloadLinks.tosService" class="no-icon">使用条款 · 服务说明</a>。
+            {{ t.riskNote }}<a :href="localeLinks.tosService" class="no-icon">{{ t.riskLink }}</a>{{ t.riskEnd }}
           </span></span></span></span>
       </p>
 
@@ -578,8 +768,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/person-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/person-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">个人</h3>
-          <p class="dl-tile__desc">自学、备考、记笔记</p>
+          <h3 class="dl-tile__name">{{ t.who[0][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.who[0][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -589,8 +779,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/school-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/school-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">教育</h3>
-          <p class="dl-tile__desc">课堂教学、培训和讲座</p>
+          <h3 class="dl-tile__name">{{ t.who[1][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.who[1][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -603,8 +793,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/business-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/business-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">企业与商业</h3>
-          <p class="dl-tile__desc">会议、汇报和商业用途，同样免费</p>
+          <h3 class="dl-tile__name">{{ t.who[2][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.who[2][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -618,17 +808,17 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/live-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/live-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">创作与直播</h3>
-          <p class="dl-tile__desc">录课、直播和视频讲解</p>
+          <h3 class="dl-tile__name">{{ t.who[3][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.who[3][1] }}</p>
         </li>
       </ul>
     </section>
 
     <!-- ---------- 什么设备可以使用 ---------- -->
     <section class="dl-section" aria-labelledby="dl-device-title">
-      <h2 id="dl-device-title" class="dl-h2">在什么设备上使用</h2>
+      <h2 id="dl-device-title" class="dl-h2">{{ t.deviceTitle }}</h2>
       <p class="dl-lead">
-        Windows 8 及以上可直接使用；Windows 7 需要 SP1，并安装 KB2670838 更新（<a :href="downloadLinks.win7" class="no-icon">详细说明</a>）<span class="dl-legal__sep" aria-hidden="true">·</span>支持 x86、x64 和原生 ARM64
+        {{ t.deviceLead }}<a :href="localeLinks.win7" class="no-icon">{{ t.deviceLink }}</a>{{ t.deviceLeadEnd }}<span class="dl-legal__sep" aria-hidden="true">·</span>{{ t.arch }}
       </p>
 
       <ul :ref="setGalleryEl('devices')" class="dl-grid" data-gallery="devices" :data-anim="galleries.devices">
@@ -642,8 +832,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/computer-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/computer-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">笔记本和台式电脑</h3>
-          <p class="dl-tile__desc">搭配鼠标、触控板或数位板使用</p>
+          <h3 class="dl-tile__name">{{ t.devices[0][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.devices[0][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -656,8 +846,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/panel-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/panel-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">大屏一体机</h3>
-          <p class="dl-tile__desc">教室和会议室里的触控大屏</p>
+          <h3 class="dl-tile__name">{{ t.devices[1][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.devices[1][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -673,8 +863,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--light" href="/download/ink/projector-light.webp" width="160" height="120" />
             <image class="dl-ink dl-ink--dark" href="/download/ink/projector-dark.webp" width="160" height="120" />
           </svg>
-          <h3 class="dl-tile__name">投影仪</h3>
-          <p class="dl-tile__desc">投到幕布或墙上，边讲边批注</p>
+          <h3 class="dl-tile__name">{{ t.devices[2][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.devices[2][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -690,13 +880,13 @@ onBeforeUnmount(() => {
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
             </g>
           </svg>
-          <h3 class="dl-tile__name">二合一平板</h3>
-          <p class="dl-tile__desc">拆下键盘，直接用笔写</p>
+          <h3 class="dl-tile__name">{{ t.devices[3][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.devices[3][1] }}</p>
         </li>
       </ul>
 
-      <h3 class="dl-h3">用什么书写</h3>
-      <p class="dl-lead">鼠标、手指、数位板和屏幕笔都可以。</p>
+      <h3 class="dl-h3">{{ t.inputTitle }}</h3>
+      <p class="dl-lead">{{ t.inputLead }}</p>
 
       <ul :ref="setGalleryEl('inputs')" class="dl-grid" data-gallery="inputs" :data-anim="galleries.inputs">
         <li class="dl-tile" style="--i: 0">
@@ -708,8 +898,8 @@ onBeforeUnmount(() => {
             <image class="dl-ink dl-ink--dark" href="/download/ink/mouse-dark.webp" width="160" height="120" />
             <path class="dl-art dl-art--solid" d="M78 84 V101 L82.5 97 L85.5 104 L88.5 102.7 L85.5 96 H91 Z" />
           </svg>
-          <h3 class="dl-tile__name">鼠标</h3>
-          <p class="dl-tile__desc">按住拖动就能写</p>
+          <h3 class="dl-tile__name">{{ t.inputs[0][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.inputs[0][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -718,8 +908,8 @@ onBeforeUnmount(() => {
             <path class="dl-art dl-art--solid" d="M96 120 L88.5 102 L71.7 81.5 A5.5 5.5 0 0 1 80.3 74.5 L90 86.3 V50 A6 6 0 0 1 102 50 V68 A5.5 5.5 0 0 1 113 68 V71 A5.5 5.5 0 0 1 124 71 V75 A5.5 5.5 0 0 1 135 75 V98 Q135 110 128 120" />
             <path class="dl-art" d="M102 68 V82 M113 71 V84 M124 75 V86 M93 52 Q96 49 99 52" />
           </svg>
-          <h3 class="dl-tile__name">触摸</h3>
-          <p class="dl-tile__desc">手指直接在屏幕上写</p>
+          <h3 class="dl-tile__name">{{ t.inputs[1][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.inputs[1][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 2">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -737,8 +927,8 @@ onBeforeUnmount(() => {
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
             </g>
           </svg>
-          <h3 class="dl-tile__name">数位板</h3>
-          <p class="dl-tile__desc">连上电脑就能写</p>
+          <h3 class="dl-tile__name">{{ t.inputs[2][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.inputs[2][1] }}</p>
         </li>
         <li class="dl-tile" style="--i: 3">
           <svg viewBox="0 0 160 120" aria-hidden="true">
@@ -751,8 +941,8 @@ onBeforeUnmount(() => {
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
             </g>
           </svg>
-          <h3 class="dl-tile__name">屏幕笔</h3>
-          <p class="dl-tile__desc">像在纸上一样书写</p>
+          <h3 class="dl-tile__name">{{ t.inputs[3][0] }}</h3>
+          <p class="dl-tile__desc">{{ t.inputs[3][1] }}</p>
         </li>
       </ul>
     </section>

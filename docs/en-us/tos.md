@@ -2,13 +2,10 @@
 title: Inkeys Terms of Use
 ---
 
-[简体中文](./zh-cn) | **English**
-
----
-
 **Version:** 1.0  
 **Release Date:** November 28, 2025  
-**Effective Date:** November 28, 2025  
+**Last Modified:** November 25, 2026  
+**Effective Date:** November 25, 2026  
 
 **These *Inkeys Terms of Use* (hereinafter referred to as "these Terms") constitute a legally binding agreement between you ("User" or "You") and the Inkeys Development Team (hereinafter referred to as "We" or "Us") regarding your downloading, installation, copying, or other use of the "Inkeys" software (including its updates, upgrades, related documentation, and auxiliary components, collectively referred to as "the Software").**
 
@@ -20,7 +17,7 @@ title: Inkeys Terms of Use
 
 Specifically, when you launch the Software for the first time, the Software will guide you to read this Agreement. By checking the checkbox representing "Agree" and proceeding to the next step, you confirm that you fully understand and accept all terms of this Agreement.
 
-If you are using the Software on behalf of a company, organization, or other entity, you represent and warrant that you have full authority to bind that entity to these Terms, and in such case, "You" refers to that company, organization, or other entity.
+If you are using the Software on behalf of a company, organization, or other entity, you represent and warrant that you have full authority to bind that entity to these Terms, and in such case, "You" also includes that company, organization, or other entity.
 
 ---
 
@@ -72,7 +69,7 @@ If you are using the Software on behalf of a company, organization, or other ent
 
    3.4 Not forge, tamper with, or delete copyright notices, trademarks, or other proprietary notices in the Software.  
 
-   3.5 Carefully check any error reports, logs, memory dump files, or other technical information before proactively submitting them to Us to ensure they do not contain sensitive content you do not wish to disclose (e.g., trade secrets, personal privacy).  
+   3.5 Before voluntarily submitting error reports, logs, memory dump files, or other technical information to Us, carefully check whether they contain sensitive content you do not wish to disclose (e.g., trade secrets, personal privacy).  
 
    3.6 Properly safeguard your device and system environment configuration and not intentionally provide a device installed with the Software to others for use in illegal activities.
 
@@ -121,7 +118,7 @@ When the Software crashes or encounters a serious error, the Software may genera
 **Our sole purpose in receiving such error reports is to locate and fix issues and improve the stability and performance of the Software.**  
 Unless required to meet mandatory legal or regulatory requirements, or necessary to protect the significant legitimate rights and interests of you or others, We will not use error reports for purposes unrelated to failure analysis.
 
-#### 3. Localization and Content Data
+#### 3. Local Processing and Content Data
 
 We specifically declare and promise:
 
@@ -145,7 +142,7 @@ We specifically declare and promise:
 
    1.1 Under the current product design, the Software and related online services are primarily provided to users located **within the territory of the People's Republic of China (PRC)**. We primarily store limited telemetry statistical data and error reports proactively sent by you on servers located **within the PRC**.  
 
-   1.2 We may use third-party service providers (e.g., code hosting platforms, log or error tracking services) to assist Us in processing the above data. We select service providers that operate servers **within the PRC** and comply with legal and regulatory requirements to process data related to the Software; under the current business architecture, this data will not be transferred to or stored on overseas servers.  
+   1.2 We may use third-party service providers (e.g., code hosting platforms, log or error tracking services) to assist Us in processing the above data. We only use service providers that operate servers **within the PRC** and comply with applicable legal and regulatory requirements to process data related to the Software; under the current business architecture, this data will not be transferred to or stored on overseas servers.  
 
    1.3 If cross-border data transfer becomes necessary due to business development or compliance requirements in the future, We will fully inform you of the relevant purpose, data type, recipient, and protection measures in advance within the scope required by applicable law, and proceed only after obtaining necessary authorization or fulfilling statutory procedures.
 
@@ -223,7 +220,7 @@ For the complete text of the GPLv3 license, please refer to:
 
 #### 2. Code Signing and Integrity
 
-To improve the security and credibility of released versions, the Software digitally signs official executable files.
+To improve the security and credibility of released versions, We digitally sign officially released executable files.
 
 - We may use the trusted third-party certificate authority **SignPath Foundation** to provide code signing support, and We collaborate with SignPath on release process security audits;
 - The code signing, build, and release processes are integrated into the CI/CD workflow of GitHub Actions;
@@ -337,7 +334,7 @@ Regarding the above third-party fonts and design resources, please understand an
 Copyright © 2023–2025 **AlanCRL (Chen Runlin) Studio**  
 All Rights Reserved (within the scope permitted by applicable open-source licenses).
 
-Third-party fonts, icon fonts, and other resources subject to third-party licenses are the property of their respective rights holders.
+Copyright and related rights in third-party fonts, icon fonts, and other resources subject to third-party licenses belong to their respective rights holders.
 
 ### VI. DISCLAIMER
 
@@ -392,7 +389,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, YOU UNDERSTAND AND AGREE TO T
 
 3. **Acceptance and Rejection**
 
-   - From the effective date stated in the updated version or notification, **your continued downloading, installation, or use of the Software constitutes your full reading, understanding, and acceptance of the updated Agreement content**;  
+   - From the date the updated version is published or the effective date specified in the notice, **your continued downloading, installation, or use of the Software constitutes your full reading, understanding, and acceptance of the updated Agreement content**;  
    - If you do not agree to the updated Agreement content, you must immediately stop using the Software and uninstall the installed version.
 
 > To stay informed of the latest terms, We recommend that you check the page where this Agreement is located or relevant files in the official repository from time to time.
@@ -403,7 +400,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, YOU UNDERSTAND AND AGREE TO T
    The conclusion, execution, interpretation, and dispute resolution of these Terms shall be governed by the laws of the People's Republic of China (for the purpose of these Terms, excluding the Hong Kong Special Administrative Region, the Macau Special Administrative Region, and the Taiwan region). If the laws of the People's Republic of China do not provide for a matter or the provisions are unclear, reference shall be made to commercial practices or general industry rules.
 
 2. **Exceptions for Local Law (Consumer Protection)**
-   Notwithstanding the foregoing, if you are a consumer in the European Union, the United Kingdom, the United States, or other jurisdictions, and local laws explicitly provide for mandatory consumer protection rights that cannot be excluded by contract (e.g., the right to sue in the consumer's place of residence), the jurisdiction clause in these Terms shall not deprive you of such rights under mandatory local laws. In such cases, other parts of these Terms shall remain in full force and effect.
+   Notwithstanding the foregoing, if you are a consumer in the European Union, the United Kingdom, the United States, or other jurisdictions, and local laws explicitly provide for mandatory consumer protection rights that cannot be excluded by contract (e.g., a requirement to bring proceedings in the consumer's place of residence), the jurisdiction clause in these Terms shall not deprive you of such rights under mandatory local laws. In such cases, other parts of these Terms shall remain in full force and effect.
    
 3. **Language**
    These Terms may be published in multiple languages. In the event of any conflict or ambiguity between the Chinese version and other language versions, the Simplified Chinese version shall prevail to the extent permitted by applicable law.

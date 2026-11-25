@@ -1,10 +1,15 @@
 import { defineThemeConfig } from 'vuepress-theme-plume'
 
-import navbar from './navbar'
+import { enUSNavbar, zhCNNavbar, zhTWNavbar } from './navbar'
 
 import { downloadSidebar } from './sidebar'
 import { versionSidebar } from './sidebar'
 import { tutorialSidebar } from './sidebar'
+import { enUSDownloadSidebar, enUSStandardSidebar, enUSTutorialSidebar, enUSVersionSidebar, zhTWDownloadSidebar, zhTWStandardSidebar, zhTWTutorialSidebar, zhTWVersionSidebar } from './sidebar'
+import { LOCALE_NAME } from './i18n/locales'
+
+const year = new Date().getFullYear()
+const license = '<a href="https://github.com/Alan-CRL/Inkeys/blob/main/LICENSE" target="_blank">GNU General Public License v3.0</a>'
 
 export default defineThemeConfig({
   logo: '/Inkeys.svg',
@@ -44,118 +49,212 @@ export default defineThemeConfig({
   // nextPage: true,   // 是否启用下一页链接
   // createTime: true, // 是否显示文章创建时间
 
-  footer: {
-    message: `本项目基于 <a href="https://github.com/Alan-CRL/Inkeys/blob/main/LICENSE" target="_blank">GNU General Public License v3.0</a> 获得许可 | <a href="/tos/zh-cn" target="_blank">智绘教Inkeys 使用条款</a>`,
-    copyright: `Copyright © 2023-${new Date().getFullYear()} AlanCRL(陈润林) 工作室`,
-  },
-
-  navbar,
-  sidebar: {
-    '/download': downloadSidebar,
-    '/tos/': downloadSidebar,
-    
-    '/tutorial/': tutorialSidebar,
-
-    '/win7': versionSidebar,
-    '/version': versionSidebar,
-    '/jabber': versionSidebar,
-  },
-  collections: [ 
-    { 
-      type: 'post', 
-      dir: '/version/', 
-      title: '版本',
-
-      postList: true, // 启用文章列表页
-      link: '/version/', // 列表页链接
-      linkPrefix: '/version/', // 文章链接前缀
-      exclude: ['introduction/**'], // 排除代码片段文件
-
-      meta: {
-        tags: true, // 是否显示标签
-        createTime: false, // boolean | 'short' | 'long'
-        readingTime: true, // 是否显示阅读时间估算
-        wordCount: true, // 是否显示字数统计
+  /**
+   * 多语言：简体中文为根路径，繁中 / 英文带前缀（见 config.ts 的 locales 与 i18n/）。
+   * 侧栏键相对于各自的语言前缀，例如 '/zh-tw/' 下的 '/download' 对应 /zh-tw/download。
+   * 指向未翻译页面的条目链接写简体中文页面的绝对路径。
+   */
+  locales: {
+    '/': {
+      selectLanguageName: LOCALE_NAME['zh-CN'],
+      footer: {
+        message: `本项目基于 ${license} 获得许可 | <a href="/tos" target="_blank">智绘教Inkeys 使用条款</a>`,
+        copyright: `Copyright © 2023-${year} AlanCRL(陈润林) 工作室`,
       },
-      autoFrontmatter: {
-        title: false, // 自动生成标题
-        createTime: false, // 自动生成创建时间
-        permalink: false, // 自动生成永久链接
-      },
+      navbar: zhCNNavbar,
+      sidebar: {
+        '/download': downloadSidebar,
+        '/tos': downloadSidebar,
 
-      tags: false,
-      archives: false,
-      categories: false,
-    },
-    { 
-      type: 'doc', 
-      dir: '/standard/', 
-      title: '规范',
-      meta: {
-        tags: true, // 是否显示标签
-        readingTime: true, // 是否显示阅读时间估算
-        wordCount: true, // 是否显示字数统计
+        '/tutorial/': tutorialSidebar,
+
+        '/win7': versionSidebar,
+        '/version': versionSidebar,
+        '/jabber': versionSidebar,
       },
-      autoFrontmatter: {
-        title: true, // 自动生成标题
-        createTime: false, // 自动生成创建时间
-        permalink: false, // 自动生成永久链接
-      },
-      // UInk 1.1 文档结构；顺序需与 plugins/uinkSpecBundle.ts 的 UINK_V11_PAGES 一致。
-      sidebar: [
-        { text: '概览', link: '/standard/' },
-        {
-          text: '开始',
-          items: [
-            { text: '规范介绍', link: '/standard/intro', },
-            { text: '快速开始', link: '/standard/quick-start', },
-            { text: '分级与认证', link: '/standard/levels', },
-            { text: '兼容与回退', link: '/standard/compatibility', },
-          ],
+      collections: [ 
+        { 
+          type: 'post', 
+          dir: '/version/', 
+          title: '版本',
+
+          postList: true, // 启用文章列表页
+          link: '/version/', // 列表页链接
+          linkPrefix: '/version/', // 文章链接前缀
+          exclude: ['introduction/**'], // 排除代码片段文件
+
+          meta: {
+            tags: true, // 是否显示标签
+            createTime: false, // boolean | 'short' | 'long'
+            readingTime: true, // 是否显示阅读时间估算
+            wordCount: true, // 是否显示字数统计
+          },
+          autoFrontmatter: {
+            title: false, // 自动生成标题
+            createTime: false, // 自动生成创建时间
+            permalink: false, // 自动生成永久链接
+          },
+
+          tags: false,
+          archives: false,
+          categories: false,
         },
-        {
-          text: '文件',
-          items: [
-            { text: '墨迹主文件', link: '/standard/file/main' },
-            { text: '保存、追加与恢复', link: '/standard/incremental' },
-            { text: '资源包', link: '/standard/file/extra' },
+        { 
+          type: 'doc', 
+          dir: '/standard/', 
+          title: '规范',
+          meta: {
+            tags: true, // 是否显示标签
+            readingTime: true, // 是否显示阅读时间估算
+            wordCount: true, // 是否显示字数统计
+          },
+          autoFrontmatter: {
+            title: true, // 自动生成标题
+            createTime: false, // 自动生成创建时间
+            permalink: false, // 自动生成永久链接
+          },
+          // UInk 1.1 文档结构；顺序需与 plugins/uinkSpecBundle.ts 的 UINK_V11_PAGES 一致。
+          sidebar: [
+            { text: '概览', link: '/standard/' },
+            {
+              text: '开始',
+              items: [
+                { text: '规范介绍', link: '/standard/intro', },
+                { text: '快速开始', link: '/standard/quick-start', },
+                { text: '分级与认证', link: '/standard/levels', },
+                { text: '兼容与回退', link: '/standard/compatibility', },
+              ],
+            },
+            {
+              text: '文件',
+              items: [
+                { text: '墨迹主文件', link: '/standard/file/main' },
+                { text: '保存、追加与恢复', link: '/standard/incremental' },
+                { text: '资源包', link: '/standard/file/extra' },
+              ],
+            },
+            {
+              text: '块规范',
+              items: [
+                { text: 'Header 块', link: '/standard/blocks/header' },
+                { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
+                { text: 'Device 结构', link: '/standard/blocks/device' },
+                { text: 'Canvas 块', link: '/standard/blocks/canvas' },
+                { text: 'Ink 块', link: '/standard/blocks/ink' },
+                { text: 'Shape 块', link: '/standard/blocks/shape' },
+                { text: 'Media 块', link: '/standard/blocks/media' },
+                { text: 'Clear 块', link: '/standard/blocks/clear' },
+              ],
+            },
+            {
+              text: '公共结构',
+              items: [
+                { text: 'Color Map', link: '/standard/common/color' },
+                { text: '笔尖与端帽', link: '/standard/common/nib' },
+              ],
+            },
+            {
+              text: '附录',
+              items: [
+                { text: '块类型与编码', link: '/standard/type', },
+                { text: '图形预设注册表', link: '/standard/appendix/shape-presets', },
+                { text: '实现一致性与样例', link: '/standard/conformance', },
+                { text: '版本与变更', link: '/standard/version', },
+                { text: '术语表', link: '/standard/glossary', },
+              ],
+            },
           ],
-        },
-        {
-          text: '块规范',
-          items: [
-            { text: 'Header 块', link: '/standard/blocks/header' },
-            { text: 'Header Extension 块', link: '/standard/blocks/headerExtension' },
-            { text: 'Device 结构', link: '/standard/blocks/device' },
-            { text: 'Canvas 块', link: '/standard/blocks/canvas' },
-            { text: 'Ink 块', link: '/standard/blocks/ink' },
-            { text: 'Shape 块', link: '/standard/blocks/shape' },
-            { text: 'Media 块', link: '/standard/blocks/media' },
-            { text: 'Clear 块', link: '/standard/blocks/clear' },
-          ],
-        },
-        {
-          text: '公共结构',
-          items: [
-            { text: 'Color Map', link: '/standard/common/color' },
-            { text: '笔尖与端帽', link: '/standard/common/nib' },
-          ],
-        },
-        {
-          text: '附录',
-          items: [
-            { text: '块类型与编码', link: '/standard/type', },
-            { text: '图形预设注册表', link: '/standard/appendix/shape-presets', },
-            { text: '实现一致性与样例', link: '/standard/conformance', },
-            { text: '版本与变更', link: '/standard/version', },
-            { text: '术语表', link: '/standard/glossary', },
-          ],
+          sidebarScrollbar: true, // 显示侧边栏滚动条
+          sidebarCollapsed: true,
         },
       ],
-      sidebarScrollbar: true, // 显示侧边栏滚动条
-      sidebarCollapsed: true,
     },
-  ],
+    '/zh-tw/': {
+      selectLanguageName: LOCALE_NAME['zh-TW'],
+      footer: {
+        message: `本專案依據 ${license} 授權 | <a href="/zh-tw/tos" target="_blank">Inkeys 使用條款</a>`,
+        copyright: `Copyright © 2023-${year} AlanCRL(陳潤林) 工作室`,
+      },
+      navbar: zhTWNavbar,
+      sidebar: {
+        '/download': zhTWDownloadSidebar,
+        '/tos': zhTWDownloadSidebar,
+        '/tutorial/': zhTWTutorialSidebar,
+        '/version': zhTWVersionSidebar,
+        '/jabber': zhTWVersionSidebar,
+      },
+      // 只有规范概览页有译文；集合让 /zh-tw/standard/ 拿到翻译后的规范侧栏。
+      collections: [
+        // 版本列表：繁中 / 英文的 inkeys3 有译文，更新日志是镜像页（见 i18n/mirror.ts）。
+        {
+          type: 'post',
+          dir: '/version/',
+          title: '版本',
+          postList: true,
+          link: '/version/',
+          linkPrefix: '/version/',
+          exclude: ['introduction/**'],
+          meta: { tags: true, createTime: false, readingTime: true, wordCount: true },
+          autoFrontmatter: { title: false, createTime: false, permalink: false },
+          tags: false,
+          archives: false,
+          categories: false,
+        },
+        {
+          type: 'doc',
+          dir: '/standard/',
+          title: '規範',
+          meta: { tags: true, readingTime: true, wordCount: true },
+          autoFrontmatter: { title: false, createTime: false, permalink: false },
+          sidebar: zhTWStandardSidebar,
+          sidebarScrollbar: true,
+          sidebarCollapsed: true,
+        },
+      ],
+    },
+    '/en-us/': {
+      selectLanguageName: LOCALE_NAME['en-US'],
+      footer: {
+        message: `Licensed under the ${license} | <a href="/en-us/tos" target="_blank">Inkeys Terms of Use</a>`,
+        copyright: `Copyright © 2023-${year} AlanCRL (Chen Runlin / Chen Yunlam) Studio`,
+      },
+      navbar: enUSNavbar,
+      sidebar: {
+        '/download': enUSDownloadSidebar,
+        '/tos': enUSDownloadSidebar,
+        '/tutorial/': enUSTutorialSidebar,
+        '/version': enUSVersionSidebar,
+        '/jabber': enUSVersionSidebar,
+      },
+      collections: [
+        // 版本列表：繁中 / 英文的 inkeys3 有译文，更新日志是镜像页（见 i18n/mirror.ts）。
+        {
+          type: 'post',
+          dir: '/version/',
+          title: 'Versions',
+          postList: true,
+          link: '/version/',
+          linkPrefix: '/version/',
+          exclude: ['introduction/**'],
+          meta: { tags: true, createTime: false, readingTime: true, wordCount: true },
+          autoFrontmatter: { title: false, createTime: false, permalink: false },
+          tags: false,
+          archives: false,
+          categories: false,
+        },
+        {
+          type: 'doc',
+          dir: '/standard/',
+          title: 'Spec',
+          meta: { tags: true, readingTime: true, wordCount: true },
+          autoFrontmatter: { title: false, createTime: false, permalink: false },
+          sidebar: enUSStandardSidebar,
+          sidebarScrollbar: true,
+          sidebarCollapsed: true,
+        },
+      ],
+    },
+  },
 
 
   /**

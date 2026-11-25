@@ -17,6 +17,18 @@ const locales: Record<string, Locale> = {
     share: '分享此页面',
     copied: '链接已复制！'
   },
+  '/zh-tw/': {
+    star: '在 GitHub 上 Star',
+    issue: '軟體有問題？',
+    share: '分享此頁面',
+    copied: '連結已複製！'
+  },
+  '/en-us/': {
+    star: 'Star on GitHub',
+    issue: 'Having trouble?',
+    share: 'Share this page',
+    copied: 'Link copied!'
+  },
 }
 
 const lang = useRouteLocale()
