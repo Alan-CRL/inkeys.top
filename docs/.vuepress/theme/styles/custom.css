@@ -1,5 +1,8 @@
 :root {
-  --vp-layout-max-width: 1660px;
+  /* Plume 在 ≥1440px 时按 (100% - (此值 - 64px)) / 2 + 侧栏宽 - 32px 计算侧栏宽度，
+     视口窄于 1660px 时偏移为负，侧栏会被压到 260px 以下、条目被裁切；
+     用 min(100%, …) 让偏移在窄视口收敛为 0（与 Plume 自带“宽”阅读模式同写法），1660px 以上不变。 */
+  --vp-layout-max-width: min(100%, 1660px);
   --vp-sidebar-width: 260px;
   /* 主题色、背景色、文本色统一在 site.css 中指向首页令牌。 */
 
