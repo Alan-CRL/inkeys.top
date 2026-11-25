@@ -1,0 +1,6 @@
+repository=D:\Project\Inkeys\Repo\Inkeys-draw
+revision=c0064aee0a49fade69ebbcd7ac586cee6b453b6c
+build=Debug|ARM64
+locale=en-US
+harness: Bar.Button.cpp recall refresh keeps NoteRecallHistoryAvailability(true,false) while INKEYS_HERO_OUTPUT is set
+layers=board.png,capture-manifest.json,ink-brush.png,ink-handwriting.png,ink-highlight.png,ink-laser.png,pattern.png,toolbar-body.json,toolbar.png

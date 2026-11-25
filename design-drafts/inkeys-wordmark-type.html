@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Inkeys wordmark · type pairing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..900&family=Libre+Caslon+Text:ital,wght@0,700;1,400;1,700&family=Instrument+Serif:ital@0;1&family=Playfair+Display:ital,wght@0,700;1,700;1,900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root { --sans: "Google Sans Flex", system-ui, sans-serif; }
+  body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); transition: background .3s, color .3s; }
+  body.light { --bg: #F4F3EF; --ink: #161616; --muted: #8a8780; }
+  body.dark  { --bg: #111111; --ink: #F3F1EC; --muted: #77746e; }
+  header { position: sticky; top: 0; z-index: 2; display: flex; gap: 10px; align-items: center; padding: 14px 24px;
+           background: var(--bg); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  header strong { margin-right: 12px; }
+  button { padding: 7px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+           background: transparent; color: var(--ink); cursor: pointer; font: inherit; font-size: 13px; }
+  button.on { background: var(--ink); color: var(--bg); }
+  section { padding: 36px 24px 28px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); text-align: center; }
+  section h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; text-align: left; }
+  section p { margin: 0; font-size: 12px; color: var(--muted); text-align: left; }
+
+  .mark { display: inline-flex; align-items: flex-start; margin-top: 18px; font-size: clamp(96px, 15vw, 200px);
+          line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
+  .mark .ver { font-family: var(--sans); font-weight: 600; font-size: .3em; letter-spacing: 0; margin: .12em 0 0 .12em; }
+  .sans { font-family: var(--sans); font-weight: 650; }
+</style>
+</head>
+<body class="light">
+<header>
+  <strong>Inkeys 字标 · 字体组合</strong>
+  <button data-theme="light" class="on">浅色</button>
+  <button data-theme="dark">深色</button>
+</header>
+
+<section>
+  <h2>1 · Google Sans Flex + Libre Caslon 斜体</h2>
+  <p>最接近 Art of Hosting 原配（Big Caslon 的免费近亲），庄重、经典。</p>
+  <div class="mark"><span class="sans">Ink</span><span style="font-family:'Libre Caslon Text';font-style:italic;font-weight:700">eys</span><span class="ver">3</span></div>
+</section>
+
+<section>
+  <h2>2 · Google Sans Flex + Playfair Display 粗斜体</h2>
+  <p>衬线对比更强、更粗，和无衬线的重量更匹配，冲击力最强。</p>
+  <div class="mark"><span class="sans">Ink</span><span style="font-family:'Playfair Display';font-style:italic;font-weight:900">eys</span><span class="ver">3</span></div>
+</section>
+
+<section>
+  <h2>3 · Google Sans Flex + DM Serif Display 斜体</h2>
+  <p>高对比展示衬线，笔画粗细差大，有“钢笔笔锋”的联想。</p>
+  <div class="mark"><span class="sans">Ink</span><span style="font-family:'DM Serif Display';font-style:italic">eys</span><span class="ver">3</span></div>
+</section>
+
+<section>
+  <h2>4 · Google Sans Flex + Instrument Serif 斜体</h2>
+  <p>纤细优雅，当下设计圈常见；粗细反差最大，但“粗体感”最弱。</p>
+  <div class="mark"><span class="sans">Ink</span><span style="font-family:'Instrument Serif';font-style:italic">eys</span><span class="ver">3</span></div>
+</section>
+
+<section>
+  <h2>5 · 反向：Playfair Display 粗斜体 + Google Sans Flex</h2>
+  <p>“Ink” 用衬线斜体强调“墨迹”，“eys” 回到粗无衬线。</p>
+  <div class="mark"><span style="font-family:'Playfair Display';font-style:italic;font-weight:900">Ink</span><span class="sans">eys</span><span class="ver">3</span></div>
+</section>
+
+<script>
+document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => {
+  document.body.className = b.dataset.theme;
+  document.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('on', x === b));
+});
+if (new URLSearchParams(location.search).get('theme') === 'dark') document.querySelector('[data-theme=dark]').click();
+</script>
+</body>
+</html>

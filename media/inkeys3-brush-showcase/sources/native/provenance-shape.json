@@ -1,0 +1,22 @@
+{
+  "input_sha256": "8f9fd6051289a5f1c01d43db1a20c300ea3250655d05f7320229b884784a3dd9",
+  "executable_sha256": "1fa56b535597a7bf81f57b752ae070b5757603be6767b28b40eaaf71fa1ee0a9",
+  "executable_path": "D:\\Project\\Inkeys\\website\\media\\inkeys3-brush-showcase\\build\\native-shape-bin\\Inkeys.exe",
+  "adapters": {
+    "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+    "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+    "HeroExport.inc": "15a34d08e07622a7a071b53b47c37acc9f4864eb8061778c4198b0a18f7dc637",
+    "HeroInk.inc": "37d1b0288ce5aee4b9740f849224162ff71fcce517b5426147b74b7151f05e13",
+    "HeroScene.inc": "84592f8305b091fe517364798cdf176cc01821ca08190ec6e1b507cbf2976b5b",
+    "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+  },
+  "failures": 0,
+  "export_log_sha256": "e54dad2606d6d3fea2ba79932e853a495bd1075f33cd2b7252a278e4cee495c8",
+  "source_revision": "d060e39bca3673a9cb25da44b7e5a4534e32d038",
+  "repository": "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape",
+  "build": "Debug|ARM64 full solution, isolated OutDir",
+  "layers": {
+    "geometry.png": "c1e436a9916408e6fc24dfbc0208344be3fa4972860ec7d625dc493ffcd16db5"
+  },
+  "metadata": {}
+}

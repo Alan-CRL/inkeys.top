@@ -1,0 +1,27 @@
+{
+  "canvas": [
+    6186,
+    928
+  ],
+  "body_rect": [
+    2972.5,
+    343.5,
+    5282.5,
+    583.5
+  ],
+  "transform": [
+    1,
+    0,
+    0,
+    1,
+    2971,
+    342
+  ],
+  "locale": "en-US",
+  "pen": "soft",
+  "mode": "drawing",
+  "pen_rgb": "FF1000",
+  "undo": true,
+  "redo": false,
+  "state_fields": "requested states applied through production APIs; image independently visually inspected"
+}

@@ -1,0 +1,27 @@
+{
+  "input_sha256": "600fed9dc3c8f17e227c696ed86f5670a4cfc9699c128039480769077240dcd8",
+  "background_sha256": "647cfe47f302780e948197511be12cde10b819fbab874272190208d020e64d66",
+  "approved_geometry_sha256": "304cb17731938b84ac2e5a31ea5076f5581f4694efbd9a63d5273db9e9c2ae37",
+  "handwriting_width_policy": "height*.095 native nominal; V3 *.105 was draft proxy",
+  "hold_ms": 88,
+  "lattice": {
+    "origin": [
+      1390,
+      625
+    ],
+    "basis": [
+      [
+        20,
+        0
+      ],
+      [
+        10,
+        17.32050807568877
+      ]
+    ],
+    "dot_radius": 1,
+    "alpha": 92
+  },
+  "brush_clip_y": 1870,
+  "strokes": 482
+}

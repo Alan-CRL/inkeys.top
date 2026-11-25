@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "restored": [
+    {
+      "kind": "dev",
+      "capture_only": true,
+      "source_unchanged": true,
+      "source_before_after": {
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.EraserAttribute.Test.cpp": "240487b00d37623e77a61d04f37994e54a02dff4557882483c1974b10b931a86",
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.Button.cpp": "6236f8abbcbbbffdd73e3cee4569ee821738d8a90d7127b1b4965e308d42a318",
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCanvas.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCommon.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroExport.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroInk.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroScene.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroShapes.inc": null
+      }
+    },
+    {
+      "kind": "shape",
+      "capture_only": true,
+      "source_unchanged": true,
+      "source_before_after": {
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\Bar.EraserAttribute.Test.cpp": "75dc5bf42339df08e1a1ac6d7abe1cd8059505cd9bc3f762dc3287443475938a",
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\Bar.Button.cpp": "64adf1427799d394c3b91351be117baf1a5ad0571eee1f5eb3b8b14f33558b80",
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroCanvas.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroCommon.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroExport.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroInk.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroScene.inc": null,
+        "D:\\Project\\Inkeys\\Repo\\Inkeys-hero-shape\\Inkeys\\Inkeys\\UI\\Bar\\HeroShapes.inc": null
+      }
+    }
+  ],
+  "handwriting_strokes": 482,
+  "physical_hold_ms_range": [
+    96.0,
+    96.0
+  ],
+  "actual_visible_buttons": [
+    "Select",
+    "Soft Pen",
+    "Shapes",
+    "Erase",
+    "Undo",
+    "Clear",
+    "",
+    "More",
+    "",
+    "Board",
+    "Lock"
+  ]
+}

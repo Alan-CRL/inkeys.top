@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "geometry": [
+    {
+      "k": 9.2,
+      "intersection_area": 46.696089772056936,
+      "big_minus_three_small": 46.69608977205693,
+      "alternating_sides": [
+        3.959797974644667,
+        4.525483399593903,
+        3.959797974644667,
+        4.525483399593903,
+        3.959797974644667,
+        4.525483399593903
+      ]
+    },
+    {
+      "k": 10,
+      "intersection_area": 45.033320996790806,
+      "big_minus_three_small": 45.033320996790806,
+      "alternating_sides": [
+        2.8284271247461903,
+        5.656854249492381,
+        2.8284271247461903,
+        5.656854249492381,
+        2.8284271247461903,
+        5.656854249492381
+      ]
+    },
+    {
+      "k": 11.5,
+      "intersection_area": 35.94005425705421,
+      "big_minus_three_small": 35.9400542570542,
+      "alternating_sides": [
+        0.7071067811865476,
+        7.7781745930520225,
+        0.7071067811865476,
+        7.7781745930520225,
+        0.7071067811865476,
+        7.7781745930520225
+      ]
+    }
+  ],
+  "lattice_nodes": "PASS",
+  "orthographic_and_hidden_edges": "PASS",
+  "closed_laser_loops": 2,
+  "face_fills": 0,
+  "label_bbox_overlaps": [],
+  "unchanged_outside_right_field": true,
+  "unchanged_taskbar": true,
+  "frozen_files": {
+    "frozen-original.json": 44,
+    "frozen-v2.json": 29,
+    "frozen-approved-v3.json": 19
+  },
+  "visual_review": "Inspect context-preview.png and right-detail.png; direct draft only, approval pending."
+}

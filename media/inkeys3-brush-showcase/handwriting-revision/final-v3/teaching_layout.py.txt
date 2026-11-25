@@ -1,0 +1,81 @@
+    stroke(hand,[(818,482),(838,478),(857,483),(856,496),(836,499),(817,494),(818,482)],1.4)
+    stroke(hand,[(695,517),(778,519),(944,516)],1.5)
+    stroke(hand,[(825,538),(857,540),(890,537)],1.6)
+    stroke(hand,[(1060,559),(1058,576),(1137,576),(1139,557)],1.4,curve=False)
+    stroke(hand,[(1108,585),(1124,604),(1058,620)],1.4)
+    stroke(hand,[(1070,611),(1058,620),(1073,624)],1.4,curve=False)
+
+    # 逐步板演：左灰区从坐标到棱中点，再检验三角形；各小组独立微倾斜。
+    cluster(268,236,-1.4)
+    text(hand,'A=(0,0,0)',268,236,20)
+    text(hand,'G=(6,6,6)',309,278,20)
+    text(hand,'O=(3,3,3)',283,320,20)
+    cluster(275,367,1.7)
+    text(hand,'AG ⊥ plane',275,367,19)
+    text(hand,'x+y+z=k',268,408,21)
+    text(hand,'3+3+3=k → k=9',281,452,17)
+    stroke(hand,[(410,475),(470,472)],1.6,color=BLUE)
+    cluster(274,499,-1.5)
+    text(hand,'BC: x=6,z=0',274,499,18)
+    text(hand,'6+y=9 → y=3',266,542,19)
+    text(hand,'M=(6,3,0)',321,584,20)
+    text(hand,'N=(3,6,0)',293,626,20)
+    cluster(268,674,1.2)
+    x=text(hand,'MN',268,674,20);x=superscript(hand,x,667)+2
+    x=text(hand,'=3',x,674,20);x=superscript(hand,x,667)+2
+    x=text(hand,'+3',x,674,20);x=superscript(hand,x,667)+1;text(hand,'=18',x,674,20)
+    x=text(hand,'OM',305,716,20);x=superscript(hand,x,709)+2
+    x=text(hand,'=ON',x,716,20);x=superscript(hand,x,709)+2;text(hand,'=18',x,716,20)
+    text(hand,'→ equilateral',281,759,19)
+    text(hand,'∠MON=60°',295,803,20)
+    text(hand,'by symmetry',332,845,17)
+    stroke(hand,[(288,827),(435,826)],1.5,color=BLUE)
+
+    # 中心截面面积：六个全等正三角形，乘法保留而不是直接跳到结果。
+    cluster(640,631,-.7)
+    x=text(hand,'P=6×3',640,631,20);x=radical(hand,2,x,631,20)
+    x=text(hand,'=18',x,631,20);x=radical(hand,2,x,631,20);text(hand,'cm',x+3,633,16)
+    cluster(552,678,.6)
+    x=text(hand,'S',552,678,20);text(hand,'0',x-1,689,12)
+    x=text(hand,'=6×',x+10,678,20);x=fraction_root(hand,4,x+4,678,19)
+    x=text(hand,'×(3',x,678,20);x=radical(hand,2,x,678,20);x=text(hand,')',x,678,20);superscript(hand,x,669)
+    cluster(576,724,-.5)
+    x=text(hand,'=6×',576,724,19);x=fraction_root(hand,4,x+3,724,18)
+    x=text(hand,'×18=27',x,724,19);x=radical(hand,3,x,724,19);x=text(hand,'cm',x+3,726,15);superscript(hand,x,719,11)
+
+    # 平移法向距离先转为截距参数；宽行展开后再代入，不省略关键中间式。
+    cluster(952,622,.8)
+    x=text(hand,'d=',952,622,19)
+    end=text(hand,'k-9',x+8,610,17)
+    stroke(hand,[(x+1,631),(end+5,630)],1.5,curve=False)
+    radical(hand,3,x+8,638,16)
+    cluster(935,674,-.7)
+    x=text(hand,'→ k=9+',935,674,18);x=radical(hand,3,x,674,18);text(hand,'d',x,674,18)
+
+    cluster(552,775,-.4)
+    x=text(hand,'S(d)=',552,775,20);x=fraction_root(hand,2,x+5,775,18)
+    x=text(hand,'[k',x,775,20);first=x;superscript(hand,x,768)
+    x=text(hand,'-3(k-6)',x+12,775,20);superscript(hand,x-1,768);text(hand,']',x+10,775,20)
+    text(hand,'big - 3 small',first-12,804,12,color=BLUE)
+    cluster(576,822,.55)
+    x=text(hand,'=',576,822,19);x=fraction_root(hand,2,x+7,822,17)
+    x=text(hand,'[-2k',x,822,19);superscript(hand,x,815)
+    text(hand,'+36k-108]',x+11,822,19)
+    cluster(923,774,-.8)
+    x=text(hand,'=',923,774,18);x=fraction_root(hand,2,x+6,774,16)
+    x=text(hand,'[54-6d',x,774,18);superscript(hand,x,767,11);text(hand,']',x+10,774,18)
+    cluster(926,824,.4)
+    x=text(hand,'=27',926,824,18);x=radical(hand,3,x,824,18)
+    x=text(hand,'-3',x+3,824,18);x=radical(hand,3,x,824,18);x=text(hand,'d',x,824,18);superscript(hand,x,817,11)
+    text(hand,'max at d=0',959,863,16,color=BLUE)
+    global TRANSFORM
+    TRANSFORM=None
+    # 蓝色连接箭头说明展开式代入右侧，避免两组计算看起来毫无关联。
+    stroke(hand,[(880,844),(890,824),(903,786)],1.5,color=BLUE)
+    stroke(hand,[(891,791),(903,786),(902,800)],1.5,color=BLUE,curve=False)
+    path=[(400+34*math.cos(a),552+16*math.sin(a)) for a in [i*2*math.pi/60 for i in range(61)]]
+    stroke(hand,path,1.5,color=BLUE)
+    path=[(469+(20+math.sin(a*3))*math.cos(a),687+17*math.sin(a)) for a in [i*2*math.pi/65 for i in range(66)]]
+    stroke(hand,path,1.5,color=BLUE)
+    stroke(hand,[(491,699),(499,721),(496,751),(480,768)],1.5,color=BLUE)
+    stroke(hand,[(481,758),(480,768),(490,764)],1.5,color=BLUE,curve=False)

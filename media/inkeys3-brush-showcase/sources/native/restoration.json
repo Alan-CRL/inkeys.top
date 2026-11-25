@@ -1,0 +1,20 @@
+{
+  "D:/Project/Inkeys/Repo/Inkeys-draw": {
+    "Bar.EraserAttribute.Test.cpp": {
+      "restored": true,
+      "sha256": "0aa0267188fb7d703645f1b808cd2bff7411be26028772364a13478d239d4bfa"
+    },
+    "Bar.Button.cpp": {
+      "restored": true,
+      "sha256": "398b16a4ef7a7938cba8fa2f520b909a3c84325677b2ac1ea399929905140549"
+    },
+    "temporary_includes_absent": true
+  },
+  "D:/Project/Inkeys/Repo/Inkeys-hero-shape": {
+    "Bar.EraserAttribute.Test.cpp": {
+      "restored": true,
+      "sha256": "75dc5bf42339df08e1a1ac6d7abe1cd8059505cd9bc3f762dc3287443475938a"
+    },
+    "temporary_includes_absent": true
+  }
+}

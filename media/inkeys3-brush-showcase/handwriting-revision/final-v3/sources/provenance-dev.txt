@@ -1,0 +1,6 @@
+repository=D:\Project\Inkeys\Repo\Inkeys-draw
+revision=97e619256befc4397e287ddcaebcc5719aa7f838
+build=Debug|ARM64
+locale=en-US
+Verified private binary replay; no native source installation or mutation; revision is compiled revision
+layers=board.png,ink-brush.png,ink-handwriting.png,ink-highlight.png,ink-laser.png,pattern.json,pattern.png,stroke-diagnostics.csv,stroke-geometry.csv,toolbar-body.json,toolbar-state.json,toolbar.png

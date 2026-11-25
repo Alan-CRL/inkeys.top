@@ -1,0 +1,7 @@
+# 独立制作依赖，不加入官网的 VuePress 安装边界。
+packages:
+  - '.'
+supportedArchitectures:
+  cpu:
+    - current
+    - x64

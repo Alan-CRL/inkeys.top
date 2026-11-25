@@ -1,0 +1,26 @@
+{
+  "name": "inkeys3-screen-freeze-film",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "studio": "node scripts/run.mjs studio",
+    "typecheck": "tsc --noEmit",
+    "render": "node scripts/run.mjs render",
+    "stills": "node scripts/run.mjs render --stills"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "@remotion/renderer": "4.0.534",
+    "@remotion/bundler": "4.0.534",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.534"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "typescript": "5.9.3"
+  }
+}

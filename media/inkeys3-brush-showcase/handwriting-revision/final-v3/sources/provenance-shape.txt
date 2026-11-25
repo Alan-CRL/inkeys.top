@@ -1,0 +1,6 @@
+repository=D:\Project\Inkeys\Repo\Inkeys-hero-shape
+revision=d060e39bca3673a9cb25da44b7e5a4534e32d038
+build=Debug|ARM64
+locale=en-US
+Verified private binary replay; no native source installation or mutation; revision is compiled revision
+layers=geometry.png

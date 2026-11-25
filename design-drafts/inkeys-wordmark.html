@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Inkeys wordmark concepts v2</title>
+<style>
+  :root { font-family: "HarmonyOS Sans", system-ui, sans-serif; }
+  body { margin: 0; background: var(--bg); color: var(--ink); transition: background .3s; }
+  body.light { --bg: #F4F3EF; --ink: #161616; --muted: #8a8780; --hl-blend: multiply; }
+  body.dark  { --bg: #111111; --ink: #F3F1EC; --muted: #77746e; --hl-blend: normal; }
+  header { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+           padding: 14px 24px; background: var(--bg); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  header strong { margin-right: 12px; }
+  button { padding: 7px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+           background: transparent; color: var(--ink); cursor: pointer; font: inherit; font-size: 13px; }
+  button.on { background: var(--ink); color: var(--bg); }
+  section { padding: 28px 24px 8px; max-width: 1100px; margin: 0 auto; }
+  section h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  section p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  svg.mark { width: 100%; height: auto; display: block; }
+  .hl-layer { mix-blend-mode: var(--hl-blend); }
+</style>
+</head>
+<body class="light">
+<header>
+  <strong>Inkeys 字标概念 v2</strong>
+  <button data-theme="light" class="on">浅色</button>
+  <button data-theme="dark">深色</button>
+  <span style="width:12px"></span>
+  <button data-hl="amber" class="on">荧光笔：琥珀黄</button>
+  <button data-hl="brand">荧光笔：品牌青</button>
+  <span style="width:12px"></span>
+  <button id="replay">重播书写</button>
+</header>
+
+<section>
+  <h2>A · 软笔签名</h2>
+  <p>整词软笔书写（慢处粗、快处细、收笔出锋），荧光笔横扫 “eys”，激光笔写版本号。</p>
+  <svg class="mark" id="A" viewBox="0 0 820 360"></svg>
+</section>
+<section>
+  <h2>B · 软硬交替</h2>
+  <p>I / k / y 用软笔（长笔画显笔锋），n / e / s 用硬笔（等宽圆头），荧光笔扫过 “Ink”。</p>
+  <svg class="mark" id="B" viewBox="0 0 820 360"></svg>
+</section>
+<section>
+  <h2>C · 硬笔粗体</h2>
+  <p>整词粗硬笔（等宽、最接近粗字体趋势），荧光笔压在 “keys” 下半部，激光笔写版本号。</p>
+  <svg class="mark" id="C" viewBox="0 0 820 360"></svg>
+</section>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+
+/* ---------- letter skeletons (writing order) ---------- */
+const L = {
+  I: ['M72,70 C70,130 68,190 66,250'],
+  n: ['M122,150 C122,190 121,225 120,250 C121,210 130,160 162,151 C188,145 192,170 191,200 C191,222 190,238 190,250'],
+  k: ['M236,62 C235,130 234,200 233,250', 'M290,148 C270,168 252,182 236,194 C256,210 274,230 294,252'],
+  e: ['M322,200 C344,202 372,198 384,188 C392,170 376,150 354,150 C330,150 316,172 316,200 C316,232 336,252 360,252 C374,252 386,246 394,236'],
+  y: ['M416,150 C420,196 436,232 456,236', 'M492,150 C488,220 474,300 444,326 C428,338 408,332 402,318'],
+  s: ['M576,160 C562,146 528,146 522,168 C516,190 580,196 578,224 C576,254 526,258 510,238'],
+};
+const LASER = {
+  '3': ['M636,78 C654,62 686,68 684,90 C682,104 666,110 656,110 C674,110 690,120 688,140 C686,162 650,164 634,150'],
+  'three': [
+    'M636,84 C636,110 635,134 638,146 C641,152 648,152 652,148', 'M626,104 L654,102',
+    'M662,74 C662,110 661,130 661,150 C664,120 674,106 686,108 C696,110 696,124 696,150',
+    'M708,110 C708,126 708,140 708,150 C710,124 720,110 732,112',
+    'M736,132 C748,132 758,130 760,124 C762,112 752,106 744,108 C732,112 730,130 732,140 C735,150 746,154 760,146',
+    'M766,132 C778,132 788,130 790,124 C792,112 782,106 774,108 C762,112 760,130 762,140 C765,150 776,154 790,146',
+  ],
+  'III': ['M628,76 L692,76', 'M640,78 L640,148', 'M660,78 L660,148', 'M680,78 L680,148', 'M628,150 L692,150'],
+};
+
+/* ---------- geometry helpers ---------- */
+const probe = document.createElementNS(NS, 'path');
+const probeSvg = document.createElementNS(NS, 'svg');
+probeSvg.style.cssText = 'position:absolute;width:0;height:0';
+probeSvg.appendChild(probe); document.body.appendChild(probeSvg);
+
+function sample(d, step = 2) {
+  probe.setAttribute('d', d);
+  const len = probe.getTotalLength(), n = Math.max(2, Math.ceil(len / step));
+  const pts = [];
+  for (let i = 0; i <= n; i++) { const p = probe.getPointAtLength(len * i / n); pts.push([p.x, p.y]); }
+  return { pts, len };
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = t => { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); };
+
+/* soft pen: simulated pressure 0.8x (fast) .. 1.4x (slow), live-tip taper at pen-up */
+function softRadii(pts, D) {
+  const r = []; let cur = D;
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[Math.max(0, i - 3)], b = pts[i], c = pts[Math.min(pts.length - 1, i + 3)];
+    const a1 = Math.atan2(b[1] - a[1], b[0] - a[0]), a2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+    let turn = Math.abs(a2 - a1); if (turn > Math.PI) turn = 2 * Math.PI - turn;
+    const accel = 0.6 + 0.4 * smooth(i / 12);
+    const speed = accel * (1 - smooth(turn / 0.5));     // slows down on curves
+    const target = D * (1.4 + (0.8 - 1.4) * smooth(speed));
+    cur += (target - cur) * 0.18;
+    r.push(cur / 2);
+  }
+  const tail = Math.floor(pts.length * 0.16);
+  for (let k = 0; k < tail; k++) { const i = pts.length - 1 - k; r[i] *= 0.3 + 0.7 * smooth(k / tail); }
+  return r;
+}
+function ribbon(pts, r, count) {
+  count = Math.max(2, Math.min(pts.length, count));
+  const Lf = [], Rt = [];
+  for (let i = 0; i < count; i++) {
+    const p = pts[i], q = pts[Math.min(pts.length - 1, i + 1)], o = pts[Math.max(0, i - 1)];
+    let dx = q[0] - o[0], dy = q[1] - o[1]; const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+    Lf.push([p[0] - dy * r[i], p[1] + dx * r[i]]); Rt.push([p[0] + dy * r[i], p[1] - dx * r[i]]);
+  }
+  const all = Lf.concat(Rt.reverse());
+  const cap = (p, rr) => `M${(p[0] - rr).toFixed(1)},${p[1].toFixed(1)}a${rr},${rr} 0 1,0 ${2 * rr},0a${rr},${rr} 0 1,0 ${-2 * rr},0Z`;
+  return ['M' + all.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z',
+    cap(pts[0], r[0]) + cap(pts[count - 1], r[count - 1])];
+}
+/* highlighter: vertical chisel nib, width:height = 1:8, no taper */
+function chisel(pts, H, count) {
+  count = Math.max(2, Math.min(pts.length, count));
+  const hx = H / 8, top = [], bot = [];
+  for (let i = 0; i < count; i++) { top.push([pts[i][0], pts[i][1] - H]); bot.push([pts[i][0], pts[i][1] + H]); }
+  const s = pts[0], e = pts[count - 1];
+  const poly = [[s[0] - hx, s[1] - H], ...top, [e[0] + hx, e[1] - H], [e[0] + hx, e[1] + H], ...bot.reverse(), [s[0] - hx, s[1] + H]];
+  return 'M' + poly.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join('L') + 'Z';
+}
+
+/* ---------- concepts ---------- */
+const HL = { amber: '#FFC21A', brand: '#2FE3C8' };
+const HL_OP = { light: .55, dark: .42 };
+const LASER_RGB = [255, 16, 0];
+const mixWhite = (c, t) => c.map(v => Math.round(v + (255 - v) * t));
+const rgb = c => `rgb(${c.join(',')})`;
+
+const concepts = {
+  A: { letters: 'Inkeys'.split('').map(ch => ({ ch, pen: 'soft', D: 19 })),
+       hl: { d: 'M312,202 C400,197 500,204 588,198', H: 30 } },
+  B: { letters: [['I','soft'],['n','hard'],['k','soft'],['e','hard'],['y','soft'],['s','hard']].map(([ch, pen]) => ({ ch, pen, D: pen === 'soft' ? 20 : 14 })),
+       hl: { d: 'M50,208 C130,203 220,209 300,204', H: 30 } },
+  C: { letters: 'Inkeys'.split('').map(ch => ({ ch, pen: 'hard', D: 26 })),
+       hl: { d: 'M220,226 C340,221 470,229 592,222', H: 22 } },
+};
+
+let theme = 'light', hlKey = 'amber', runs = [];
+
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; }
+
+function build(id) {
+  const svg = document.getElementById(id); svg.innerHTML = '';
+  const cfg = concepts[id];
+  const defs = el('defs', {}, svg);
+  const f = el('filter', { id: id + '-glow', filterUnits: 'userSpaceOnUse', x: 0, y: 0, width: 820, height: 360 }, defs);
+  el('feGaussianBlur', { stdDeviation: 6 }, f);
+
+  const inkG = el('g', {}, svg), hlG = el('g', { class: 'hl-layer', opacity: HL_OP[theme] }, svg);
+  const laserG = el('g', {}, svg);
+  const items = [];
+  const ink = getComputedStyle(document.body).getPropertyValue('--ink').trim();
+
+  for (const { ch, pen, D } of cfg.letters) for (const d of L[ch]) {
+    const s = sample(d);
+    if (pen === 'soft') {
+      const r = softRadii(s.pts, D);
+      const body = el('path', { fill: ink, d: '' }, inkG), caps = el('path', { fill: ink, d: '' }, inkG);
+      items.push({ len: s.len, draw: p => {
+        const [b, c] = p <= 0 ? ['', ''] : ribbon(s.pts, r, Math.ceil(s.pts.length * p));
+        body.setAttribute('d', b); caps.setAttribute('d', c);
+      } });
+    } else {
+      const node = el('path', { d, fill: 'none', stroke: ink, 'stroke-width': D, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+                                'stroke-dasharray': s.len, 'stroke-dashoffset': s.len }, inkG);
+      items.push({ len: s.len, draw: p => { node.setAttribute('stroke-dashoffset', s.len * (1 - p)); node.style.opacity = p > 0 ? 1 : 0; } });
+    }
+  }
+  const hs = sample(cfg.hl.d);
+  const hNode = el('path', { fill: HL[hlKey], d: '' }, hlG);
+  items.push({ len: hs.len, draw: p => hNode.setAttribute('d', p <= 0 ? '' : chisel(hs.pts, cfg.hl.H, Math.ceil(hs.pts.length * p))) });
+
+  /* laser: glow + border + edge + near-white core, like Draw3's laser shader layers */
+  const layers = [
+    { stroke: rgb(LASER_RGB), w: 18, op: .85, filter: `url(#${id}-glow)` },
+    { stroke: rgb(LASER_RGB), w: 8, op: .98 },
+    { stroke: rgb(mixWhite(LASER_RGB, .43)), w: 5.5, op: .72 },
+    { stroke: rgb(mixWhite(LASER_RGB, .94)), w: 3, op: 1 },
+  ];
+  const laserSeqs = ['3', 'three', 'III'].map(key => {
+    const g = el('g', { opacity: 0 }, laserG);
+    const strokes = LASER[key].map(d => {
+      const s = sample(d);
+      const nodes = layers.map(Ly => el('path', { d, fill: 'none', stroke: Ly.stroke, 'stroke-width': Ly.w, opacity: Ly.op,
+        'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-dasharray': s.len, 'stroke-dashoffset': s.len,
+        ...(Ly.filter ? { filter: Ly.filter } : {}) }, g));
+      return { len: s.len, draw: p => nodes.forEach(n => n.setAttribute('stroke-dashoffset', s.len * (1 - p))) };
+    });
+    return { g, strokes };
+  });
+
+  return { items, laserSeqs };
+}
+
+/* ---------- timeline ---------- */
+const WRITE_SPEED = 900;   // px/s for wordmark
+const LIFT = 0.07;         // pen-up gap between strokes
+const LASER_SPEED = 260;   // slower, like a presenter writing
+const LASER_LIFT = 0.12, HOLD = 1.0, FADE = 0.8, REST = 0.6;
+
+function schedule(strokes, speed, lift, t0) {
+  let t = t0; return strokes.map(s => { const start = t, dur = s.len / speed; t += dur + lift; return { s, start, dur, end: start + dur }; });
+}
+
+function run(id) {
+  const { items, laserSeqs } = build(id);
+  const plan = schedule(items, WRITE_SPEED, LIFT, 0.2);
+  const wordEnd = plan[plan.length - 1].end;
+  let cursor = wordEnd + 0.4;
+  const lasers = laserSeqs.map(seq => {
+    const p = schedule(seq.strokes, LASER_SPEED, LASER_LIFT, 0);
+    const writeEnd = p[p.length - 1].end;
+    const total = writeEnd + HOLD + FADE + REST;
+    return { seq, p, writeEnd, total };
+  });
+  const cycle = lasers.reduce((a, l) => a + l.total, 0);
+  const t0 = performance.now();
+  const tick = now => {
+    if (gen !== myGen) return;
+    const t = (now - t0) / 1000;
+    for (const { s, start, dur } of plan) s.draw(clamp((t - start) / dur, 0, 1));
+    if (t >= cursor) {
+      let lt = (t - cursor) % cycle;
+      for (const L of lasers) {
+        const local = lt; lt -= L.total;
+        const g = L.seq.g;
+        if (local < 0 || local >= L.total) { g.setAttribute('opacity', 0); L.p.forEach(x => x.s.draw(0)); continue; }
+        L.p.forEach(x => x.s.draw(clamp((local - x.start) / x.dur, 0, 1)));
+        const fadeStart = L.writeEnd + HOLD;
+        g.setAttribute('opacity', local < fadeStart ? 1 : clamp(1 - (local - fadeStart) / FADE, 0, 1));
+      }
+    }
+    requestAnimationFrame(tick);
+  };
+  const myGen = gen;
+  requestAnimationFrame(tick);
+}
+
+let gen = 0;
+function renderAll() { gen++; ['A', 'B', 'C'].forEach(run); }
+
+document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => {
+  theme = b.dataset.theme; document.body.className = theme;
+  document.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('on', x === b)); renderAll();
+});
+document.querySelectorAll('[data-hl]').forEach(b => b.onclick = () => {
+  hlKey = b.dataset.hl;
+  document.querySelectorAll('[data-hl]').forEach(x => x.classList.toggle('on', x === b)); renderAll();
+});
+document.getElementById('replay').onclick = renderAll;
+const q = new URLSearchParams(location.search);
+if (q.get('theme')) document.querySelector(`[data-theme="${q.get('theme')}"]`).click();
+else renderAll();
+</script>
+</body>
+</html>

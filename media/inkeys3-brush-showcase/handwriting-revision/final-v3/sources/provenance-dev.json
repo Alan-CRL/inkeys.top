@@ -1,0 +1,49 @@
+{
+  "input_sha256": "600fed9dc3c8f17e227c696ed86f5670a4cfc9699c128039480769077240dcd8",
+  "executable_sha256": "1a716eb52d30a1d3aa87ee8e76f99787f0f48272da6a9393a8d4e9e4f47fc75b",
+  "executable_path": "D:\\Project\\Inkeys\\website\\media\\inkeys3-brush-showcase\\handwriting-revision\\final-v3\\build\\native-dev-bin\\Inkeys.exe",
+  "adapters": {
+    "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+    "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+    "HeroExport.inc": "c704eb580ae9a90052a00948c82092a83fa216bf09493eadad4f3fc6ad4692dd",
+    "HeroInk.inc": "48205bc9770adda3db36248734b35a437640e3cbc4f27d579117091edf76c1dc",
+    "HeroScene.inc": "93fbacab9736287a49b232bc1d0355a04c0d63ab27746d7475f23ac82c2f4c80",
+    "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+  },
+  "compiled_build": {
+    "adapters": {
+      "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+      "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+      "HeroExport.inc": "c704eb580ae9a90052a00948c82092a83fa216bf09493eadad4f3fc6ad4692dd",
+      "HeroInk.inc": "48205bc9770adda3db36248734b35a437640e3cbc4f27d579117091edf76c1dc",
+      "HeroScene.inc": "93fbacab9736287a49b232bc1d0355a04c0d63ab27746d7475f23ac82c2f4c80",
+      "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+    },
+    "executable_sha256": "1a716eb52d30a1d3aa87ee8e76f99787f0f48272da6a9393a8d4e9e4f47fc75b",
+    "revision": "97e619256befc4397e287ddcaebcc5719aa7f838",
+    "build_log_sha256": "ae2e3ccd01ee8a1291b245b871cfabdf05c5fb4fd6a969bc906c2a1bc4f73fb8"
+  },
+  "capture_only": true,
+  "current_worktree_revision": "85132bb10e6e4c7b6b04555ef272773d62437433",
+  "failures": 0,
+  "export_log_sha256": "beef1721792b3e8647980496dc7af90bcf90d89c3a8b3b52fdc7df948dcc22ef",
+  "source_revision": "97e619256befc4397e287ddcaebcc5719aa7f838",
+  "repository": "D:\\Project\\Inkeys\\Repo\\Inkeys-draw",
+  "build": "Debug|ARM64 full solution, isolated OutDir",
+  "layers": {
+    "board.png": "4cef17349549ad52e2402bae6a53ab796c4be349718a09533f28edb7fb23ee4a",
+    "ink-brush.png": "1a14b084016c701194d091d0221c349ec25b1b950f1daf3b953ee007d2749192",
+    "ink-handwriting.png": "a544d88271284eec6ef9ffb14a9cdd1907f0c8c7b57ea7b24d731faed6e8c68f",
+    "ink-highlight.png": "0017084ac51fb4dba18344d1e544d0dbf0dfb051a6bb579d839aa163bf05eeb7",
+    "ink-laser.png": "0a12466bfb02ddc1687b1b4730533b7283588e399398f434abda843db7f168cf",
+    "pattern.png": "4cef17349549ad52e2402bae6a53ab796c4be349718a09533f28edb7fb23ee4a",
+    "toolbar.png": "ba81cceb2f207bd4223af643fcc6e2e496e199f7971896094d61fd4b125cb0b7"
+  },
+  "metadata": {
+    "stroke-diagnostics.csv": "88323612ea007390229726cce421e7bafcda9354c06b8e2034d079d891246aa2",
+    "stroke-geometry.csv": "26f480e684545d7cd158317817dfb3a7b6898fb3b14947deb3aace0c66724945",
+    "pattern.json": "3e4f1563ca6cbd61e01032ffa371ef91df4b9774bc213d371f512b4b0784f3a2",
+    "toolbar-body.json": "b39ac27e5794a9204726bec71600538642451ae3a201fdb3c10c6f6951d1409a",
+    "toolbar-state.json": "cdaa9589db834991101af6512d993fd4382633e71701d930a927da802fea5039"
+  }
+}

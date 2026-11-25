@@ -1,0 +1,5 @@
+repository=D:\Project\Inkeys\Repo\Inkeys-hero-shape
+revision=d060e39bca3673a9cb25da44b7e5a4534e32d038
+build=Debug|ARM64
+locale=en-US
+layers=capture-manifest.json,geometry.png

@@ -1,0 +1,6 @@
+node_modules/
+build/
+out/
+public/native/
+src/native-assets.json
+.cache/

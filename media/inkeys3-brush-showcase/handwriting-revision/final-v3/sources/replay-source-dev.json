@@ -1,0 +1,24 @@
+{
+  "capture_only": true,
+  "unchanged": true,
+  "before": {
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.EraserAttribute.Test.cpp": "240487b00d37623e77a61d04f37994e54a02dff4557882483c1974b10b931a86",
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.Button.cpp": "6236f8abbcbbbffdd73e3cee4569ee821738d8a90d7127b1b4965e308d42a318",
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCanvas.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCommon.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroExport.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroInk.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroScene.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroShapes.inc": null
+  },
+  "after": {
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.EraserAttribute.Test.cpp": "240487b00d37623e77a61d04f37994e54a02dff4557882483c1974b10b931a86",
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\Bar.Button.cpp": "6236f8abbcbbbffdd73e3cee4569ee821738d8a90d7127b1b4965e308d42a318",
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCanvas.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroCommon.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroExport.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroInk.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroScene.inc": null,
+    "D:\\Project\\Inkeys\\Repo\\Inkeys-draw\\Inkeys\\Inkeys\\UI\\Bar\\HeroShapes.inc": null
+  }
+}

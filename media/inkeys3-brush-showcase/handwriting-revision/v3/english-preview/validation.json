@@ -1,0 +1,26 @@
+{
+  "by_symmetry_preserved_exactly": true,
+  "words": [
+    "by",
+    "symmetry",
+    "hence",
+    "therefore",
+    "the",
+    "section",
+    "is",
+    "regular"
+  ],
+  "stroke_counts": {
+    "by": 1,
+    "symmetry": 3,
+    "hence": 3,
+    "therefore": 6,
+    "the": 2,
+    "section": 6,
+    "is": 3,
+    "regular": 4
+  },
+  "finite_json_checked": true,
+  "visual_review": "Direct draft reviewed word-by-word and complete sentence; opened overlapping c/e/o and separated is/lar for clarity. No font outlines or image tracing.",
+  "native_calls": false
+}

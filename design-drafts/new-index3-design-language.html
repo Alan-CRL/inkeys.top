@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light" data-cta="mono">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>new-index3 设计语言 · 纯净（定稿候选）</title>
+<style>
+/* ───────── 令牌 ───────── */
+:root {
+  /* 色彩 · 浅色 */
+  --bg: #ffffff; --surface: #f5f5f5; --surface-hover: #ededed;
+  --text: #121212; --text2: #5c5c5c; --text3: #757575;
+  --line: rgba(0, 0, 0, .1); --line-strong: rgba(0, 0, 0, .22);
+  --accent: #006a63; --on-accent: #ffffff;
+  /* 墨迹展示卡片：深墨绿，不随主题变亮 */
+  --ink-bg: #10302d; --ink-fg: #eaf2f0; --ink-fg2: rgba(234, 242, 240, .68); --ink-panel: rgba(0, 0, 0, .24); --ink-edge: rgba(255, 255, 255, 0);
+  --ink-gradient: linear-gradient(105deg, #078b99, #b3cd33 27%, #ffb500 40%, #ff7157 55%, #ce5897 72%, #289fca);
+
+  /* 字体：拉丁字体排在前面，避免英文和数字落到中文字体自带的拉丁字形上 */
+  --latin: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Roboto;
+  --cjk-sc: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC";
+  --cjk-tc: "PingFang TC", "Microsoft JhengHei UI", "Microsoft JhengHei", "Noto Sans CJK TC", "Source Han Sans TC";
+  --font: var(--latin), var(--cjk-sc), sans-serif;
+
+  /* 字号阶梯 */
+  --fs-display: clamp(34px, 4.4vw, 60px);
+  --fs-title: clamp(25px, 2.6vw, 34px);
+  --fs-heading: 21px;
+  --fs-lead: clamp(17px, 1.4vw, 20px);
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-caption: 13px;
+  --lh-display: 1.3; --lh-title: 1.38; --lh-body: 1.75; --ls-display: .01em;
+  --w-strong: 600; --w-medium: 500;
+
+  /* 形状：外层大、内层小，按钮为胶囊 */
+  --r-card: 24px; --r-media: 16px; --r-control: 12px; --r-pill: 999px;
+
+  /* 间距 */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 72px;
+  --section: clamp(96px, 12vw, 176px);
+  --gutter: clamp(20px, 5vw, 48px);
+
+  /* 动效 */
+  --dur-press: 120ms; --dur: 200ms; --dur-slow: 400ms;
+  --ease: cubic-bezier(.4, 0, .2, 1); --ease-out: cubic-bezier(.2, 0, 0, 1);
+
+  --btn-bg: var(--text); --btn-fg: var(--bg);
+}
+html[data-theme="dark"] {
+  --bg: #0f0f0f; --surface: #1b1b1b; --surface-hover: #252525;
+  --text: #f2f2f2; --text2: #a6a6a6; --text3: #8a8a8a;
+  --line: rgba(255, 255, 255, .12); --line-strong: rgba(255, 255, 255, .28);
+  --accent: #58ffec; --on-accent: #00201d;
+  --ink-bg: #0f2826; --ink-fg: #e6f0ee; --ink-fg2: rgba(230, 240, 238, .66); --ink-panel: rgba(0, 0, 0, .3); --ink-edge: rgba(255, 255, 255, .07);
+  --ink-gradient: linear-gradient(105deg, #55ccbc, #dedb68 27%, #ff9569 45%, #fa83af 65%, #a194f4 80%, #62bcf4);
+}
+html[data-cta="accent"] { --btn-bg: var(--accent); --btn-fg: var(--on-accent); }
+html[lang="zh-TW"] { --font: var(--latin), var(--cjk-tc), sans-serif; }
+html[lang="en-US"] { --font: var(--latin), sans-serif; --lh-display: 1.1; --lh-title: 1.22; --lh-body: 1.6; --ls-display: -.025em; }
+
+/* ───────── 基础 ───────── */
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--text); font-family: var(--font); }
+body { margin: 0; font-size: var(--fs-body); line-height: var(--lh-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+.t-display { font-size: var(--fs-display); font-weight: var(--w-strong); line-height: var(--lh-display); letter-spacing: var(--ls-display); text-wrap: balance; line-break: strict; }
+.t-title { font-size: var(--fs-title); font-weight: var(--w-strong); line-height: var(--lh-title); letter-spacing: calc(var(--ls-display) * .6); text-wrap: balance; line-break: strict; }
+.t-heading { font-size: var(--fs-heading); font-weight: var(--w-strong); line-height: 1.4; }
+.t-lead { font-size: var(--fs-lead); color: var(--text2); text-wrap: pretty; max-width: 34em; }
+.t-body { color: var(--text2); text-wrap: pretty; }
+.t-small { font-size: var(--fs-small); line-height: 1.6; }
+.t-caption { font-size: var(--fs-caption); line-height: 1.6; color: var(--text3); }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 var(--gutter); }
+.center { text-align: center; }
+.center .t-lead { margin-inline: auto; }
+.block { padding-top: var(--section); }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* 区块进入视口时只做一次淡入，不位移，不跟随滚动进度 */
+.appear { opacity: 0; transition: opacity var(--dur-slow) var(--ease-out); }
+.appear.in { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .appear { opacity: 1; transition: none; } }
+
+/* ───────── 按钮 ───────── */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 48px; padding: 0 26px; border: 0; border-radius: var(--r-pill); font: inherit; font-size: var(--fs-body); font-weight: var(--w-medium); line-height: 1.2; text-decoration: none; white-space: nowrap; cursor: pointer; transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+.btn-primary { background: var(--btn-bg); color: var(--btn-fg); }
+.btn-secondary { background: var(--surface); color: var(--text); }
+.btn-sm { min-height: 38px; padding: 0 16px; font-size: var(--fs-small); }
+.btn svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: color-mix(in srgb, var(--btn-bg) 84%, var(--bg)); }
+  .btn-secondary:hover { background: var(--surface-hover); }
+}
+.btn:active { transform: scale(.97); transition-duration: var(--dur-press); }
+.btn[disabled] { opacity: .4; pointer-events: none; }
+.link { color: var(--accent); font-weight: var(--w-medium); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color var(--dur) var(--ease); }
+.link:hover { text-decoration-color: currentColor; }
+
+/* ───────── 顶栏 ───────── */
+.nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+.nav .wrap { display: flex; align-items: center; height: 64px; gap: var(--s6); max-width: 1360px; }
+.brand { font-size: 20px; font-weight: 700; letter-spacing: -.01em; margin-right: auto; }
+.brand i { font-family: Georgia, serif; font-weight: 400; }
+.nav-link { text-decoration: none; font-size: var(--fs-small); color: var(--text2); transition: color var(--dur) var(--ease); }
+.nav-link:hover { color: var(--text); }
+@media (max-width: 760px) { .nav-link { display: none; } }
+
+/* ───────── S0 首屏 ───────── */
+.hero { position: relative; min-height: calc(100svh - 64px); display: grid; place-items: center; padding: 40px 0 72px; overflow: hidden; }
+.hero-inner { text-align: center; position: relative; z-index: 1; padding: 0 var(--s5); }
+/* 仅为示意：正式页面这里是现有的 Canvas 书写动画，不改动 */
+.wordmark { font-size: clamp(84px, 17vw, 236px); line-height: 1.15; letter-spacing: -.045em; background: var(--ink-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 .1em; user-select: none; }
+.wordmark b { font-family: var(--latin), sans-serif; font-weight: 650; }
+.wordmark i { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+.tagline { margin-top: var(--s5); font-size: clamp(17px, 1.45vw, 21px); color: var(--text2); text-wrap: balance; }
+.tagline span { display: inline-block; }
+.actions { margin-top: var(--s6); display: flex; gap: var(--s3); justify-content: center; flex-wrap: wrap; }
+/* 书写控制：平时很淡，鼠标移到首屏或键盘聚焦时才清楚 */
+.hero-tools { position: absolute; right: var(--gutter); bottom: var(--s5); display: flex; gap: var(--s2); opacity: .35; transition: opacity var(--dur) var(--ease); z-index: 2; }
+.hero:hover .hero-tools, .hero-tools:focus-within { opacity: 1; }
+.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: var(--r-control); background: var(--surface); color: var(--text2); cursor: pointer; transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease); }
+.icon-btn:hover { background: var(--surface-hover); color: var(--text); }
+.icon-btn:active { transform: scale(.94); transition-duration: var(--dur-press); }
+.icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
+/* 场景碎片：平时半透明，悬停时变实并显示名称 */
+.frag { position: absolute; width: clamp(150px, 15vw, 230px); aspect-ratio: 4 / 3; border-radius: var(--r-media); background: var(--surface); opacity: .6; display: grid; place-items: center; font-size: 12px; color: var(--text3); transition: opacity var(--dur) var(--ease), transform var(--dur-slow) var(--ease-out); cursor: pointer; }
+.frag::after { content: attr(data-name); position: absolute; left: 50%; top: calc(100% + 10px); transform: translateX(-50%); white-space: nowrap; font-size: var(--fs-small); color: var(--text); opacity: 0; transition: opacity var(--dur) var(--ease); }
+.frag:hover { opacity: 1; transform: scale(1.04) rotate(0deg); }
+.frag:hover::after { opacity: 1; }
+.f1 { left: 4%; top: 12%; transform: rotate(-4deg); } .f2 { left: 7%; bottom: 14%; transform: rotate(3deg); aspect-ratio: 5 / 2; }
+.f3 { right: -3%; top: 10%; transform: rotate(4deg); } .f4 { right: -2%; bottom: 13%; transform: rotate(-3deg); }
+@media (max-width: 1100px) { .frag { display: none; } }
+
+/* ───────── 媒体占位 ───────── */
+.ph { position: relative; display: grid; place-items: center; text-align: center; color: var(--text3); font-size: var(--fs-caption); line-height: 1.6; padding: var(--s4); background: repeating-linear-gradient(135deg, color-mix(in srgb, currentColor 9%, transparent) 0 1px, transparent 1px 14px); }
+
+/* ───────── S1 三张竖向卡片 ───────── */
+.s1-head { padding-bottom: clamp(72px, 10vw, 144px); }
+.s1-head .t-lead { margin-top: var(--s5); }
+.cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(12px, 1.6vw, 20px); }
+.vcard { display: flex; flex-direction: column; border-radius: var(--r-card); overflow: hidden; text-decoration: none; background: var(--surface); min-height: clamp(420px, 44vw, 580px); transition: background-color var(--dur) var(--ease); }
+.vcard:hover { background: var(--surface-hover); }
+.vcard-text { padding: clamp(22px, 2.4vw, 32px); }
+.vcard-text p { color: var(--text2); margin-top: 6px; }
+.vcard .ph { flex: 1; }
+@media (max-width: 820px) { .cards3 { grid-template-columns: 1fr; } .vcard { min-height: 340px; } }
+
+/* ───────── S2 平铺卡片与步骤 ───────── */
+.s2-head .t-lead { margin-top: var(--s5); }
+.hcard { margin-top: clamp(48px, 6vw, 80px); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); border-radius: var(--r-card); background: var(--surface); overflow: hidden; }
+.hcard-text { padding: clamp(26px, 3.4vw, 48px); display: flex; flex-direction: column; }
+.scene { font-size: var(--fs-small); font-weight: var(--w-strong); color: var(--accent); margin-bottom: var(--s3); }
+.hcard-text .t-body { margin-top: var(--s4); }
+.steps { list-style: none; margin: auto 0 0; padding: var(--s6) 0 0; display: grid; }
+.step { position: relative; display: flex; align-items: center; gap: var(--s3); width: 100%; padding: 12px 0; border: 0; background: none; font: inherit; font-size: 15px; color: var(--text3); text-align: start; cursor: pointer; transition: color var(--dur) var(--ease); }
+.step::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 2px; background: var(--line); }
+.step::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; border-radius: 2px; width: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+.step:hover { color: var(--text); }
+.step.on { color: var(--text); font-weight: var(--w-strong); }
+.step.on::after { animation: fill 4s linear forwards; }
+.stepper.paused .step.on::after { animation-play-state: paused; }
+.step-n { font-variant-numeric: tabular-nums; font-size: 12px; font-weight: 400; color: var(--text3); }
+@keyframes fill { to { transform: scaleX(1); } }
+.hcard-media { position: relative; min-height: 380px; margin: var(--s3); border-radius: var(--r-media); overflow: hidden; background: var(--bg); }
+.hcard-media .ph { position: absolute; inset: 0; }
+.hcard-media .ph b { display: block; font-size: 44px; font-weight: var(--w-strong); color: var(--text2); line-height: 1.2; }
+.pause { position: absolute; right: var(--s3); bottom: var(--s3); background: color-mix(in srgb, var(--surface) 86%, transparent); }
+@media (max-width: 880px) { .hcard { grid-template-columns: 1fr; } .hcard-media { order: -1; min-height: 0; aspect-ratio: 16 / 10; } }
+
+/* ───────── S5-A 墨迹展示卡片 ─────────
+   深墨绿底 + 细颗粒 + 一处很淡的顶光，像一块哑光的板面；彩色只留给墨迹本身 */
+.ink-card { margin: var(--section) clamp(12px, 2vw, 28px) 0; border-radius: calc(var(--r-card) + 8px); background-color: var(--ink-bg); color: var(--ink-fg); padding: clamp(56px, 8vw, 112px) 0 clamp(20px, 3vw, 40px); position: relative; overflow: hidden; box-shadow: inset 0 0 0 1px var(--ink-edge); }
+.ink-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background:
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E"),
+  radial-gradient(120% 70% at 50% -10%, rgba(255, 255, 255, .09), transparent 60%); mix-blend-mode: soft-light; }
+.ink-card > .wrap { position: relative; }
+.ink-card .t-lead { color: var(--ink-fg2); margin-top: var(--s5); }
+.ink-card .ph { margin-top: clamp(40px, 5vw, 64px); aspect-ratio: 21 / 9; border-radius: var(--r-media); color: var(--ink-fg2); background-color: var(--ink-panel); }
+
+/* ───────── S6 下载收尾 ───────── */
+.s6 { padding-bottom: var(--section); }
+.s6 .t-lead { margin-top: var(--s5); }
+.s6 .actions { margin-top: var(--s6); }
+.s6 .t-caption { margin-top: var(--s4); }
+
+/* ───────── 规范样张 ───────── */
+.spec { border-top: 1px solid var(--line); padding: var(--s8) 0 160px; }
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 56px; margin-top: var(--s7); }
+.spec h4 { margin: 0 0 var(--s4); font-size: var(--fs-caption); font-weight: var(--w-strong); color: var(--text3); }
+.spec h4:not(:first-child) { margin-top: 40px; }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s4); padding: var(--s3) 0; border-bottom: 1px solid var(--line); }
+.row > :first-child { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.val { font-size: 12px; line-height: 1.4; color: var(--text3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.btn-rows { display: grid; gap: var(--s4); }
+.btn-rows > div { display: flex; gap: var(--s3); flex-wrap: wrap; align-items: center; }
+.radii { display: flex; gap: var(--s4); align-items: flex-end; flex-wrap: wrap; }
+.radii div { display: grid; gap: var(--s2); justify-items: center; }
+.radii span:first-child { display: block; width: 72px; height: 72px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.sws { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s3); }
+.sw span:first-child { display: block; aspect-ratio: 1; border-radius: var(--r-control); box-shadow: inset 0 0 0 1px var(--line); }
+.sw .val { display: block; margin-top: 6px; white-space: normal; }
+.sw i { font-style: normal; }
+.notes { margin: 0; padding-left: 1.2em; color: var(--text2); }
+.notes li { margin-bottom: 6px; }
+.motion-demo { height: 72px; border-radius: var(--r-control); background: var(--surface); position: relative; overflow: hidden; cursor: pointer; }
+.motion-demo i { position: absolute; left: 12px; top: 12px; width: 48px; height: 48px; border-radius: var(--r-control); background: var(--accent); transition: transform var(--dur-slow) var(--ease-out); }
+.motion-demo.go i { transform: translateX(min(220px, 50vw)); }
+
+/* ───────── 切换条（预览工具，不属于设计） ───────── */
+.switch { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 50; display: flex; gap: 10px; padding: 8px; border-radius: 16px; background: #1b1b1b; box-shadow: 0 8px 32px rgba(0, 0, 0, .28); font-family: var(--latin), var(--cjk-sc), sans-serif; max-width: calc(100vw - 16px); overflow-x: auto; }
+.seg { display: flex; background: #2c2c2c; border-radius: 10px; padding: 3px; }
+.seg button { border: 0; background: none; color: #b8b8b8; font: inherit; font-size: 13px; line-height: 1; padding: 8px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: #fff; color: #111; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <span class="brand">Ink<i>eys</i></span>
+    <a class="nav-link" href="#" data-t="nav1"></a><a class="nav-link" href="#" data-t="nav2"></a><a class="nav-link" href="#" data-t="nav3"></a><a class="nav-link" href="#" data-t="nav4"></a>
+    <a class="btn btn-primary btn-sm" href="#" data-t="dl"></a>
+  </div>
+</header>
+
+<!-- S0 -->
+<div class="hero">
+  <div class="frag f1" data-tn="f1">4:3</div>
+  <div class="frag f2" data-tn="f2">5:2</div>
+  <div class="frag f3" data-tn="f3">4:3</div>
+  <div class="frag f4" data-tn="f4">4:3</div>
+  <div class="hero-inner">
+    <div class="wordmark" aria-label="Inkeys"><b>Ink</b><i>eys</i></div>
+    <p class="t-caption">（静态示意。正式页面保留现有的艺术字书写动画）</p>
+    <p class="tagline"><span data-t="tag1"></span><span data-t="tag2"></span></p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#" data-t="dl"></a>
+      <a class="btn btn-secondary" href="#"><svg viewBox="0 0 24 24"><path d="m12 2.6 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5l-5.9 3.1 1.2-6.5L2.5 9.5l6.6-.9z"/></svg><span data-t="star"></span></a>
+    </div>
+  </div>
+  <div class="hero-tools">
+    <button class="icon-btn" type="button" aria-label="调整书写样式"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18h1.3a2.1 2.1 0 0 0 1.4-3.6c-.6-.6-.2-1.7.7-1.7h1.2A4.4 4.4 0 0 0 21 11.3 8.5 8.5 0 0 0 12 3ZM7.2 11a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm3.3-3.2a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Zm4.5.6a1.2 1.2 0 1 1 0-2.4 1.2 1.2 0 0 1 0 2.4Z"/></svg></button>
+    <button class="icon-btn" type="button" aria-label="暂停动画"><svg viewBox="0 0 16 16"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button>
+  </div>
+</div>
+
+<!-- S1 -->
+<section class="block">
+  <div class="wrap">
+    <div class="s1-head center appear">
+      <h1 class="t-display" data-t="s1t"></h1>
+      <p class="t-lead" data-t="s1s"></p>
+    </div>
+    <div class="cards3 appear">
+      <a class="vcard" href="#"><div class="vcard-text"><h3 class="t-heading" data-t="c1t"></h3><p data-t="c1s"></p></div><div class="ph">Remotion 轮播，铺到卡片边缘</div></a>
+      <a class="vcard" href="#"><div class="vcard-text"><h3 class="t-heading" data-t="c2t"></h3><p data-t="c2s"></p></div><div class="ph">Remotion 轮播，铺到卡片边缘</div></a>
+      <a class="vcard" href="#"><div class="vcard-text"><h3 class="t-heading" data-t="c3t"></h3><p data-t="c3s"></p></div><div class="ph">Remotion 轮播，铺到卡片边缘</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- S2 -->
+<section class="block">
+  <div class="wrap">
+    <div class="s2-head appear">
+      <h1 class="t-display" data-t="s2t"></h1>
+      <p class="t-lead" data-t="s2s"></p>
+    </div>
+    <div class="hcard appear stepper">
+      <div class="hcard-text">
+        <p class="scene" data-t="k1"></p>
+        <h2 class="t-title" data-t="k1t"></h2>
+        <p class="t-body" data-t="k1d"></p>
+        <ol class="steps">
+          <li><button class="step on" type="button"><span class="step-n">1</span><span data-t="st1"></span></button></li>
+          <li><button class="step" type="button"><span class="step-n">2</span><span data-t="st2"></span></button></li>
+          <li><button class="step" type="button"><span class="step-n">3</span><span data-t="st3"></span></button></li>
+          <li><button class="step" type="button"><span class="step-n">4</span><span data-t="st4"></span></button></li>
+        </ol>
+      </div>
+      <div class="hcard-media">
+        <div class="ph"><div><b class="step-big">1</b>短循环画面，16:10，画面内无文字</div></div>
+        <button class="icon-btn pause" type="button" aria-label="暂停"><svg viewBox="0 0 16 16"><path class="ico" d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S5-A -->
+<div class="ink-card appear">
+  <div class="wrap center">
+    <h1 class="t-display" data-t="s5t"></h1>
+    <p class="t-lead" data-t="s5s"></p>
+    <div class="ph">Remotion 书写演示，21:9。墨迹的彩色直接落在这块深色板面上</div>
+  </div>
+</div>
+
+<!-- S6 -->
+<section class="block s6">
+  <div class="wrap center appear">
+    <h1 class="t-display" data-t="s6t"></h1>
+    <p class="t-lead" data-t="s6s"></p>
+    <div class="actions"><a class="btn btn-primary" href="#" data-t="dl"></a></div>
+    <p class="t-caption" data-t="req"></p>
+  </div>
+</section>
+
+<!-- 规范样张 -->
+<div class="spec">
+  <div class="wrap">
+    <h2 class="t-title">设计语言：纯净</h2>
+    <p class="t-lead" style="margin-top:8px">纯白与近黑的底色、中性灰卡片、胶囊按钮。页面上的彩色只来自墨迹：首屏艺术字和产品画面。</p>
+    <div class="spec-grid">
+      <div>
+        <h4>字号（字号 / 行高 / 字重，随窗口宽度变化）</h4>
+        <div class="row"><span class="t-display" data-t="ty1"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-title" data-t="ty2"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-heading" data-t="ty3"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-lead" data-t="ty4"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-body" data-t="ty5"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-small" data-t="ty7"></span><span class="val" data-m></span></div>
+        <div class="row"><span class="t-caption" data-t="ty6"></span><span class="val" data-m></span></div>
+      </div>
+      <div>
+        <h4>按钮（把鼠标移上去、按下、用 Tab 键聚焦试试）</h4>
+        <div class="btn-rows">
+          <div><a class="btn btn-primary" href="#" data-t="dl"></a><a class="btn btn-secondary" href="#" data-t="star"></a></div>
+          <div><a class="btn btn-primary btn-sm" href="#" data-t="dl"></a><a class="btn btn-secondary btn-sm" href="#" data-t="more"></a><button class="btn btn-primary btn-sm" disabled data-t="dl"></button></div>
+          <div><a class="link" href="#" data-t="more"></a><button class="icon-btn" type="button" aria-label="示例图标按钮"><svg viewBox="0 0 16 16"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button></div>
+        </div>
+        <h4>动效（点击方块重放）</h4>
+        <div class="motion-demo" id="motion"><i></i></div>
+        <ul class="notes t-small" style="margin-top:12px">
+          <li>按下 120ms，悬停与颜色变化 200ms，出现与面板展开 400ms</li>
+          <li>没有回弹，没有悬停放大；按下时缩小到 97%</li>
+          <li>区块进入视口只淡入一次，不位移</li>
+        </ul>
+      </div>
+      <div>
+        <h4>圆角（外层大、内层小）</h4>
+        <div class="radii">
+          <div><span style="border-radius:var(--r-card)"></span><span class="val">卡片 24</span></div>
+          <div><span style="border-radius:var(--r-media)"></span><span class="val">媒体 16</span></div>
+          <div><span style="border-radius:var(--r-control)"></span><span class="val">控件 12</span></div>
+          <div><span style="border-radius:var(--r-pill);height:44px"></span><span class="val">按钮 胶囊</span></div>
+        </div>
+        <h4>色板</h4>
+        <div class="sws">
+          <div class="sw"><span style="background:var(--bg)"></span><span class="val">背景<br><i data-c="--bg"></i></span></div>
+          <div class="sw"><span style="background:var(--surface)"></span><span class="val">卡片<br><i data-c="--surface"></i></span></div>
+          <div class="sw"><span style="background:var(--text)"></span><span class="val">文字<br><i data-c="--text"></i></span></div>
+          <div class="sw"><span style="background:var(--text2)"></span><span class="val">次要文字<br><i data-c="--text2"></i></span></div>
+          <div class="sw"><span style="background:var(--text3)"></span><span class="val">说明文字<br><i data-c="--text3"></i></span></div>
+          <div class="sw"><span style="background:var(--accent)"></span><span class="val">主题色<br><i data-c="--accent"></i></span></div>
+          <div class="sw"><span style="background:var(--ink-bg)"></span><span class="val">墨迹板面<br><i data-c="--ink-bg"></i></span></div>
+          <div class="sw"><span style="background:var(--surface-hover)"></span><span class="val">卡片悬停<br><i data-c="--surface-hover"></i></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="switch" aria-label="预览切换">
+  <div class="seg" data-key="theme"><button data-v="light">浅色</button><button data-v="dark">深色</button></div>
+  <div class="seg" data-key="lang"><button data-v="zh-CN">简中</button><button data-v="zh-TW">繁中</button><button data-v="en-US">EN</button></div>
+  <div class="seg" data-key="cta"><button data-v="mono">主按钮：黑白</button><button data-v="accent">主按钮：主题色</button></div>
+</nav>
+
+<script>
+const T = {
+  'zh-CN': {
+    nav1: '教程', nav2: '版本', nav3: '知识库', nav4: '社区', dl: '立即下载', star: '为 GitHub 点亮 Star', more: '了解更多',
+    tag1: '让屏幕上的书写行云流水，', tag2: '让每一次操作都赏心悦目。',
+    f1: '屏幕批注', f2: '主栏', f3: '自由白板', f4: 'PPT 演示',
+    s1t: '在屏幕上随时书写、标注与讲解。', s1s: '桌面批注、自由白板、PPT 演示，一个软件就够了。',
+    c1t: '屏幕批注', c1s: '在任何画面上直接书写。', c2t: '自由白板', c2s: '推导与板书，空间足够。', c3t: 'PPT 演示', c3s: '放映时自动跟上，边讲边写。',
+    s2t: '从屏幕到讲台，处处都能写。', s2s: '电脑前讲解、会议室演示、教室里板书，智绘教Inkeys 都能从容应对。',
+    k1: '屏幕演示', k1t: '抓住每一个想法，在任何画面上写下来。',
+    k1d: '从 PDF、Word 文档到网页，随手圈画标注，笔锋自然流畅。画面在动？按下定格，背景立刻停住，用荧光笔、激光笔从容讲解；取消定格后切回选择，墨迹原地不动，背景照常操作。',
+    st1: '圈画标注', st2: '切到网页', st3: '定格讲解', st4: '继续操作',
+    s5t: '每一笔，都跟得上思路。', s5s: '全新绘图引擎，由 C++ 与 Direct3D 强劲驱动。快速勾画不断线，细致书写有笔锋。',
+    s6t: '现在，就在你的屏幕上写下第一笔。', s6s: '免费、开源，下载即可开始。', req: '支持 Windows 7 SP1 及以上',
+    ty1: '区块大标题', ty2: '卡片标语', ty3: '卡片标题', ty4: '导语', ty5: '正文', ty6: '说明文字', ty7: '小号文字',
+  },
+  'zh-TW': {
+    nav1: '教學', nav2: '版本', nav3: '知識庫', nav4: '社群', dl: '立即下載', star: '為 GitHub 點亮 Star', more: '瞭解更多',
+    tag1: '讓螢幕上的書寫行雲流水，', tag2: '讓每一次操作都賞心悅目。',
+    f1: '螢幕批註', f2: '主欄', f3: '自由白板', f4: '簡報演示',
+    s1t: '在螢幕上隨時書寫、標註與講解。', s1s: '桌面批註、自由白板、簡報演示，一個軟體就夠了。',
+    c1t: '螢幕批註', c1s: '在任何畫面上直接書寫。', c2t: '自由白板', c2s: '推導與板書，空間足夠。', c3t: '簡報演示', c3s: '放映時自動跟上，邊講邊寫。',
+    s2t: '從螢幕到講台，處處都能寫。', s2s: '電腦前講解、會議室演示、教室裡板書，Inkeys 都能從容應對。',
+    k1: '螢幕演示', k1t: '抓住每一個想法，在任何畫面上寫下來。',
+    k1d: '從 PDF、Word 文件到網頁，隨手圈畫標註，筆鋒自然流暢。畫面在動？按下定格，背景立刻停住，用螢光筆、雷射筆從容講解；取消定格後切回選取，墨跡原地不動，背景照常操作。',
+    st1: '圈畫標註', st2: '切到網頁', st3: '定格講解', st4: '繼續操作',
+    s5t: '每一筆，都跟得上思路。', s5s: '全新繪圖引擎，由 C++ 與 Direct3D 強勁驅動。快速勾畫不斷線，細緻書寫有筆鋒。',
+    s6t: '現在，就在你的螢幕上寫下第一筆。', s6s: '免費、開源，下載即可開始。', req: '支援 Windows 7 SP1 及以上',
+    ty1: '區塊大標題', ty2: '卡片標語', ty3: '卡片標題', ty4: '導語', ty5: '內文', ty6: '說明文字', ty7: '小號文字',
+  },
+  'en-US': {
+    nav1: 'Guide', nav2: 'Releases', nav3: 'Knowledge base', nav4: 'Community', dl: 'Download', star: 'Star on GitHub', more: 'Learn more',
+    tag1: 'Writing on screen that simply flows. ', tag2: 'Every interaction, a pleasure.',
+    f1: 'Screen annotation', f2: 'Toolbar', f3: 'Whiteboard', f4: 'Slideshows',
+    s1t: 'Write, annotate and explain on any screen.', s1s: 'Screen annotation, a free-form whiteboard and slideshow inking, all in one app.',
+    c1t: 'Screen annotation', c1s: 'Write directly on top of anything.', c2t: 'Whiteboard', c2s: 'Plenty of room to work things out.', c3t: 'Slideshows', c3s: 'Follows your slides while you present.',
+    s2t: 'From your desk to the lectern, write anywhere.', s2s: 'Explaining at your desk, presenting in a meeting or teaching a class: Inkeys handles them all.',
+    k1: 'Screen demos', k1t: 'Catch every idea and write it on whatever is on screen.',
+    k1d: 'Mark up PDFs, Word documents and web pages with a pen that tapers naturally. Is the picture moving? Freeze it, and the background stops at once so you can explain with the highlighter and laser pointer. Unfreeze and switch to Select: your ink stays put while you use the app underneath.',
+    st1: 'Mark up a document', st2: 'Switch to a web page', st3: 'Freeze and explain', st4: 'Carry on working',
+    s5t: 'Every stroke keeps up with your thinking.', s5s: 'A new drawing engine, powered by C++ and Direct3D. Fast sketches never break, and careful writing keeps its taper.',
+    s6t: 'Make your first stroke on your own screen.', s6s: 'Free and open source. Download and start.', req: 'Windows 7 SP1 or later',
+    ty1: 'Section title', ty2: 'Card slogan', ty3: 'Card title', ty4: 'Lead paragraph', ty5: 'Body text', ty6: 'Caption', ty7: 'Small text',
+  },
+}
+
+const root = document.documentElement
+const state = { theme: 'light', lang: 'zh-CN', cta: 'mono' }
+// 状态写进地址栏，方便直接打开某一种组合，例如 #dark-en-US-accent
+const m = location.hash.slice(1).match(/^(light|dark)-(zh-CN|zh-TW|en-US)(?:-(mono|accent))?$/)
+if (m) { state.theme = m[1]; state.lang = m[2]; state.cta = m[3] || 'mono' }
+
+function apply() {
+  root.dataset.theme = state.theme
+  root.dataset.cta = state.cta
+  root.lang = state.lang
+  const dict = T[state.lang]
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = dict[el.dataset.t] })
+  document.querySelectorAll('[data-tn]').forEach(el => { el.dataset.name = dict[el.dataset.tn] })
+  document.querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.v === state[seg.dataset.key]))))
+  history.replaceState(null, '', `#${state.theme}-${state.lang}-${state.cta}`)
+  requestAnimationFrame(measure)
+}
+function measure() {
+  const style = getComputedStyle(root)
+  document.querySelectorAll('[data-m]').forEach(el => {
+    const cs = getComputedStyle(el.previousElementSibling)
+    el.textContent = `${Math.round(parseFloat(cs.fontSize))} / ${Math.round(parseFloat(cs.lineHeight))} / ${cs.fontWeight}`
+  })
+  document.querySelectorAll('[data-c]').forEach(el => { el.textContent = style.getPropertyValue(el.dataset.c).trim() })
+}
+document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const b = e.target.closest('button')
+  if (!b) return
+  state[seg.dataset.key] = b.dataset.v
+  apply()
+}))
+window.addEventListener('resize', measure)
+
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }), { threshold: .12 })
+document.querySelectorAll('.appear').forEach(el => io.observe(el))
+
+// 步骤卡：按时间自动轮播，可点击切换，可暂停，离开视口暂停
+const stepper = document.querySelector('.stepper')
+const steps = [...stepper.querySelectorAll('.step')]
+const big = stepper.querySelector('.step-big')
+const pauseBtn = stepper.querySelector('.pause')
+let userPaused = matchMedia('(prefers-reduced-motion: reduce)').matches
+let visible = false
+function go(i) {
+  steps.forEach((s, n) => s.classList.toggle('on', n === i))
+  big.textContent = String(i + 1)
+}
+function syncPause() {
+  stepper.classList.toggle('paused', userPaused || !visible)
+  pauseBtn.setAttribute('aria-label', userPaused ? '继续' : '暂停')
+  pauseBtn.querySelector('.ico').setAttribute('d', userPaused ? 'M4 2l10 6-10 6z' : 'M4 2h3v12H4zM9 2h3v12H9z')
+}
+steps.forEach((s, i) => {
+  s.addEventListener('click', () => go(i))
+  s.addEventListener('animationend', () => go((i + 1) % steps.length))
+})
+pauseBtn.addEventListener('click', () => { userPaused = !userPaused; syncPause() })
+new IntersectionObserver(es => { visible = es[0].isIntersecting; syncPause() }, { threshold: .3 }).observe(stepper)
+syncPause()
+
+document.getElementById('motion').addEventListener('click', e => e.currentTarget.classList.toggle('go'))
+document.querySelectorAll('a[href="#"]').forEach(a => a.addEventListener('click', e => e.preventDefault()))
+apply()
+</script>
+</body>
+</html>

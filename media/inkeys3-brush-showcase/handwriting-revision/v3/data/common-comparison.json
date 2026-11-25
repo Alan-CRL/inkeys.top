@@ -1,0 +1,8 @@
+{
+  "renderer": "common direct draft for BOTH V2 and V3, not native",
+  "main_height": 27,
+  "small_height": 21,
+  "v2_paths_sha256": "9b69eb94de70b50ae18cec7d02ce420d060a27dcccb90c4f247ad5efa3fc3862",
+  "v3_paths_sha256": "0da9cbd49084479399d25d0ed24f564c4f259d7417bbc11ba04d6e31508a66a6",
+  "master_sha256": "e9f42c28c8a5e8a75c79657071a7e80ee2ba3f22eb62a0828c250b3f908c51e7"
+}

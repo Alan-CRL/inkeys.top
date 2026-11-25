@@ -1,0 +1,6 @@
+repository=D:\Project\Inkeys\Repo\Inkeys-draw
+revision=c0064aee0a49fade69ebbcd7ac586cee6b453b6c
+build=Debug|ARM64
+locale=en-US
+ink samples only; no UI capture or Recall patch
+layers=capture-manifest.json,samples-new.png,samples-old.png,stroke-diagnostics.csv,stroke-geometry.csv

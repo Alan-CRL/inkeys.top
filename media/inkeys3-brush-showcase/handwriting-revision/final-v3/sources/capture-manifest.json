@@ -1,0 +1,28 @@
+{
+  "input_sha256": "8cbbbdfc914988775a00cd3acc535476c7be614eab6e7122403b7b5332e93619",
+  "executable_sha256": "1a716eb52d30a1d3aa87ee8e76f99787f0f48272da6a9393a8d4e9e4f47fc75b",
+  "executable_path": "D:\\Project\\Inkeys\\website\\media\\inkeys3-brush-showcase\\handwriting-revision\\final-v3\\build\\native-dev-bin\\Inkeys.exe",
+  "adapters": {
+    "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+    "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+    "HeroExport.inc": "c704eb580ae9a90052a00948c82092a83fa216bf09493eadad4f3fc6ad4692dd",
+    "HeroInk.inc": "48205bc9770adda3db36248734b35a437640e3cbc4f27d579117091edf76c1dc",
+    "HeroScene.inc": "93fbacab9736287a49b232bc1d0355a04c0d63ab27746d7475f23ac82c2f4c80",
+    "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+  },
+  "compiled_build": {
+    "adapters": {
+      "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+      "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+      "HeroExport.inc": "c704eb580ae9a90052a00948c82092a83fa216bf09493eadad4f3fc6ad4692dd",
+      "HeroInk.inc": "48205bc9770adda3db36248734b35a437640e3cbc4f27d579117091edf76c1dc",
+      "HeroScene.inc": "93fbacab9736287a49b232bc1d0355a04c0d63ab27746d7475f23ac82c2f4c80",
+      "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+    },
+    "executable_sha256": "1a716eb52d30a1d3aa87ee8e76f99787f0f48272da6a9393a8d4e9e4f47fc75b",
+    "revision": "97e619256befc4397e287ddcaebcc5719aa7f838",
+    "build_log_sha256": "ae2e3ccd01ee8a1291b245b871cfabdf05c5fb4fd6a969bc906c2a1bc4f73fb8"
+  },
+  "failures": 0,
+  "export_log_sha256": "9b2b546a87fbaeaf89d760b29b29ee56672d8ddbc378b982f273ebb18248e0de"
+}

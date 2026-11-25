@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 2,
+  "fps": 60,
+  "supersample": 2,
+  "nativeCanvas": [1440, 720],
+  "profiles": {
+    "desktop": { "width": 1440, "height": 640, "fps": 60 },
+    "mobile": { "width": 720, "height": 720, "fps": 60 },
+    "readme": { "width": 960, "height": 426, "fps": 15, "sourceProfile": "desktop" }
+  },
+  "palette": {
+    "paper": "#f5f6f3",
+    "ink": "#203b40",
+    "muted": "#71827f",
+    "accent": "#168573",
+    "cyan": "#18a7c7",
+    "orange": "#e7a13b",
+    "line": "#d6e0dc",
+    "desktop": "#dbe5e8"
+  },
+  "defaults": {
+    "transition": { "axis": "slash", "durationMs": 400, "distance": 42 },
+    "controls": {
+      "toolbar": {
+        "desktop": { "center": [720, 578], "width": 690 },
+        "mobile": { "center": [360, 650], "width": 640 }
+      },
+      "pptPager": {
+        "desktop": { "center": [1200, 555], "width": 320 },
+        "mobile": { "center": [555, 570], "width": 300 }
+      },
+      "boardPager": {
+        "desktop": { "center": [1200, 555], "width": 360 },
+        "mobile": { "center": [540, 570], "width": 330 }
+      }
+    }
+  },
+  "shared": {
+    "pendulum": {
+      "pivot": [620, 70], "length": 350, "amplitudeDeg": 55,
+      "period": 4.8, "highestAt": 2.0, "gravityLength": 160, "tensionLength": 91.77222981616738
+    },
+    "cuboid": { "front": [480, 230, 300, 230], "depth": [150, -85] },
+    "cone": { "apex": [720, 150], "center": [720, 450], "radiusX": 230, "radiusY": 70 },
+    "wave": { "origin": [350, 360], "width": 740, "amplitude": 105, "cycles": 2.0 }
+  },
+  "scenes": [
+    {
+      "id": "screen-dynamic",
+      "mode": "dynamic",
+      "durationMs": 7000,
+      "narrative": "pendulum",
+      "required": ["toolbar-draw", "pendulum-mark", "pen-icon-light"],
+      "posterTime": 5.6,
+      "contactTimes": [0.4, 1.4, 2.8, 4.0, 5.6, 6.7],
+      "placements": {
+        "window": { "desktop": [40, 24, 1360, 548], "mobile": [20, 24, 680, 560] },
+        "page": { "desktop": [300, 100, 840, 420], "mobile": [30, 140, 660, 330], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "low": { "desktop": [720, 410], "mobile": [360, 350] },
+        "outside": { "desktop": [1330, 490], "mobile": [660, 520] },
+        "mark": { "native": [790, 520], "placement": "page" }
+      },
+      "controls": { "toolbar": { "default": "toolbar-draw", "placement": "toolbar" } },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 36 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 0.8, "note": "完整浏览器与运动单摆，主栏已就位" },
+        { "id": "S2", "start": 0.8, "end": 3.6, "note": "斜向移近，真实 PenIcon 写最低点横线与切向箭头" },
+        { "id": "S3", "start": 3.6, "end": 4.4, "note": "抬笔越界切换箭头，书写完成后回到全景" },
+        { "id": "S4", "start": 4.4, "end": 7.0, "note": "单摆继续运动，批注保持屏幕坐标" }
+      ],
+      "camera": [
+        { "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 },
+        { "at": 0.8, "scale": 1.0, "target": "wide", "shift": 0 },
+        { "at": 1.15, "scale": 1.12, "target": "low", "shift": 16 },
+        { "at": 3.6, "scale": 1.12, "target": "low", "shift": 16 },
+        { "at": 4.0, "scale": 1.0, "target": "wide", "shift": 0 },
+        { "at": 7.0, "scale": 1.0, "target": "wide", "shift": 0 }
+      ],
+      "actions": [
+        { "id": "mark", "type": "draw", "asset": "pendulum-mark", "placement": "page", "start": 1.25, "end": 3.1, "cursor": "pen-icon-light", "paths": [[[500, 475], [740, 475]], [[560, 520], [790, 520], [760, 500]]] },
+        { "id": "leave", "type": "pointer", "start": 3.1, "end": 3.65, "from": "mark", "to": "outside", "cursor": "arrow" }
+      ]
+    },
+    {
+      "id": "screen-through",
+      "mode": "through",
+      "durationMs": 7800,
+      "narrative": "pendulum",
+      "required": ["toolbar-draw", "toolbar-pierce", "pendulum-mark", "pen-icon-light"],
+      "posterTime": 6.4,
+      "contactTimes": [0.4, 1.5, 2.8, 4.0, 5.4, 6.6],
+      "placements": {
+        "window": { "desktop": [40, 24, 1360, 548], "mobile": [20, 24, 680, 560] },
+        "page": { "desktop": [300, 100, 840, 420], "mobile": [30, 140, 660, 330], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "outside": { "desktop": [1330, 490], "mobile": [660, 520] },
+        "canvasRest": { "native": [620, 460], "placement": "page" },
+        "pierceButton": { "desktop": [480, 578], "mobile": [148, 650] },
+        "next": { "native": [1160, 360], "placement": "page" },
+        "back": { "native": [280, 360], "placement": "page" }
+      },
+      "controls": { "toolbar": { "default": "toolbar-draw", "placement": "toolbar" } },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 42 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 0.8, "note": "保留单摆与批注，画布内 PenIcon" },
+        { "id": "S2", "start": 0.8, "end": 2.0, "note": "现代箭头点击真实穿透按钮" },
+        { "id": "S3", "start": 2.0, "end": 3.4, "note": "点击网页下一项，波形进入而批注不动" },
+        { "id": "S4", "start": 3.4, "end": 4.6, "note": "波形持续，旧批注不再对齐" },
+        { "id": "S5", "start": 4.6, "end": 6.0, "note": "点击返回，单摆反向沿斜轴恢复" },
+        { "id": "S6", "start": 6.0, "end": 7.8, "note": "保留连续场景供定格使用" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 7.8, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "existing-mark", "type": "draw", "asset": "pendulum-mark", "placement": "page", "start": 0.0, "end": 0.01, "initial": true },
+        { "id": "pen-rest", "type": "pointer", "start": 0.0, "end": 0.8, "from": "canvasRest", "to": "canvasRest", "cursor": "pen-icon-light" },
+        { "id": "pierce", "type": "click", "start": 0.8, "down": 1.2, "up": 1.4, "end": 1.8, "from": "canvasRest", "to": "pierceButton", "cursor": "arrow", "control": "toolbar", "results": [{ "key": "toolbar", "value": "toolbar-pierce", "at": "up" }] },
+        { "id": "next", "type": "click", "start": 2.0, "down": 2.35, "up": 2.55, "end": 2.85, "from": "pierceButton", "to": "next", "cursor": "arrow", "results": [{ "key": "page", "value": "wave", "at": "up" }] },
+        { "id": "back", "type": "click", "start": 4.6, "down": 4.95, "up": 5.15, "end": 5.45, "from": "next", "to": "back", "cursor": "arrow", "results": [{ "key": "page", "value": "pendulum", "at": "up" }] },
+        { "id": "leave", "type": "pointer", "start": 6.0, "end": 6.5, "from": "back", "to": "outside", "cursor": "arrow" }
+      ]
+    },
+    {
+      "id": "screen-freeze",
+      "mode": "freeze",
+      "durationMs": 10000,
+      "narrative": "pendulum",
+      "required": ["toolbar-draw", "toolbar-freeze", "toolbar-shape", "pendulum-mark", "force-solids", "force-dashed"],
+      "posterTime": 9.0,
+      "contactTimes": [0.8, 2.0, 2.8, 5.2, 7.8, 9.2],
+      "placements": {
+        "window": { "desktop": [40, 24, 1360, 548], "mobile": [20, 24, 680, 560] },
+        "page": { "desktop": [300, 100, 840, 420], "mobile": [30, 140, 660, 330], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "force": { "desktop": [900, 300], "mobile": [470, 330] },
+        "outside": { "desktop": [1330, 490], "mobile": [660, 520] },
+        "freezeButton": { "desktop": [1010, 578], "mobile": [640, 650] },
+        "shapeButton": { "desktop": [610, 578], "mobile": [275, 650] }
+      },
+      "controls": { "toolbar": { "default": "toolbar-draw", "placement": "toolbar" } },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 36 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 1.4, "note": "箭头提前移向 Freeze，小球向右侧最高点运动" },
+        { "id": "S2", "start": 1.4, "end": 2.4, "note": "提前 Down，Up 与右侧最高点对齐并定格背景" },
+        { "id": "S3", "start": 2.4, "end": 3.2, "note": "绝对静止阅读，主栏与光标仍可活动" },
+        { "id": "S4", "start": 3.2, "end": 4.0, "note": "定格读清后斜向移近摆球" },
+        { "id": "S5", "start": 4.0, "end": 6.0, "note": "真实笔迹绘制 mg、T、Fₜ 箭头" },
+        { "id": "S6", "start": 6.0, "end": 6.8, "note": "点击 Shape，使用预设 Dashed 与真实工具光标" },
+        { "id": "S7", "start": 6.8, "end": 8.5, "note": "以 mg 为对角线补全虚线平行四边形" },
+        { "id": "S8", "start": 8.5, "end": 10.0, "note": "完整受力图静止阅读" }
+      ],
+      "camera": [
+        { "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 },
+        { "at": 3.2, "scale": 1.0, "target": "wide", "shift": 0 },
+        { "at": 3.6, "scale": 1.14, "target": "force", "shift": 18 },
+        { "at": 10.0, "scale": 1.14, "target": "force", "shift": 18 }
+      ],
+      "actions": [
+        { "id": "existing-mark", "type": "draw", "asset": "pendulum-mark", "placement": "page", "start": 0.0, "end": 0.01, "initial": true },
+        { "id": "approach", "type": "pointer", "start": 0.0, "end": 1.4, "from": "outside", "to": "freezeButton", "cursor": "arrow" },
+        { "id": "freeze", "type": "click", "start": 1.4, "down": 1.8, "up": 2.0, "end": 2.2, "from": "freezeButton", "to": "freezeButton", "cursor": "arrow", "control": "toolbar", "results": [{ "key": "toolbar", "value": "toolbar-freeze", "at": "up" }, { "key": "freeze", "value": true, "at": "up" }] },
+        { "id": "forces", "type": "draw", "asset": "force-solids", "placement": "page", "start": 4.0, "end": 6.0, "cursor": "native" },
+        { "id": "mg-label", "type": "symbol", "symbol": "mg", "at": 4.7 },
+        { "id": "t-label", "type": "symbol", "symbol": "T", "at": 5.1 },
+        { "id": "ft-label", "type": "symbol", "symbol": "Fₜ", "at": 5.5 },
+        { "id": "shape", "type": "click", "start": 6.0, "down": 6.4, "up": 6.6, "end": 6.8, "from": "outside", "to": "shapeButton", "cursor": "arrow", "control": "toolbar", "results": [{ "key": "toolbar", "value": "toolbar-shape", "at": "up" }] },
+        { "id": "construction", "type": "draw", "asset": "force-dashed", "placement": "page", "start": 6.8, "end": 8.5, "cursor": "native" }
+      ]
+    },
+    {
+      "id": "slides-ink",
+      "mode": "slides",
+      "durationMs": 9000,
+      "narrative": "geometry",
+      "required": ["toolbar-ppt", "toolbar-ppt-shape", "ppt-page-1", "ppt-page-2", "cuboid-solid", "cuboid-dashed", "cone-solid", "cone-dashed"],
+      "posterTime": 8.1,
+      "contactTimes": [0.4, 1.6, 3.2, 5.8, 7.2, 8.3],
+      "placements": {
+        "window": { "desktop": [70, 30, 1300, 540], "mobile": [24, 28, 672, 550] },
+        "slide": { "desktop": [300, 100, 840, 420], "mobile": [30, 140, 660, 330], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "shapeButton": { "desktop": [610, 578], "mobile": [275, 650] },
+        "shapeStyle": { "desktop": [850, 500], "mobile": [440, 555] },
+        "nextPage": { "desktop": [1290, 555], "mobile": [640, 570] },
+        "previousPage": { "desktop": [1110, 555], "mobile": [470, 570] }
+      },
+      "controls": {
+        "toolbar": { "default": "toolbar-ppt", "placement": "toolbar" },
+        "pager": { "kind": "ppt", "placement": "pptPager", "visibleFrom": 0.0 }
+      },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 42 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 0.8, "note": "PowerPoint 风格窗口与部分长方体" },
+        { "id": "S2", "start": 0.8, "end": 2.2, "note": "青蓝实线短对角辅助线，预览并提交" },
+        { "id": "S3", "start": 2.2, "end": 4.1, "note": "真实属性面板切换橙黄 Dashed，补隐藏棱" },
+        { "id": "S4", "start": 4.1, "end": 5.0, "note": "下一页沿斜轴进入圆锥" },
+        { "id": "S5", "start": 5.0, "end": 6.8, "note": "圆锥虚线高、后侧弧与青蓝半径和直角" },
+        { "id": "S6", "start": 6.8, "end": 7.7, "note": "上一页反向沿斜轴返回" },
+        { "id": "S7", "start": 7.7, "end": 9.0, "note": "长方体原辅助线精确恢复" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 9.0, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "cuboid-base", "type": "draw", "asset": "cuboid-dashed", "placement": "slide", "page": 1, "start": 0.0, "end": 0.01, "amount": 0, "until": 2.8, "cursor": "native" },
+        { "id": "solid-tool", "type": "click", "start": 0.8, "down": 1.2, "up": 1.4, "end": 1.4, "from": "wide", "to": "shapeButton", "cursor": "arrow", "control": "toolbar", "results": [{ "key": "toolbar", "value": "toolbar-ppt-shape", "at": "up" }] },
+        { "id": "cuboid-visible", "type": "draw", "asset": "cuboid-solid", "placement": "slide", "page": 1, "start": 1.4, "end": 2.1, "cursor": "native" },
+        { "id": "dashed-style", "type": "click", "start": 2.2, "down": 2.6, "up": 2.8, "end": 2.8, "from": "shapeButton", "to": "shapeStyle", "cursor": "arrow", "control": "toolbar", "results": [{ "key": "shapeStyle", "value": "dashed", "at": "up" }] },
+        { "id": "cuboid-hidden", "type": "draw", "asset": "cuboid-dashed", "placement": "slide", "page": 1, "start": 2.8, "end": 4.0, "cursor": "native" },
+        { "id": "next", "type": "click", "start": 4.1, "down": 4.5, "up": 4.7, "end": 4.9, "from": "shapeStyle", "to": "nextPage", "cursor": "arrow", "control": "pager", "results": [{ "key": "page", "value": 2, "at": "down" }] },
+        { "id": "cone-base", "type": "draw", "asset": "cone-dashed", "placement": "slide", "page": 2, "start": 0.0, "end": 0.01, "amount": 0, "until": 5.0, "cursor": "native" },
+        { "id": "cone-construction", "type": "draw", "asset": "cone-dashed", "placement": "slide", "page": 2, "start": 5.0, "end": 5.9, "cursor": "native" },
+        { "id": "cone-visible", "type": "draw", "asset": "cone-solid", "placement": "slide", "page": 2, "start": 5.95, "end": 6.75, "cursor": "native" },
+        { "id": "previous", "type": "click", "start": 6.8, "down": 7.2, "up": 7.4, "end": 7.45, "from": "nextPage", "to": "previousPage", "cursor": "arrow", "control": "pager", "results": [{ "key": "page", "value": 1, "at": "down" }] }
+      ]
+    },
+    {
+      "id": "slides-binding",
+      "mode": "binding",
+      "durationMs": 8500,
+      "narrative": "geometry",
+      "required": ["toolbar-ppt", "ppt-page-1", "ppt-page-2", "cuboid-solid", "cuboid-dashed", "binding-ink", "pen-icon-light"],
+      "posterTime": 6.2,
+      "contactTimes": [0.5, 1.8, 3.0, 4.8, 6.2, 8.0],
+      "placements": {
+        "pptSlide": { "desktop": [220, 180, 720, 320], "mobile": [70, 100, 580, 180], "fit": "contain" },
+        "wpsSlide": { "desktop": [650, 130, 600, 280], "mobile": [90, 440, 540, 180], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "wpsTitle": { "desktop": [700, 58], "mobile": [360, 370] },
+        "pptTitle": { "desktop": [230, 110], "mobile": [100, 30] },
+        "wpsInk": { "native": [900, 470], "placement": "wpsSlide" }
+      },
+      "controls": {
+        "toolbar": { "default": "toolbar-ppt", "placement": "toolbar" },
+        "pager": { "kind": "ppt", "placement": "pptPager", "visibleFrom": 0.0, "byApp": { "powerpoint": "ppt-page-1", "wps": "ppt-page-2" } }
+      },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 48 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 1.0, "note": "前景 PowerPoint 与后方 WPS 身份清晰" },
+        { "id": "S2", "start": 1.0, "end": 2.3, "note": "只点击 WPS，窗口沿斜轴换焦点并更新分页" },
+        { "id": "S3", "start": 2.3, "end": 4.0, "note": "WPS 波形上立即书写，不继承长方体批注" },
+        { "id": "S4", "start": 4.0, "end": 5.4, "note": "点击 PowerPoint，第 1 页与原批注恢复" },
+        { "id": "S5", "start": 5.4, "end": 8.5, "note": "两个窗口及各自内容稳定展示" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 8.5, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "ppt-visible", "type": "draw", "asset": "cuboid-solid", "placement": "pptSlide", "app": "powerpoint", "start": 0.0, "end": 0.01, "initial": true },
+        { "id": "ppt-hidden", "type": "draw", "asset": "cuboid-dashed", "placement": "pptSlide", "app": "powerpoint", "start": 0.0, "end": 0.01, "initial": true },
+        { "id": "activate-wps", "type": "click", "start": 1.0, "down": 1.45, "up": 1.7, "end": 2.0, "from": "wide", "to": "wpsTitle", "cursor": "arrow", "results": [{ "key": "app", "value": "wps", "at": "up" }] },
+        { "id": "wps-ink", "type": "draw", "asset": "binding-ink", "placement": "wpsSlide", "app": "wps", "start": 2.3, "end": 3.8, "cursor": "pen-icon-light", "paths": [[[540, 470], [900, 470], [870, 450]]] },
+        { "id": "activate-ppt", "type": "click", "start": 4.0, "down": 4.45, "up": 4.7, "end": 5.0, "from": "wpsInk", "to": "pptTitle", "cursor": "arrow", "results": [{ "key": "app", "value": "powerpoint", "at": "up" }] }
+      ]
+    },
+    {
+      "id": "slides-ready",
+      "mode": "ready",
+      "durationMs": 7000,
+      "narrative": "geometry",
+      "required": ["toolbar-ppt", "ppt-page-1", "ready-ink", "pen-icon-light"],
+      "posterTime": 5.4,
+      "contactTimes": [0.4, 1.2, 2.3, 3.4, 5.0, 6.6],
+      "placements": {
+        "window": { "desktop": [70, 30, 1300, 540], "mobile": [24, 28, 672, 550] },
+        "slide": { "desktop": [300, 100, 840, 420], "mobile": [30, 140, 660, 330], "fit": "contain" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 340] },
+        "fileIcon": { "desktop": [720, 300], "mobile": [360, 290] },
+        "inkEnd": { "native": [850, 470], "placement": "slide" }
+      },
+      "controls": {
+        "toolbar": { "default": "toolbar-ppt", "placement": "toolbar", "visibleWhen": "open" },
+        "pager": { "kind": "ppt", "placement": "pptPager", "visibleFrom": 1.0 }
+      },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 42 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 1.0, "note": "桌面双击课件，安装程序与插件禁止符号属于宣传片层" },
+        { "id": "S2", "start": 1.0, "end": 2.0, "note": "直接沿斜轴呈现已打开放映，无安装或加载进度" },
+        { "id": "S3", "start": 2.0, "end": 2.8, "note": "链环与确认短暂亮起，禁止符号淡出" },
+        { "id": "S4", "start": 2.8, "end": 4.6, "note": "不进入设置，直接完成第一笔" },
+        { "id": "S5", "start": 4.6, "end": 7.0, "note": "只保留可用结果" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 7.0, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "double-click-first", "type": "click", "start": 0.1, "down": 0.3, "up": 0.4, "end": 0.48, "from": "wide", "to": "fileIcon", "cursor": "arrow" },
+        { "id": "double-click-second", "type": "click", "start": 0.52, "down": 0.68, "up": 1.0, "end": 1.05, "from": "fileIcon", "to": "fileIcon", "cursor": "arrow", "results": [{ "key": "open", "value": true, "at": "up" }] },
+        { "id": "first-ink", "type": "draw", "asset": "ready-ink", "placement": "slide", "start": 2.8, "end": 4.4, "cursor": "pen-icon-light", "paths": [[[560, 470], [850, 470]]] }
+      ]
+    },
+    {
+      "id": "board-backgrounds",
+      "mode": "backgrounds",
+      "durationMs": 6800,
+      "required": ["toolbar-whiteboard-laser", "toolbar-whiteboard", "board-page1", "board-blank", "board-dots", "board-grid", "laser-wave"],
+      "posterTime": 3.0,
+      "contactTimes": [0.2, 1.0, 2.2, 3.0, 3.9, 5.4],
+      "placements": {
+        "board": { "desktop": [0, 0, 1440, 640], "mobile": [0, 0, 720, 720], "fit": "cover", "mobileFit": "stretch" }
+      },
+      "anchors": { "wide": { "desktop": [720, 320], "mobile": [360, 360] } },
+      "controls": {
+        "toolbar": { "default": "toolbar-whiteboard-laser", "placement": "toolbar" },
+        "pager": { "kind": "board", "placement": "boardPager", "visibleFrom": 4.2, "animateIn": true }
+      },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 44 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 0.5, "note": "单一浅色白板，Laser 已选中" },
+        { "id": "S2", "start": 0.5, "end": 1.2, "note": "白色空白、米白点阵、墨绿网格沿同一斜率依次进入" },
+        { "id": "S3", "start": 1.2, "end": 2.4, "note": "同一次 contact 连续画 2–2.5 个波峰" },
+        { "id": "S4", "start": 2.4, "end": 3.4, "note": "抬起后满亮 Hold 1 秒" },
+        { "id": "S5", "start": 3.4, "end": 4.2, "note": "真实 Fade 0.8 秒，无持久墨迹" },
+        { "id": "S6", "start": 4.2, "end": 4.7, "note": "激光消失后斜向进入墨绿网格与真实分页" },
+        { "id": "S7", "start": 4.7, "end": 6.8, "note": "与 board-pages 开场一致" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 6.8, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "laser", "type": "draw", "asset": "laser-wave", "placement": "board", "start": 1.2, "end": 4.4, "visibleUntil": 4.2, "cursor": "native", "transient": true, "sequence": true, "nativeDuration": true, "stages": [{ "kind": "contact", "start": 1.2, "end": 2.4 }, { "kind": "hold", "start": 2.4, "end": 3.4 }, { "kind": "fade", "start": 3.4, "end": 4.2 }, { "kind": "inactive", "start": 4.2, "end": 4.4 }] },
+        { "id": "pen-for-next-scene", "type": "state", "start": 4.2, "results": [{ "key": "toolbar", "value": "toolbar-whiteboard", "at": "start" }] }
+      ]
+    },
+    {
+      "id": "board-pages",
+      "mode": "pages",
+      "durationMs": 8500,
+      "required": ["toolbar-whiteboard", "board-page1", "board-page2", "board-grid", "board-dots", "board-page1-ink", "board-page2-ink", "pen-icon-light", "pen-icon-dark"],
+      "posterTime": 7.1,
+      "contactTimes": [0.4, 1.6, 3.0, 4.4, 6.1, 7.4],
+      "placements": {
+        "board": { "desktop": [0, 0, 1440, 640], "mobile": [0, 0, 720, 720], "fit": "cover" }
+      },
+      "anchors": {
+        "wide": { "desktop": [720, 320], "mobile": [360, 360] },
+        "nextPage": { "desktop": [1290, 555], "mobile": [640, 570] },
+        "previousPage": { "desktop": [1110, 555], "mobile": [470, 570] }
+      },
+      "controls": {
+        "toolbar": { "default": "toolbar-whiteboard", "placement": "toolbar" },
+        "pager": { "kind": "board", "placement": "boardPager", "visibleFrom": 0.0 }
+      },
+      "transition": { "axis": "slash", "durationMs": 400, "distance": 44 },
+      "shots": [
+        { "id": "S1", "start": 0.0, "end": 0.8, "note": "与 C1 末帧一致，画笔光标进入画布" },
+        { "id": "S2", "start": 0.8, "end": 2.4, "note": "第 1 页中心节点、分支、短箭头与第二节点" },
+        { "id": "S3", "start": 2.4, "end": 3.4, "note": "真实分页进入米白点阵第 2 页" },
+        { "id": "S4", "start": 3.4, "end": 5.3, "note": "第 2 页写不同两个节点和连接线" },
+        { "id": "S5", "start": 5.3, "end": 6.5, "note": "反向返回墨绿网格和原笔迹" },
+        { "id": "S6", "start": 6.5, "end": 8.5, "note": "完整第 1 页恢复笔迹静止阅读" }
+      ],
+      "camera": [{ "at": 0.0, "scale": 1.0, "target": "wide", "shift": 0 }, { "at": 8.5, "scale": 1.0, "target": "wide", "shift": 0 }],
+      "actions": [
+        { "id": "page1-ink", "type": "draw", "asset": "board-page1-ink", "placement": "board", "page": 1, "start": 0.8, "end": 2.3, "cursor": "pen-icon-dark", "paths": [[[560, 330], [760, 330]], [[760, 330], [890, 250]], [[760, 330], [900, 430]]] },
+        { "id": "next", "type": "click", "start": 2.4, "down": 2.8, "up": 3.0, "end": 3.2, "from": "wide", "to": "nextPage", "cursor": "arrow", "control": "pager", "results": [{ "key": "page", "value": 2, "at": "up" }] },
+        { "id": "page2-ink", "type": "draw", "asset": "board-page2-ink", "placement": "board", "page": 2, "start": 3.4, "end": 5.1, "cursor": "pen-icon-light", "paths": [[[520, 280], [820, 280]], [[820, 280], [920, 400]]] },
+        { "id": "previous", "type": "click", "start": 5.35, "down": 5.75, "up": 5.95, "end": 6.15, "from": "nextPage", "to": "previousPage", "cursor": "arrow", "control": "pager", "results": [{ "key": "page", "value": 1, "at": "up" }] }
+      ]
+    }
+  ]
+}

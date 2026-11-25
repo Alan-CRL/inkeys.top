@@ -1,0 +1,31 @@
+{
+  "input_sha256": "8f9fd6051289a5f1c01d43db1a20c300ea3250655d05f7320229b884784a3dd9",
+  "executable_sha256": "8fbf07c97077f8b025e3246b2488870da1387d5b2eacca109a8891fbc98a10be",
+  "executable_path": "D:\\Project\\Inkeys\\website\\media\\inkeys3-brush-showcase\\build\\native-dev-bin\\Inkeys.exe",
+  "adapters": {
+    "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+    "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+    "HeroExport.inc": "15a34d08e07622a7a071b53b47c37acc9f4864eb8061778c4198b0a18f7dc637",
+    "HeroInk.inc": "37d1b0288ce5aee4b9740f849224162ff71fcce517b5426147b74b7151f05e13",
+    "HeroScene.inc": "84592f8305b091fe517364798cdf176cc01821ca08190ec6e1b507cbf2976b5b",
+    "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+  },
+  "failures": 0,
+  "export_log_sha256": "a4315da99423727914e375a821f3337ae0360d09b5b4200b4b19772e6e5f2aff",
+  "source_revision": "c0064aee0a49fade69ebbcd7ac586cee6b453b6c",
+  "repository": "D:\\Project\\Inkeys\\Repo\\Inkeys-draw",
+  "build": "Debug|ARM64 full solution, isolated OutDir",
+  "layers": {
+    "board.png": "ebd6427348b1ec7e8b788c617187301701121bc7686eb95057b47ac0424f3643",
+    "ink-brush.png": "bba3ff260c43fb930cfd3e3fe25c6ddb4281a9485e94083d083564f827968fc2",
+    "ink-handwriting.png": "606f2bd4ee9be2b88eef3e14a20154cc237c1cca267bd4df7311fdbb3f727110",
+    "ink-highlight.png": "a08bdc4c6df591b17e79fad26c0a8fa83c37a30060c493817f62106299e171e0",
+    "ink-laser.png": "3f737b29a7231a9006a4b178d19a541a5e208451a955aa8958e1cf611b029f52",
+    "pattern.png": "ebd6427348b1ec7e8b788c617187301701121bc7686eb95057b47ac0424f3643",
+    "toolbar.png": "4ba98b92150df8a9f322198e886c3970693797b5ea33199cef4eb49c9d1b79a7"
+  },
+  "metadata": {
+    "pattern.json": "5ec42c10a9274b5e31b8836c28ea5b5df7ff582aac7bb6078727c9d6cdeaad6f",
+    "toolbar-body.json": "22854fec5397dfcf8b7f9d9849247722699431275f42e8b6efdaa2737b49c063"
+  }
+}

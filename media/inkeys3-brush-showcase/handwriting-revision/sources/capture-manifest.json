@@ -1,0 +1,15 @@
+{
+  "input_sha256": "3965e21ec977ea2c6a5aa285bb4bc5af4bec045ede731455b7537ffd9dca3070",
+  "executable_sha256": "dd416624834c86f2fde61f1d5ff93a1c8fdacda3f43b51972043124439562ba2",
+  "executable_path": "D:\\Project\\Inkeys\\website\\media\\inkeys3-brush-showcase\\handwriting-revision\\build\\native-dev-bin\\Inkeys.exe",
+  "adapters": {
+    "HeroCanvas.inc": "289d3a5c48dbcfd8314f8af0e1ed751119a488aac43024f413f8669194e2d840",
+    "HeroCommon.inc": "a454a403cbbda5b83bdbd5a368910799bb8387913be442a0050e14a107cc1607",
+    "HeroExport.inc": "09e25975caf9d0c9818a6fe99c5b21be64e97f857140e9db10f16c8f72c98305",
+    "HeroInk.inc": "738e5e84977b20a1aeaf9f8557d523fab748f2ec11ad89be6e29f27d9ea3d84b",
+    "HeroScene.inc": "f0bb9554fa3bff10e02f0591ef359d789242db0b50349dd3f48963bf650d94a0",
+    "HeroShapes.inc": "2eec53bab117b62f95f23b34dd4d2ab209faa4aeb1c7d79a0e4d513f7c5caa17"
+  },
+  "failures": 0,
+  "export_log_sha256": "6b22507f9c800d290b8e55db2a3bf9edcd0ff3fb6708cc04de6376c1adff93fd"
+}

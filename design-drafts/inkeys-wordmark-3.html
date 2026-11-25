@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>Inkeys wordmark · version 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root { --sans: "Google Sans Flex", system-ui, sans-serif; --serif: "DM Serif Display", serif; }
+  body { margin: 0; font-family: var(--sans); background: var(--bg); color: var(--ink); }
+  body.light { --bg: #F4F3EF; --ink: #161616; --muted: #8a8780; }
+  body.dark  { --bg: #111111; --ink: #F3F1EC; --muted: #77746e; }
+  header { position: sticky; top: 0; z-index: 2; display: flex; gap: 10px; align-items: center; padding: 14px 24px;
+           background: var(--bg); border-bottom: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  header strong { margin-right: 12px; }
+  button { padding: 7px 16px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+           background: transparent; color: var(--ink); cursor: pointer; font: inherit; font-size: 13px; }
+  button.on { background: var(--ink); color: var(--bg); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; }
+  section { padding: 28px 24px 36px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+            border-right: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); text-align: center; }
+  section h2 { margin: 0 0 4px; font-size: 14px; font-weight: 600; text-align: left; }
+  section p { margin: 0; font-size: 12px; color: var(--muted); text-align: left; }
+
+  .mark { position: relative; display: inline-flex; align-items: baseline; margin-top: 28px;
+          font-size: clamp(64px, 8.5vw, 140px); line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
+  .ink { font-family: var(--sans); font-weight: 650; }
+  .eys { font-family: var(--serif); font-style: italic; }
+  .v { display: inline-block; line-height: 1; letter-spacing: 0; }
+
+  /* variants */
+  .v1 { font-family: var(--serif); font-style: italic; margin-left: .06em; }
+  .v2 { font-family: var(--serif); font-style: italic; transform: rotate(12deg) translateY(-.12em); margin-left: .02em; }
+  .v3 { font-family: var(--sans); font-weight: 650; transform: rotate(-8deg); margin-left: .1em; }
+  .v4 { font-family: var(--serif); font-style: italic; transform: translateY(.22em); margin-left: -.02em; }
+  .v5 { font-family: var(--serif); font-style: italic; color: transparent; -webkit-text-stroke: .018em var(--ink);
+        margin-left: -.14em; transform: translateY(-.08em) rotate(6deg); }
+  .v6 { font-family: var(--serif); font-style: italic; font-size: 1.25em; margin-left: -.04em; transform: translateY(.06em) rotate(-6deg); }
+</style>
+</head>
+<body class="light">
+<header>
+  <strong>Inkeys 字标 · 版本号 3 的摆法（基于方案 3：Google Sans Flex + DM Serif Display 斜体）</strong>
+  <button data-theme="light" class="on">浅色</button>
+  <button data-theme="dark">深色</button>
+</header>
+
+<div class="grid">
+  <section><h2>a · 并排</h2><p>与 eys 同字体同大小，自然接续，最稳。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v1">3</span></div></section>
+  <section><h2>b · 右倾上扬</h2><p>顺时针转 12° 并略抬高，像随手补写上去。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v2">3</span></div></section>
+  <section><h2>c · 无衬线反向倾斜</h2><p>用 Ink 的字体、逆时针倾斜，和 eys 的斜体形成对撞。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v3">3</span></div></section>
+  <section><h2>d · 下沉</h2><p>3 沉到基线以下，尾部与 y 的下伸呼应。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v4">3</span></div></section>
+  <section><h2>e · 空心叠压</h2><p>描边空心、压住 s 的尾巴，层次感强，也方便后期填入动画。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v5">3</span></div></section>
+  <section><h2>f · 放大跳跃</h2><p>比主体大 25%、轻微反转，最活泼，成为视觉重点。</p>
+    <div class="mark"><span class="ink">Ink</span><span class="eys">eys</span><span class="v v6">3</span></div></section>
+</div>
+
+<script>
+document.querySelectorAll('[data-theme]').forEach(b => b.onclick = () => {
+  document.body.className = b.dataset.theme;
+  document.querySelectorAll('[data-theme]').forEach(x => x.classList.toggle('on', x === b));
+});
+if (new URLSearchParams(location.search).get('theme') === 'dark') document.querySelector('[data-theme=dark]').click();
+</script>
+</body>
+</html>
