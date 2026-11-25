@@ -4,6 +4,7 @@ import type { HeadConfig, Page } from 'vuepress'
 import { plumeTheme } from 'vuepress-theme-plume'
 import { redirectPlugin } from '@vuepress/plugin-redirect'
 import { readdirSync } from 'node:fs'
+import { fs } from 'vuepress/utils'
 import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createAssetRuntimeScript } from './cdn/runtime'
@@ -313,6 +314,20 @@ export default defineUserConfig({
     }),
     // 构建后生成 UInk 单文件规范与规范索引（见 plugins/uinkSpecBundle.ts）
     uinkSpecBundlePlugin(),
+    // Chrome / Edge 正在移除 XSLT，sitemap 插件固定写入的 xml-stylesheet 会让浏览器顶部弹出警告。
+    // 样式表只给人看，搜索引擎不读；这里在 sitemap 生成后去掉引用和样式表文件，浏览器直接显示 XML。
+    // 主题插件的 onGenerated 先于这里运行。
+    {
+      name: 'inkeys-sitemap-no-xsl',
+      async onGenerated(app) {
+        const file = app.dir.dest('sitemap.xml')
+        if (!fs.existsSync(file))
+          return
+        const xml = await fs.readFile(file, 'utf-8')
+        await fs.writeFile(file, xml.replace(/<\?xml-stylesheet[^>]*\?>\s*/u, ''))
+        await fs.remove(app.dir.dest('sitemap.xsl'))
+      },
+    },
     // 版本文章没有写 createTime，Plume rc.219 按时间排序时会退回文件名升序（旧版本在前）。
     // 这里只在内存中按文件名 YYYYMMDD + 字母 补上时间，同日多个版本按字母先后错开一分钟，不写回源文件。
     {
