@@ -76,7 +76,7 @@ export default defineThemeConfig({
         { 
           type: 'post', 
           dir: '/version/', 
-          title: '版本',
+          title: '更新日志',
 
           postList: true, // 启用文章列表页
           link: '/version/', // 列表页链接
@@ -189,7 +189,7 @@ export default defineThemeConfig({
         {
           type: 'post',
           dir: '/version/',
-          title: '版本',
+          title: '更新日誌',
           postList: true,
           link: '/version/',
           linkPrefix: '/version/',
@@ -231,7 +231,7 @@ export default defineThemeConfig({
         {
           type: 'post',
           dir: '/version/',
-          title: 'Versions',
+          title: 'Changelog',
           postList: true,
           link: '/version/',
           linkPrefix: '/version/',

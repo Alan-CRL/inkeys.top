@@ -344,6 +344,23 @@
   font-size: 14px;
 }
 
+/* 正文里的按钮行（Inkeys3 介绍页、Win7 兼容页），窄屏时自动换行。 */
+.theme-plume .vp-doc .doc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.theme-plume .vp-doc .doc-actions--center {
+  justify-content: center;
+}
+
+/* 正文链接的下划线不作用于按钮。 */
+.theme-plume .vp-doc a.nh3-btn {
+  text-decoration: none;
+}
+
 /*
  * ---------- 正文链接：参照 OpenAI，下划线与文字同色、略粗、离文字稍远 ----------
  * 链接与正文同色，只靠下划线识别，所以下划线要足够明显。

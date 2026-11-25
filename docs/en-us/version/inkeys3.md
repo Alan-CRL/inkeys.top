@@ -1,28 +1,36 @@
 ---
-title: Inkeys3 Canary is out
+title: Inkeys3
 sticky: 2
 tags:
   - Introduction
 ---
 
-::: tip Release status
-Inkeys3 Canary `20261014a` is out and ready to download.  
+Inkeys3 is the biggest upgrade Inkeys has ever had. We redesigned the main toolbar and built a new drawing engine, so your ink keeps up with your pen and every action feels lighter. Screen annotation, PPT slideshows and the whiteboard are all still here, and they work better than ever.
 
-Inkeys3 LTS has not been released yet. The latest LTS release is Inkeys2 [`20261019a`](/en-us/version/changelog/20261019a) (in Chinese).  
-:::
+![Inkeys writing freely on the screen, slides and the whiteboard](/showcase/overview-light.webp#light)
+![Inkeys writing freely on the screen, slides and the whiteboard](/showcase/overview-dark.webp#dark)
 
-Inkeys3 brings the all-new UI3 interface and the Draw3 drawing engine. New features are still being developed and tested. Canary is an early development build and is not recommended for everyday use.  
+## Ink that keeps up with you
 
-## Download and feedback
+The new drawing engine, powered by C++ and Direct3D, keeps quick sketches unbroken and gives careful writing natural tapered strokes. Smoothing steadies shaky lines, and with a pressure-sensitive pen your strokes vary naturally in width. The Hard Pen is crisp and clean, the Soft Pen adds expressive taper, the Highlighter picks out key points, and the laser pointer fades away on its own. Add a wide range of shapes and smart drawing, and you are covered from quick circles to careful diagrams.
 
-[Download Inkeys3 Canary](https://1709404.share.123pan.cn/123pan/duk9-Gdr4d) · [Details and feedback](https://forum.smart-teach.cn/d/3203-inkeys3-shou-ge-canary-ban-ben-fa-bu-wen-ti-fan-kui-zhuan-lan) (in Chinese)
+![Different pens and shape tools](/showcase/tools-light.webp#light)
+![Different pens and shape tools](/showcase/tools-dark.webp#dark)
 
----
+## A redesigned toolbar and settings
 
-Some Inkeys3 features are also available in Inkeys2:
-- [PPT Presentation Helper 3](/en-us/version/introduction/pptcom3) (in Chinese)
+The main toolbar springs back when pressed, and its lighting follows your pointer. Float it anywhere on the screen or dock it at the bottom, and adjust its size, light or dark look and opacity to suit you. Settings have been redesigned too: clean and easy to find your way around, now in 20 languages that switch instantly.
 
----
+## Easier every day
 
-Also worth knowing:
-- [Compatibility changes](introduction/win7)
+On a touch display, you can erase with your palm without switching tools. SuperTop keeps the toolbar on top, so other apps can't cover it. The whiteboard gives you an infinite canvas and multiple pages, with a choice of background colors and dot or grid patterns. During a slideshow, Inkeys follows both PowerPoint and WPS automatically, and the page buttons fade when idle so they stay off your slides.
+
+Mouse, touch, screen pen and pen tablet each get a writing feel that suits them, so Inkeys is comfortable on anything from a laptop to a classroom touch display.
+
+## System requirements
+
+Inkeys3 runs on Windows 7 SP1 or later, on 32-bit, 64-bit and ARM64 PCs. On Windows 8 and later it works right away; on Windows 7 you need to install the KB2670838 update first. See [Windows 7 compatibility](introduction/win7).
+
+<div class="doc-actions doc-actions--center">
+  <RouteLink to="/en-us/download" class="nh3-btn nh3-btn-primary">Download</RouteLink>
+</div>

@@ -1,14 +1,19 @@
 export const downloadSidebar = [
     { text: '下载', link: '/download' },
     { text: '使用条款', link: '/tos', badge: { text: '新', type: 'danger' } },
-    { text: 'Inkeys3 Canary', link: '/version/inkeys3' },
-    { text: '版本', link: '/version/', badge: { text: '新', type: 'tip' } },
+    {
+        // 带 items 的项会被 Plume 单独分成一组，与上面两项之间留出分组间距（同版本侧栏）。
+        items: [
+            { text: 'Inkeys3', link: '/version/inkeys3' },
+            { text: '更新日志', link: '/version/', badge: { text: '新', type: 'tip' } },
+        ],
+    },
 ]
 
 export const versionSidebar = [
-    { text: '版本', link: '/version/' },
+    { text: '更新日志', link: '/version/' },
     {   
-        text: 'Inkeys3 Canary', 
+        text: 'Inkeys3', 
         link: '/version/inkeys3',
         badge: { text: '新', type: 'tip' },
         items: [
@@ -42,21 +47,30 @@ export const tutorialSidebar = [
 export const zhTWDownloadSidebar = [
     { text: '下載', link: '/zh-tw/download' },
     { text: '使用條款', link: '/zh-tw/tos', badge: { text: '新', type: 'danger' } },
-    { text: 'Inkeys3 Canary', link: '/zh-tw/version/inkeys3' },
-    { text: '版本', link: '/zh-tw/version/', badge: { text: '新', type: 'tip' } },
+    {
+        // 与简体中文下载侧栏相同：带 items 的项单独成组，与上面两项之间留出分组间距。
+        items: [
+            { text: 'Inkeys3', link: '/zh-tw/version/inkeys3' },
+            { text: '更新日誌', link: '/zh-tw/version/', badge: { text: '新', type: 'tip' } },
+        ],
+    },
 ]
 
 export const enUSDownloadSidebar = [
     { text: 'Download', link: '/en-us/download' },
     { text: 'Terms of Use', link: '/en-us/tos', badge: { text: 'New', type: 'danger' } },
-    { text: 'Inkeys3 Canary', link: '/en-us/version/inkeys3' },
-    { text: 'Versions', link: '/en-us/version/', badge: { text: 'New', type: 'tip' } },
+    {
+        items: [
+            { text: 'Inkeys3', link: '/en-us/version/inkeys3' },
+            { text: 'Changelog', link: '/en-us/version/', badge: { text: 'New', type: 'tip' } },
+        ],
+    },
 ]
 
 export const zhTWVersionSidebar = [
-    { text: '版本', link: '/zh-tw/version/' },
+    { text: '更新日誌', link: '/zh-tw/version/' },
     {
-        text: 'Inkeys3 Canary',
+        text: 'Inkeys3',
         link: '/zh-tw/version/inkeys3',
         badge: { text: '新', type: 'tip' },
         items: [
@@ -68,9 +82,9 @@ export const zhTWVersionSidebar = [
 ]
 
 export const enUSVersionSidebar = [
-    { text: 'Versions', link: '/en-us/version/' },
+    { text: 'Changelog', link: '/en-us/version/' },
     {
-        text: 'Inkeys3 Canary',
+        text: 'Inkeys3',
         link: '/en-us/version/inkeys3',
         badge: { text: 'New', type: 'tip' },
         items: [
