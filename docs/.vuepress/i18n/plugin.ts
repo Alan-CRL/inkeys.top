@@ -46,6 +46,14 @@ export function i18nPlugin(): Plugin {
     },
     async onGenerated(app) {
       const base = app.siteData.base.replace(/\/$/, '')
+      // Plume 的“复制页面”组件在挂载时就预取当前页的 .md（即使镜像页因 llmstxt: false 不显示菜单），
+      // llms 插件又不为镜像页生成 .md，每个镜像页都会出现一次 404。这里写出镜像页正文（含“暂未翻译”提示）。
+      await Promise.all(app.pages.filter(isMirrorPage).map(async (page) => {
+        const file = app.dir.dest(page.htmlFilePathRelative.replace(/\.html$/, '.md'))
+        const body = page.content.replace(/^---\r?\n[\s\S]*?\r?\n---[ \t]*(\r?\n|$)/, '').trimStart()
+        await fs.ensureDir(path.dirname(file))
+        await fs.writeFile(file, body)
+      }))
       await Promise.all(Object.entries(SHORTCUTS).map(async ([source, { target }]) => {
         // /inkeys3 与 /inkeys3.html 都由 inkeys3.html 提供
         const file = app.dir.dest(`${source.slice(1)}.html`)

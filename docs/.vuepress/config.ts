@@ -93,7 +93,21 @@ export default defineUserConfig({
     docsDir: "docs",
     docsBranch: "main",
 
-    llmstxt: true,
+    // 默认只为简体页面生成 .md 与 llms.txt；'all' 让繁中、英文译文也生成，“复制页面”才取得到内容。
+    // 镜像页 frontmatter 带 llmstxt: false，不生成，菜单也随之隐藏。
+    llmstxt: {
+      locale: 'all',
+      llmsTxtTemplateGetter: {
+        // 插件默认把其他语言的 llms.txt 链接改成 .md 扩展名（/zh-tw/llms.md 并不存在），这里改回 .txt。
+        alternateLinks: (_pages, { allLocales, currentLocale, app }) => {
+          if (!allLocales || currentLocale !== '/') return ''
+          const links = Object.entries(app.siteData.locales)
+            .filter(([path]) => path !== '/')
+            .map(([path, { lang }]) => `- [${lang}](${path}llms.txt)`)
+          return links.length ? `\n\n## Alternate Language Versions\n\n${links.join('\n')}\n\n` : ''
+        },
+      },
+    },
     /* 页内信息 */
     // editLink: true,
     // lastUpdated: true,
