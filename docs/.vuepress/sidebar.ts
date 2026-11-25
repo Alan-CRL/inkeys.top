@@ -9,6 +9,7 @@ export const downloadSidebar = [
         ],
     },
     { text: 'Inkeys3 Canary', link: '/version/inkeys3' },
+    { text: '版本', link: '/version/', badge: { text: '新', type: 'tip' } },
 ]
 
 export const versionSidebar = [
@@ -38,22 +39,5 @@ export const tutorialSidebar = [
   {
     text: 'PptxVideoProcessing',
     link: '/tutorial/pptx-video-processing',
-  },
-]
-
-export const wikiSidebar = [
-  {
-    text: '教程',
-    link: '/wiki/wiki',
-  },
-  {
-    text: '快速上手',
-    link: '/wiki/start/start',
-  },
-  {
-    text: '使用文档',
-    items: [
-        { text: '基础指南', link: '/wiki/guide/basic-guide' },
-    ],
   },
 ]

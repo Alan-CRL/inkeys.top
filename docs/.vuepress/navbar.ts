@@ -8,10 +8,8 @@ import { defineNavbarConfig } from 'vuepress-theme-plume'
 
 export default defineNavbarConfig([
   { text: '下载', link: '/download' },
-  { text: '教程', link: '/wiki/wiki' },
-  { text: '版本', link: '/version/', badge: { text: '新', type: 'tip' }, },
-  { text: '知识库', link: '/tutorial/tutorial' },
   { text: 'UInk 规范', link: '/standard/' },
+  { text: '知识库', link: '/tutorial/tutorial' },
   { text: '社区', link: '/community' },
   { text: '链接', link: '/link' }
 ])
