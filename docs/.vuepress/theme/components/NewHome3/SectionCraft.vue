@@ -374,22 +374,18 @@ useAppear(root)
 }
 
 @media (max-width: 560px) {
+  /* 竖长板面只露出壁纸很窄的一条，取景对准山峰；靠左只剩空白暗部，看起来像没有背景。 */
   .nh3-craft {
-    --wallpaper-position: left center;
+    --wallpaper-position: 35% center;
   }
 
   .nh3-craft-text .nh3-body {
     max-width: 25em;
   }
 
-  /* 最窄的屏幕只留主栏。 */
-  .nh3-craft-window {
-    display: none;
-  }
-
+  /* 最窄的屏幕仍保留设置界面，主栏铺满并照常压在窗口下沿。 */
   .nh3-craft-bar {
     --bar-width: 100%;
-    margin-top: 0;
   }
 }
 </style>
