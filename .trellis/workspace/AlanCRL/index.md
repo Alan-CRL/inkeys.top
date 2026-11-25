@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 27
-- **Last Active**: 2026-11-24
+- **Total Sessions**: 28
+- **Last Active**: 2026-11-25
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~830 | Active |
+| `journal-1.md` | ~853 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 28 | 2026-11-25 | 网站三语 i18n（zh-CN / zh-TW / en-US） | `7f81652`, `333a7ef` | `main` |
 | 27 | 2026-11-24 | new-index3 S2 场景卡片静态层叠画面 | `00a90da`, `ad99653` | `main` |
 | 26 | 2026-11-24 | new-index3 收尾提交与子任务归档 | `438cbad`, `83f1306`, `456d4e2`, `ae44a88` | `main` |
 | 25 | 2026-11-22 | S1 三张卡片动画定稿并归档 | `f85e6bb`, `a5849d0`, `71d3033`, `865aef6` | `main` |

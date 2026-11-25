@@ -828,3 +828,26 @@ V3文字已确认；完成上方中心截面立方体、下方面积相减构造
 ### Status
 
 [OK] **Completed**
+
+
+## Session 28: 网站三语 i18n（zh-CN / zh-TW / en-US）
+<!-- trellis-session: v=2 fp=f66de1fe6604cd4d -->
+
+**Date**: 2026-11-25
+**Task**: 网站三语 i18n（zh-CN / zh-TW / en-US）
+**Branch**: `main`
+
+### Summary
+
+实现三语 i18n：简体无前缀、/zh-tw/、/en-us/；整页加载按手动选择或浏览器语言跳转到已有译文（站内不自动切换、爬虫不跳），/inkeys3、/win7、/tos 旧地址按语言跳转；顶栏语言按钮并隐藏 Plume 自带入口；首页、下载页、UInk 首页、inkeys3、win7、使用条款三语，条款合并为 /tos 并新增繁中版，英文条款按简体原文修订（修改/生效日期 2026-11-25）；未翻译页面构建时生成繁中/英文镜像（简体原文 + 暂未翻译提示，canonical + noindex），访客不再掉回简体界面。Codex（gpt-6.2-sol high 只读）交叉审查译文，核实后采纳。生产构建与 25 项 headless 跳转测试通过。新增 spec frontend/i18n-guidelines.md。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7f81652` | feat(i18n): 网站支持简体中文、繁体中文、英文三语 |
+| `333a7ef` | docs(spec): 补充 i18n 规范（语言匹配、语言按钮、未翻译页面镜像、译文用语） |
+
+### Status
+
+[OK] **Completed**
