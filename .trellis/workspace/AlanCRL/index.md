@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 28
+- **Total Sessions**: 29
 - **Last Active**: 2026-11-25
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~853 | Active |
+| `journal-1.md` | ~877 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 29 | 2026-11-25 | 下载侧栏分组、Inkeys3 介绍页与 Win7 兼容页（三语） | `b7f5d9f`, `35f048a`, `807186f` | `main` |
 | 28 | 2026-11-25 | 网站三语 i18n（zh-CN / zh-TW / en-US） | `7f81652`, `333a7ef` | `main` |
 | 27 | 2026-11-24 | new-index3 S2 场景卡片静态层叠画面 | `00a90da`, `ad99653` | `main` |
 | 26 | 2026-11-24 | new-index3 收尾提交与子任务归档 | `438cbad`, `83f1306`, `456d4e2`, `ae44a88` | `main` |

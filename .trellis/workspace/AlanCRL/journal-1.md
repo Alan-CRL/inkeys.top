@@ -851,3 +851,27 @@ V3文字已确认；完成上方中心截面立方体、下方面积相减构造
 ### Status
 
 [OK] **Completed**
+
+
+## Session 29: 下载侧栏分组、Inkeys3 介绍页与 Win7 兼容页（三语）
+<!-- trellis-session: v=2 fp=b5feba0354eac694 -->
+
+**Date**: 2026-11-25
+**Task**: 下载侧栏分组、Inkeys3 介绍页与 Win7 兼容页（三语）
+**Branch**: `main`
+
+### Summary
+
+下载侧栏用 Plume items 分组把 Inkeys3/更新日志与下载/使用条款分开，Canary 与版本改名；重写 /version/inkeys3 介绍页（恢复画廊两图到 public/showcase，加立即下载按钮）；/win7 去掉未发布提示、加 KB2670838 下载按钮与安装失败处理；调查确认 KB2670838 为 SHA-1 签名，Win7 原生支持；繁中英文同步；规范补充侧栏分组、public 目录命名与正文按钮写法；custom.css 侧栏宽度修复单独提交；归档 9 个已完成任务
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b7f5d9f` | feat(version): 重写 Inkeys3 介绍页与 Win7 兼容页，下载侧栏分组改名 |
+| `35f048a` | docs(spec): 补充侧栏分组、public 目录命名与正文按钮、深浅色图片的写法 |
+| `807186f` | fix(theme): 视口窄于 1660px 时侧栏不再被压窄 |
+
+### Status
+
+[OK] **Completed**
