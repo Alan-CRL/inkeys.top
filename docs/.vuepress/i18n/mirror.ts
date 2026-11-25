@@ -44,7 +44,7 @@ function insertNotice(raw: string, notice: string): string {
 
 /**
  * 把指向站内页面的绝对链接改到对应语言下（Markdown 链接与 href="..." 两种写法）。
- * 只改写确实存在于简体站点的页面路径，资源文件（/download/ink/…、/standard/uink-v11/spec.md 等）保持不变。
+ * 只改写确实存在于简体站点的页面路径，资源文件（/dist-download/ink/…、/dist-standard/uink-v11/spec.md 等）保持不变。
  */
 function localizeLinks(content: string, prefix: string, pageKeys: Set<string>): string {
   return content.replace(/(\]\(|href=")(\/(?!\/)[^)"#?\s]*)/g, (whole, lead: string, link: string) =>

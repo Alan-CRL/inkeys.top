@@ -61,7 +61,7 @@ UInk 不设认证机构，也不提供自动化测试工具。软件按以下步
 
 ## 公开样例
 
-1.1 样例由仓库中的生成脚本产生，全部发布在 [`/standard/uink-v11/`](/standard/uink-v11/fixtures.json)。[`fixtures.json`](/standard/uink-v11/fixtures.json) 记录每个样例的用途、覆盖的规则编号、可读的对象内容，以及在各等级下的期望结果；[`SHA256SUMS.txt`](/standard/uink-v11/SHA256SUMS.txt) 用于下载后校验。
+1.1 样例由仓库中的生成脚本产生，全部发布在 [`/dist-standard/uink-v11/`](/dist-standard/uink-v11/fixtures.json)。[`fixtures.json`](/dist-standard/uink-v11/fixtures.json) 记录每个样例的用途、覆盖的规则编号、可读的对象内容，以及在各等级下的期望结果；[`SHA256SUMS.txt`](/dist-standard/uink-v11/SHA256SUMS.txt) 用于下载后校验。
 
 ::: warning Beta
 样例的文件结构已经过独立解码检查，但各等级的期望结果尚未经过读取器实现的验证。Inkeys 适配 1.1 时会逐一验证；发现期望结果与规范不一致时，以规范正文为准，并请反馈。
@@ -86,4 +86,4 @@ UInk 不设认证机构，也不提供自动化测试工具。软件按以下步
 | `future-minor.uink` | 核心 | `version = 12` 的文件：跳过不认识的块与键，尽力读取 |
 | `core-shape-curves.uink` | 核心 | 曲线与自由图形：双曲线的两支写成两个 Polyline 并组合成对象，心形写成 Polygon |
 
-1.0 的样例保留在 [`/standard/uink-v10/`](/standard/uink-v10/fixtures.json)，不再更新。
+1.0 的样例保留在 [`/dist-standard/uink-v10/`](/dist-standard/uink-v10/fixtures.json)，不再更新。

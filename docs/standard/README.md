@@ -42,7 +42,7 @@ readingTime: false
 <LinkCard title="规范正文" href="/standard/intro" description="从规范介绍开始，逐页阅读。" />
 <LinkCard title="分级与认证" href="/standard/levels" description="确定要实现到哪一级，并对照检查清单。" />
 <LinkCard title="公开样例" href="/standard/conformance#公开样例" description="用样例文件验证读取器在每一级的显示结果。" />
-<LinkCard title="单文件规范（给 AI 助手）" href="/standard/uink-v11/spec.md" description="全部规范页面合成一个 Markdown 文件。" />
+<LinkCard title="单文件规范（给 AI 助手）" href="/dist-standard/uink-v11/spec.md" description="全部规范页面合成一个 Markdown 文件。" />
 </CardGrid>
 
-让 AI 助手帮你实现时，可以把[单文件规范](/standard/uink-v11/spec.md)或 [llms.txt](/standard/llms.txt) 交给它。
+让 AI 助手帮你实现时，可以把[单文件规范](/dist-standard/uink-v11/spec.md)或 [llms.txt](/standard/llms.txt) 交给它。

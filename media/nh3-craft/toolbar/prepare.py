@@ -19,7 +19,7 @@ SITE = HERE.parents[2]
 # 2026-11-24 起该目录已打包进 media/archive/2026-11-24-gallery-overview-tools.7z，重新运行前先解压回原处。
 PROMO = SITE / 'media/inkeys3-theme-promo'
 BUILD = PROMO / 'build'
-DESTINATION = SITE / 'docs/.vuepress/public/new-index3/craft'
+DESTINATION = SITE / 'docs/.vuepress/public/dist-new-index3/craft'
 # 原生主栏底板：深色 0.80，浅色材质叠加后约 0.92。
 BAR_BASE = {'dark': ((24, 24, 24), 204), 'light': ((251, 251, 251), 235)}
 

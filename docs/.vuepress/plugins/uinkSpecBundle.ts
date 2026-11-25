@@ -120,8 +120,8 @@ function rewriteTarget(target: string, page: string): string {
 
   const pageDir = posix.dirname(`/standard/${page}`)
   let abs = pathPart.startsWith('/') ? pathPart : posix.join(pageDir, pathPart)
-  // 规范发布目录（/standard/uink-v11/spec.md、样例等）是静态文件，保持原扩展名
-  if (/^\/standard\/uink-v\d+\//.test(abs)) return abs + hash
+  // 规范发布目录（/dist-standard/uink-v11/spec.md、样例等）是静态文件，保持原扩展名
+  if (/^\/dist-standard\/uink-v\d+\//.test(abs)) return abs + hash
   if (pathPart.endsWith('/') && !abs.endsWith('/')) abs += '/'
   if (!abs.endsWith('/')) {
     const base = posix.basename(abs)
@@ -269,7 +269,7 @@ export function buildLlmsTxt(pages: SpecPage[]): string {
     '',
     '## 规范',
     '',
-    `- [UInk 1.1 规范（单文件版）](${SITE_URL}/standard/uink-v11/spec.md): 全部规范页面按目录顺序拼成的单个 Markdown 文件`,
+    `- [UInk 1.1 规范（单文件版）](${SITE_URL}/dist-standard/uink-v11/spec.md): 全部规范页面按目录顺序拼成的单个 Markdown 文件`,
     ...pages.map(page => {
       const { title } = parsePage(page)
       return `- [${title}](${SITE_URL}${pageSitePath(page.path)})`
@@ -278,12 +278,12 @@ export function buildLlmsTxt(pages: SpecPage[]): string {
     // 公开样例：实现者用来对照各等级的期望结果
     '## 样例',
     '',
-    `- [UInk 1.1 公开样例清单](${SITE_URL}/standard/uink-v11/fixtures.json): 每个样例的用途、覆盖的规则编号、对象内容与各等级下的期望结果；.uink 文件与清单在同一目录`,
-    `- [样例校验和](${SITE_URL}/standard/uink-v11/SHA256SUMS.txt): 下载后用 sha256sum -c 校验`,
+    `- [UInk 1.1 公开样例清单](${SITE_URL}/dist-standard/uink-v11/fixtures.json): 每个样例的用途、覆盖的规则编号、对象内容与各等级下的期望结果；.uink 文件与清单在同一目录`,
+    `- [样例校验和](${SITE_URL}/dist-standard/uink-v11/SHA256SUMS.txt): 下载后用 sha256sum -c 校验`,
     '',
     '## 存档',
     '',
-    `- [UInk 1.0 Beta 规范（单文件存档）](${SITE_URL}/standard/uink-v10/spec.md): version 10 的冻结存档`,
+    `- [UInk 1.0 Beta 规范（单文件存档）](${SITE_URL}/dist-standard/uink-v10/spec.md): version 10 的冻结存档`,
     '',
   ]
   return lines.join('\n')
@@ -311,7 +311,7 @@ async function writeOut(file: string, content: string): Promise<void> {
 
 /**
  * 构建结束后生成：
- * - /standard/uink-v11/spec.md：当前版本的单文件规范
+ * - /dist-standard/uink-v11/spec.md：当前版本的单文件规范
  * - /standard/llms.txt：UInk 规范索引
  * 根目录 /llms.txt 由主题的 llmstxt 插件生成（全站索引），此处不覆盖它。
  */
@@ -327,7 +327,7 @@ export const uinkSpecBundlePlugin = (): Plugin => ({
         '规范性用词：**必须**、**不得**、**应**、**可以**。',
       ],
     })
-    await writeOut(app.dir.dest('standard', 'uink-v11', 'spec.md'), spec)
+    await writeOut(app.dir.dest('dist-standard', 'uink-v11', 'spec.md'), spec)
     await writeOut(app.dir.dest('standard', 'llms.txt'), buildLlmsTxt(pages))
   },
 })

@@ -144,7 +144,7 @@ UInk 1.1 读取：标准级 + Inkeys 附加级；写入：基础级
 
 ## 规范
 
-- [UInk 1.1 规范（单文件版）](https://www.inkeys.top/standard/uink-v11/spec.md): 全部规范页面按目录顺序拼成的单个 Markdown 文件
+- [UInk 1.1 规范（单文件版）](https://www.inkeys.top/dist-standard/uink-v11/spec.md): 全部规范页面按目录顺序拼成的单个 Markdown 文件
 - [UInk 规范](https://www.inkeys.top/standard/intro)
 - [快速开始](https://www.inkeys.top/standard/quick-start)
 - [分级与认证](https://www.inkeys.top/standard/levels)
@@ -191,8 +191,8 @@ UInk 1.1 目前是 **Beta** 版（`Header.version = 11`）。智绘教Inkeys 与
 
 - 规范主页：https://www.inkeys.top/standard/
 - 版本与变更：https://www.inkeys.top/standard/version
-- 单文件规范：https://www.inkeys.top/standard/uink-v11/spec.md
+- 单文件规范：https://www.inkeys.top/dist-standard/uink-v11/spec.md
 - llms.txt：https://www.inkeys.top/standard/llms.txt
-- 公开样例：https://www.inkeys.top/standard/uink-v11/fixtures.json
+- 公开样例：https://www.inkeys.top/dist-standard/uink-v11/fixtures.json
 
 如果你也在开发批注、白板或笔记类软件，欢迎来看看 UInk。一份墨迹，处处可读。

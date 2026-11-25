@@ -21,7 +21,7 @@ Read this before you add a page, translate a page, add a navbar or sidebar entry
 ## 3. Contracts
 
 - **Pages**: a translation is a real file at `docs/zh-tw/<same path>.md` / `docs/en-us/<same path>.md` with the same frontmatter (`pageLayout`, `pageClass`, …). Every other zh-CN page automatically gets a mirror at the same prefixed path: Simplified text, a "not translated" tip on top, `canonical` to the zh-CN page, `robots: noindex, follow`, `sitemap: false`, `llmstxt: false`.
-- **Links in translated pages and zh-TW / en-US config**: always point to the same-locale path (`/en-us/standard/intro`), never to the zh-CN path. Mirrors exist for every page, so the locale is never lost. Assets (`/standard/uink-v11/spec.md`, `/standard/llms.txt`, `/download/ink/…`) keep their root paths.
+- **Links in translated pages and zh-TW / en-US config**: always point to the same-locale path (`/en-us/standard/intro`), never to the zh-CN path. Mirrors exist for every page, so the locale is never lost. Assets (`/dist-standard/uink-v11/spec.md`, `/standard/llms.txt`, `/dist-download/ink/…`) keep their root paths.
 - **Plume sidebar keys inside `locales['/zh-tw/']` etc. are relative to the locale** (`'/download'` means `/zh-tw/download`); link values are absolute (`'/zh-tw/download'`).
 - **Auto-matching (head script)**: runs once per full page load. Only unprefixed URLs are rewritten; prefixed URLs are shown as-is; bots are never redirected. Locale = valid `localStorage['inkeys-locale']`, else the first zh/en entry in `navigator.languages` (`zh-TW|HK|MO|Hant*` → zh-TW, other `zh*` → zh-CN, `en*` → en-US, none → en-US, empty → zh-CN). It redirects only if the target locale has a **real translation** (mirrors don't count). `search` and `hash` are kept.
 - **Storage**: only `LocaleSwitch.vue` writes `inkeys-locale`. Clicking a link that changes locale must not write it.
@@ -49,7 +49,7 @@ Read this before you add a page, translate a page, add a navbar or sidebar entry
 
 ## 6. Tests Required
 
-`.trellis/tasks/archive/2026-11/11-25-site-i18n/verify-i18n.cjs <origin>` (headless Edge, Playwright). Run it against a production build served with clean URLs (`/x` → `x.html`); `http-server` mis-serves `/download` because `public/download/` exists. Assertion points:
+`.trellis/tasks/archive/2026-11/11-25-site-i18n/verify-i18n.cjs <origin>` (headless Edge, Playwright). Run it against a production build served with clean URLs (`/x` → `x.html`); `http-server` 302s a page path to a same-named public folder, which is why every public folder now carries the `dist-` prefix. Assertion points:
 - Redirect matrix: zh-TW/zh-HK/en-US/ja-JP/zh-CN × `/`, `/download`, untranslated page, prefixed URL, bot UA, stored choice.
 - Shortcuts `/inkeys3`, `/win7`, `/tos/zh-cn#…`, `/tos/en-us` land on the right locale.
 - `<html lang>` on `/zh-tw/` and `/en-us/download`.

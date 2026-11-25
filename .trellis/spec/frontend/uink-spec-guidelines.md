@@ -49,10 +49,10 @@ comm -23 /tmp/ref.txt /tmp/def.txt                                              
 
 ## Sidebar and Single-File Bundle
 
-- `docs/.vuepress/plugins/uinkSpecBundle.ts` builds `/standard/uink-v11/spec.md` and `/standard/llms.txt` in `onGenerated`. Its `UINK_V11_PAGES` order **must match** the `/standard/` sidebar in `plume.config.ts`. When you add or move a page, change both.
+- `docs/.vuepress/plugins/uinkSpecBundle.ts` builds `/dist-standard/uink-v11/spec.md` (next to the samples) and `/standard/llms.txt` in `onGenerated`. Its `UINK_V11_PAGES` order **must match** the `/standard/` sidebar in `plume.config.ts`. When you add or move a page, change both.
 - Missing pages are skipped with a `[uink-spec-bundle] 跳过不存在的页面` warning. A clean build has no such warning.
 - Do not write `/llms.txt` at the site root: `config.ts` has `llmstxt: true`, and plume writes the site-wide `/llms.txt`. A second writer would overwrite it.
-- `docs/.vuepress/public/standard/uink-v10/spec.md` is a frozen 1.0 archive produced once by `scripts/uink-archive-v10.mjs` from commit `afc6765`. Do not regenerate or edit it.
+- `docs/.vuepress/public/dist-standard/uink-v10/spec.md` is a frozen 1.0 archive produced once by `scripts/uink-archive-v10.mjs` from commit `afc6765`. Do not regenerate or edit it.
 
 ## Sample Generator
 
@@ -63,7 +63,7 @@ pnpm fixtures:uink          # = node scripts/uink-fixtures/build.mjs (Node ≥ 2
 ```
 
 - Input: `scripts/uink-fixtures/cases/NN-name.json`, one per sample.
-- Output: `docs/.vuepress/public/standard/uink-v11/` — `*.uink`, `*.uink.extra`, `fixtures.json`, `SHA256SUMS.txt`.
+- Output: `docs/.vuepress/public/dist-standard/uink-v11/` — `*.uink`, `*.uink.extra`, `fixtures.json`, `SHA256SUMS.txt`.
 
 ### Case Contract
 
@@ -88,7 +88,7 @@ pnpm fixtures:uink          # = node scripts/uink-fixtures/build.mjs (Node ≥ 2
 ### Tests Required
 
 - Run twice; `sha256sum` of every output must be identical (deterministic: fixed ZIP timestamps, stable ordering).
-- `cd docs/.vuepress/public/standard/uink-v11 && sha256sum -c SHA256SUMS.txt` — all OK.
+- `cd docs/.vuepress/public/dist-standard/uink-v11 && sha256sum -c SHA256SUMS.txt` — all OK.
 - Optional independent decode: `uv run --no-project --with msgpack python -I <script>` per the headless-check pattern; object counts must match `fixtures.json`.
 - `pnpm docs:build` passes with no `uink-spec-bundle` warning.
 
@@ -112,7 +112,7 @@ The 16 samples are final (2026-11-24; `16-core-shape-curves` added the same day)
 ```gitattributes
 *.uink binary
 *.uink.extra binary
-docs/.vuepress/public/standard/**/SHA256SUMS.txt text eol=lf   # *.txt is crlf by default; sha256sum -c rejects CRLF
+docs/.vuepress/public/dist-standard/**/SHA256SUMS.txt text eol=lf   # *.txt is crlf by default; sha256sum -c rejects CRLF
 ```
 
 ## Wrong vs Correct

@@ -42,7 +42,7 @@ readingTime: false
 <LinkCard title="規範正文" href="/zh-tw/standard/intro" description="從規範介紹開始，逐頁閱讀（簡體中文）。" />
 <LinkCard title="分級與認證" href="/zh-tw/standard/levels" description="確定要實作到哪一級，並對照檢查清單。" />
 <LinkCard title="公開範例" href="/zh-tw/standard/conformance#公开样例" description="用範例檔案驗證讀取器在每一級的顯示結果。" />
-<LinkCard title="單檔案規範（給 AI 助理）" href="/standard/uink-v11/spec.md" description="全部規範頁面合成一個 Markdown 檔案。" />
+<LinkCard title="單檔案規範（給 AI 助理）" href="/dist-standard/uink-v11/spec.md" description="全部規範頁面合成一個 Markdown 檔案。" />
 </CardGrid>
 
-讓 AI 助理幫你實作時，可以把[單檔案規範](/standard/uink-v11/spec.md)或 [llms.txt](/standard/llms.txt) 交給它。
+讓 AI 助理幫你實作時，可以把[單檔案規範](/dist-standard/uink-v11/spec.md)或 [llms.txt](/standard/llms.txt) 交給它。

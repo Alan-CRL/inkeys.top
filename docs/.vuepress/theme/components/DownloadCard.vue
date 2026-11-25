@@ -765,8 +765,8 @@ onBeforeUnmount(() => {
             <path class="dl-art" d="M16 102 Q16 72 42 72 Q68 72 68 102" />
             <rect class="dl-art" x="82" y="18" width="62" height="84" rx="4" />
             <path class="dl-art" d="M92 68 H134 M92 79 H134 M92 90 H118" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/person-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/person-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/person-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/person-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.who[0][0] }}</h3>
           <p class="dl-tile__desc">{{ t.who[0][1] }}</p>
@@ -776,8 +776,8 @@ onBeforeUnmount(() => {
             <rect class="dl-art" x="18" y="14" width="124" height="74" rx="4" />
             <rect class="dl-art" x="58" y="88" width="44" height="5" rx="2.5" />
             <path class="dl-art" d="M42 88 L34 110 M118 88 L126 110" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/school-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/school-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/school-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/school-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.who[1][0] }}</h3>
           <p class="dl-tile__desc">{{ t.who[1][1] }}</p>
@@ -790,8 +790,8 @@ onBeforeUnmount(() => {
             <rect class="dl-art" x="82" y="82" width="12" height="24" rx="2" />
             <rect class="dl-art" x="100" y="68" width="12" height="38" rx="2" />
             <rect class="dl-art" x="118" y="52" width="12" height="54" rx="2" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/business-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/business-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/business-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/business-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.who[2][0] }}</h3>
           <p class="dl-tile__desc">{{ t.who[2][1] }}</p>
@@ -805,8 +805,8 @@ onBeforeUnmount(() => {
             <circle class="dl-art" cx="118" cy="58" r="14" />
             <circle class="dl-art" cx="118" cy="54" r="4.5" />
             <path class="dl-art" d="M109 68.5 Q110 61.5 118 61.5 Q126 61.5 127 68.5" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/live-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/live-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/live-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/live-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.who[3][0] }}</h3>
           <p class="dl-tile__desc">{{ t.who[3][1] }}</p>
@@ -829,8 +829,8 @@ onBeforeUnmount(() => {
             <rect class="dl-art dl-art--solid" x="72" y="46" width="72" height="48" rx="4" />
             <path class="dl-art dl-art--solid" d="M62 94 H154 V97 Q154 103 148 103 H68 Q62 103 62 97 Z" />
             <path class="dl-art" d="M100 94 Q100 97 103 97 H113 Q116 97 116 94" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/computer-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/computer-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/computer-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/computer-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.devices[0][0] }}</h3>
           <p class="dl-tile__desc">{{ t.devices[0][1] }}</p>
@@ -843,8 +843,8 @@ onBeforeUnmount(() => {
             <path class="dl-art" d="M130 84.5 H140 M52 90 L44 107 M108 90 L116 107 M49 99 H111" />
             <circle class="dl-art" cx="44" cy="110" r="2.5" />
             <circle class="dl-art" cx="116" cy="110" r="2.5" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/panel-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/panel-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/panel-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/panel-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.devices[1][0] }}</h3>
           <p class="dl-tile__desc">{{ t.devices[1][1] }}</p>
@@ -860,8 +860,8 @@ onBeforeUnmount(() => {
             <circle class="dl-art" cx="70" cy="102" r="6" />
             <circle class="dl-art" cx="70" cy="102" r="2.5" />
             <path class="dl-art" d="M86 98 H98 M86 102 H98 M86 106 H98 M62 112 V115 M98 112 V115" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/projector-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/projector-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/projector-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/projector-dark.webp" width="160" height="120" />
           </svg>
           <h3 class="dl-tile__name">{{ t.devices[2][0] }}</h3>
           <p class="dl-tile__desc">{{ t.devices[2][1] }}</p>
@@ -873,8 +873,8 @@ onBeforeUnmount(() => {
             <path class="dl-art" d="M30 82 H130 L140 110 H20 Z M68 82 V78 M92 82 V78" />
             <path class="dl-art dl-art--keys" d="M35 89 H125 M33 95.5 H127" />
             <path class="dl-art" d="M31 102.5 H50 M56 102.5 H104 M110 102.5 H129" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/detachable-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/detachable-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/detachable-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/detachable-dark.webp" width="160" height="120" />
             <g transform="translate(100 50) rotate(45)">
               <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-46 Q-3.5 -50 0 -50 Q3.5 -50 3.5 -46 V-9 Z" />
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
@@ -894,8 +894,8 @@ onBeforeUnmount(() => {
             <rect class="dl-art" x="98" y="50" width="38" height="58" rx="19" />
             <path class="dl-art" d="M98 74 H136 M117 50 V74 M117 50 C117 38 130 36 132 18" />
             <rect class="dl-art dl-art--solid" x="114.5" y="57" width="5" height="11" rx="2.5" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/mouse-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/mouse-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/mouse-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/mouse-dark.webp" width="160" height="120" />
             <path class="dl-art dl-art--solid" d="M78 84 V101 L82.5 97 L85.5 104 L88.5 102.7 L85.5 96 H91 Z" />
           </svg>
           <h3 class="dl-tile__name">{{ t.inputs[0][0] }}</h3>
@@ -903,8 +903,8 @@ onBeforeUnmount(() => {
         </li>
         <li class="dl-tile" style="--i: 1">
           <svg viewBox="0 0 160 120" aria-hidden="true">
-            <image class="dl-ink dl-ink--light" href="/download/ink/touch-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/touch-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/touch-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/touch-dark.webp" width="160" height="120" />
             <path class="dl-art dl-art--solid" d="M96 120 L88.5 102 L71.7 81.5 A5.5 5.5 0 0 1 80.3 74.5 L90 86.3 V50 A6 6 0 0 1 102 50 V68 A5.5 5.5 0 0 1 113 68 V71 A5.5 5.5 0 0 1 124 71 V75 A5.5 5.5 0 0 1 135 75 V98 Q135 110 128 120" />
             <path class="dl-art" d="M102 68 V82 M113 71 V84 M124 75 V86 M93 52 Q96 49 99 52" />
           </svg>
@@ -920,8 +920,8 @@ onBeforeUnmount(() => {
             <circle class="dl-art" cx="139" cy="87" r="2" />
             <circle class="dl-art" cx="139" cy="95" r="2" />
             <circle class="dl-art" cx="139" cy="103" r="2" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/tablet-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/tablet-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/tablet-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/tablet-dark.webp" width="160" height="120" />
             <g transform="translate(96 98) rotate(40)">
               <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-42 Q-3.5 -46 0 -46 Q3.5 -46 3.5 -42 V-9 Z" />
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />
@@ -934,8 +934,8 @@ onBeforeUnmount(() => {
           <svg viewBox="0 0 160 120" aria-hidden="true">
             <rect class="dl-art" x="12" y="14" width="112" height="84" rx="6" />
             <rect class="dl-art" x="17" y="19" width="102" height="74" rx="2" />
-            <image class="dl-ink dl-ink--light" href="/download/ink/pen-light.webp" width="160" height="120" />
-            <image class="dl-ink dl-ink--dark" href="/download/ink/pen-dark.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--light" href="/dist-download/ink/pen-light.webp" width="160" height="120" />
+            <image class="dl-ink dl-ink--dark" href="/dist-download/ink/pen-dark.webp" width="160" height="120" />
             <g transform="translate(96 68) rotate(45)">
               <path class="dl-art dl-art--solid" d="M0 0 L-3.5 -9 V-50 Q-3.5 -54 0 -54 Q3.5 -54 3.5 -50 V-9 Z" />
               <path class="dl-art" d="M-3.5 -9 H3.5 M0 -18 V-28" />

@@ -14,11 +14,11 @@ title: Microsoft Office/PowerPoint 无法以普通用户权限运行的解决方
 ### 打开路径一
 打开 `HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers` 看看有没有相关程序，如果有则删除。
 
-![在这里插入图片描述](/tutorial/ppt-admin/1.png)
+![在这里插入图片描述](/dist-tutorial/ppt-admin/1.png)
 
 ### 打开路径二
 打开 `HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers` 看看有没有相关程序，如果有则删除。
-![在这里插入图片描述](/tutorial/ppt-admin/2.png)
+![在这里插入图片描述](/dist-tutorial/ppt-admin/2.png)
 
 ### 最后
 重启计算机就可以了。

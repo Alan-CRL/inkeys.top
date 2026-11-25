@@ -17,7 +17,7 @@ sys.path.insert(0, str(HERE.parent))
 from glass import solid_regions, thin_backdrop  # noqa: E402
 
 BUILD = HERE / "build"
-WEB = HERE.parents[2] / "docs/.vuepress/public/new-index3/craft"
+WEB = HERE.parents[2] / "docs/.vuepress/public/dist-new-index3/craft"
 DIMENSIONS = (1440, 1050)
 LOCALES = ("zh-CN", "zh-TW", "en-US")
 THEMES = ("light", "dark")

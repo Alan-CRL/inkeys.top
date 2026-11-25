@@ -40,7 +40,7 @@ title: PPT演示助手 3
 - [x] 兼容至 **Microsoft PowerPoint 2007** 和 **Kingsoft WPS 2013**。  
 
 <SwiperSelf
-  :items='["/pptcom3/1.png", "/pptcom3/2.png"]' 
+  :items='["/dist-pptcom3/1.png", "/dist-pptcom3/2.png"]' 
   effect="flip"
   :height="450"
 />

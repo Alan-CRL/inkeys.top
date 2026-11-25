@@ -12,8 +12,8 @@ useAppear(root)
 // 每张卡片的循环动图，顺序与 copy.s1.cards 一致（屏幕批注、PPT 演示、自由白板）。
 const asset = useAssetUrl()
 const GIFS = computed(() => ['screen-annotation', 'slide-show', 'whiteboard'].map(name => ({
-  light: asset(`/new-index3/s1/${name}-light.gif`),
-  dark: asset(`/new-index3/s1/${name}-dark.gif`),
+  light: asset(`/dist-new-index3/s1/${name}-light.gif`),
+  dark: asset(`/dist-new-index3/s1/${name}-dark.gif`),
 })))
 </script>
 

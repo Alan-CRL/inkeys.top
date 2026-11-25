@@ -30,13 +30,13 @@ title: 程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方�
 ### 一、卸载所有需要**注册** COM 的软件
 #### Microsoft PowerPoint（如果安装有）
 无论是 商店版 还是 即点即用Check-To-Run/MSI 安装版，都可以在 设置/控制面板 中卸载。
-![选择 Office 并卸载即可](/tutorial/ppt-com/1.png)
+![选择 Office 并卸载即可](/dist-tutorial/ppt-com/1.png)
 如果常规方案无法卸载，请使用 Office Tools Plus 工具箱中的强力卸载。
-![强力卸载](/tutorial/ppt-com/2.png)
+![强力卸载](/dist-tutorial/ppt-com/2.png)
 #### WPS（如果安装有）
 同样也可以通过 设置/控制面板 进行卸载。
 需要注意的是，下面选项需要选择“不再使用”，并清除数据。
-![在这里插入图片描述](/tutorial/ppt-com/3.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/3.png)
 #### 畅言智慧课堂（如果安装有）
 这个软件安装时会修改 COM 注册表，来阻止其他软件读取 COM，所以也一并卸载了。
 
@@ -45,13 +45,13 @@ title: 程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方�
 
 ### 三、修复注册表和 COM 环境
 #### 打开 Office Tools Plus
-![在这里插入图片描述](/tutorial/ppt-com/4.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/4.png)
 #### 转到工具箱，并点击 Office 工具中的移除 Office
-![在这里插入图片描述](/tutorial/ppt-com/5.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/5.png)
 完成后就可以进行下一步了。
 ### 四、重新安装你所需要的 Office 软件
 **非常重要！** 如果你需要安装 Microsoft Office 和 WPS 两者，请务必按照**先**安装 Microsoft Office 后**再**安装 WPS（不能换顺序，不能同时装）。安装 WPS 的时候务必勾选下列选项。（如果忘记勾选则会导致 Microsoft Office 的 COM 接口失效，并且安装后再修改可能会没有作用，则需要重新开始本文章的步骤。）
-![在这里插入图片描述](/tutorial/ppt-com/6.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/6.png)
 
 
 ### 阶段性总结（基本上这里问题就可以解决了）
@@ -65,18 +65,18 @@ title: 程序无法识别 Office/WPS 的 COM 接口失效/无法识别解决方�
 
 ### 六、部署 32 位/ arm(32) 的 Microsoft Office
 选择部署 32 位 Office 程序（务必勾选基础三件套）
-![在这里插入图片描述](/tutorial/ppt-com/7.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/7.png)
 > 如果您只使用 WPS 或 没有Office 的激活，没有关系，我们只是下载用于修复，并不需要激活。
 
 点击部署并耐心等待安装完成。安装完成后打开任意套件并同意许可协议。
-![在这里插入图片描述](/tutorial/ppt-com/8.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/8.png)
 
 ### 阶段性总结
 此时你就会发现新安装的 Office 的 COM 接口正常了，如果你本来的目的就是使用 32 位的 Office，则可以不继续下面的教程了。
 
 ### 七、强制卸载 32 位 Microsoft Office
 和步骤三一样，直接使用 Office Tools Plus 卸载，而不用走官方的卸载方式。（因为官方的卸载方式会把安装前备份的注册表还原，这下注册表又变成原来那种错误的了，就等于啥都没做）
-![在这里插入图片描述](/tutorial/ppt-com/9.png)
+![在这里插入图片描述](/dist-tutorial/ppt-com/9.png)
 ### 八、重新安装你所需要的软件即可
 现在可以按照你的需求安装任意架构的 Office 即可。
 按照步骤四即可，务必主要安装顺序和 WPS 需要勾选的选项。

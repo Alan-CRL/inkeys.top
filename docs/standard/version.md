@@ -12,7 +12,7 @@ UInk 1.1 Beta，`Header.version = 11`。Inkeys 与 ICC-CE 完成适配、公开�
 
 | `version` | 名称 | 状态 |
 | --- | --- | --- |
-| `10` | UInk 1.0 Beta | 已被 1.1 取代，提供[单文件存档](/standard/uink-v10/spec.md) |
+| `10` | UInk 1.0 Beta | 已被 1.1 取代，提供[单文件存档](/dist-standard/uink-v10/spec.md) |
 | `11` | UInk 1.1 Beta | 当前版本 |
 
 ## 规则
@@ -67,5 +67,5 @@ Header 布局、Type ID、MessagePack 编码规则、撤回模型（`undoId` 分
 
 ## 存档
 
-- [UInk 1.0 Beta 单文件存档](/standard/uink-v10/spec.md)
-- [UInk 1.0 公开样例](/standard/uink-v10/fixtures.json)
+- [UInk 1.0 Beta 单文件存档](/dist-standard/uink-v10/spec.md)
+- [UInk 1.0 公开样例](/dist-standard/uink-v10/fixtures.json)

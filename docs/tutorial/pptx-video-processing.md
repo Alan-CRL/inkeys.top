@@ -16,7 +16,7 @@ PptxVideoProcessing 可以直接将 .pptx 文件中的视频直接进行处理�
 PptxVideoProcessing 还支持直接处理其他常见的视频文件。同时支持 Intel AMD NVIDIA 硬件加速和系统原生加速。  
 
 <SwiperSelf
-  :items='["/tutorial/pptx-video-processing/1.png", "/tutorial/pptx-video-processing/2.png", "/tutorial/pptx-video-processing/3.png"]' 
+  :items='["/dist-tutorial/pptx-video-processing/1.png", "/dist-tutorial/pptx-video-processing/2.png", "/dist-tutorial/pptx-video-processing/3.png"]' 
   effect="cards"
 />
 

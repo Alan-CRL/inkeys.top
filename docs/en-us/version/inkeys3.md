@@ -7,15 +7,15 @@ tags:
 
 Inkeys3 is the biggest upgrade Inkeys has ever had. We redesigned the main toolbar and built a new drawing engine, so your ink keeps up with your pen and every action feels lighter. Screen annotation, PPT slideshows and the whiteboard are all still here, and they work better than ever.
 
-![Inkeys writing freely on the screen, slides and the whiteboard](/showcase/overview-light.webp#light)
-![Inkeys writing freely on the screen, slides and the whiteboard](/showcase/overview-dark.webp#dark)
+![Inkeys writing freely on the screen, slides and the whiteboard](/dist-showcase/overview-light.webp#light)
+![Inkeys writing freely on the screen, slides and the whiteboard](/dist-showcase/overview-dark.webp#dark)
 
 ## Ink that keeps up with you
 
 The new drawing engine, powered by C++ and Direct3D, keeps quick sketches unbroken and gives careful writing natural tapered strokes. Smoothing steadies shaky lines, and with a pressure-sensitive pen your strokes vary naturally in width. The Hard Pen is crisp and clean, the Soft Pen adds expressive taper, the Highlighter picks out key points, and the laser pointer fades away on its own. Add a wide range of shapes and smart drawing, and you are covered from quick circles to careful diagrams.
 
-![Different pens and shape tools](/showcase/tools-light.webp#light)
-![Different pens and shape tools](/showcase/tools-dark.webp#dark)
+![Different pens and shape tools](/dist-showcase/tools-light.webp#light)
+![Different pens and shape tools](/dist-showcase/tools-dark.webp#dark)
 
 ## A redesigned toolbar and settings
 

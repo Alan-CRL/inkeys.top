@@ -4,7 +4,7 @@
 >
 > 这是 version 10 规范的冻结存档，不再更新。当前版本见 https://www.inkeys.top/standard/ ，1.0 → 1.1 的变化与 1.0 勘误见 https://www.inkeys.top/standard/version.html
 >
-> 文中的页面链接指向网站当前页面，内容可能已经是新版本；1.0 的公开样例位于 https://www.inkeys.top/standard/uink-v10/
+> 文中的页面链接指向网站当前页面，内容可能已经是新版本；1.0 的公开样例位于 https://www.inkeys.top/dist-standard/uink-v10/
 
 ## 目录
 

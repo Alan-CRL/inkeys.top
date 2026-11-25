@@ -7,15 +7,15 @@ tags:
 
 Inkeys3 是 Inkeys 迄今為止最大的一次升級。我們重新設計了主欄，換上了全新的繪圖引擎，讓書寫更跟手，操作更輕盈。螢幕批註、PPT 簡報、自由白板這些熟悉的功能都還在，而且更好用了。
 
-![Inkeys 在螢幕、簡報與白板上自由書寫](/showcase/overview-light.webp#light)
-![Inkeys 在螢幕、簡報與白板上自由書寫](/showcase/overview-dark.webp#dark)
+![Inkeys 在螢幕、簡報與白板上自由書寫](/dist-showcase/overview-light.webp#light)
+![Inkeys 在螢幕、簡報與白板上自由書寫](/dist-showcase/overview-dark.webp#dark)
 
 ## 每一筆，都跟得上思路
 
 全新繪圖引擎由 C++ 與 Direct3D 驅動，快速勾畫不斷線，細緻書寫有筆鋒。手抖修正讓線條更平穩，使用支援壓感的筆時還能寫出自然的粗細變化。硬筆清晰俐落，軟筆富有筆鋒，螢光筆突顯重點，雷射筆寫完自動消失；再加上豐富的形狀與智慧繪圖，從隨手圈畫到精細作圖都得心應手。
 
-![多樣筆觸與形狀工具](/showcase/tools-light.webp#light)
-![多樣筆觸與形狀工具](/showcase/tools-dark.webp#dark)
+![多樣筆觸與形狀工具](/dist-showcase/tools-light.webp#light)
+![多樣筆觸與形狀工具](/dist-showcase/tools-dark.webp#dark)
 
 ## 煥然一新的主欄與設定
 

@@ -67,5 +67,5 @@ UInk 把功能分成五个等级。只实现最基础的**核心级**——多�
 | 先写一个能显示 UInk 的最小读取器 | [快速开始](quick-start) |
 | 确定自己要实现到哪一级 | [分级与认证](levels) |
 | 逐条核对规则 | 各块页面中的编号规则，以及[实现一致性与样例](conformance) |
-| 让 AI 助手帮你实现 | [单文件版规范](/standard/uink-v11/spec.md)、[llms.txt](/standard/llms.txt) |
+| 让 AI 助手帮你实现 | [单文件版规范](/dist-standard/uink-v11/spec.md)、[llms.txt](/standard/llms.txt) |
 | 查一个词的意思 | [术语表](glossary) |

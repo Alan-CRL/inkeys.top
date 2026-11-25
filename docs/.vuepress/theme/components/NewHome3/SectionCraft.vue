@@ -13,7 +13,7 @@ const settings = ref<HTMLElement>()
 const bar = ref<HTMLElement>()
 // 背景图不会报加载错误，地址交给 useAssetUrl 跟随当前可用的 CDN 或本地。
 const asset = useAssetUrl()
-const craftUrl = (name: string) => `url("${asset(`/new-index3/craft/${name}`)}")`
+const craftUrl = (name: string) => `url("${asset(`/dist-new-index3/craft/${name}`)}")`
 const inkLayers = computed(() => ({ '--ink-forest': craftUrl('performance-forest.webp') }))
 // 让 data-theme 同时切换两层原生图与壁纸，浏览器只请求生效的背景。
 const nativeLayers = computed(() => ({

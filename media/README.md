@@ -25,6 +25,6 @@
 
 ## 当前网页素材
 
-2026-11-24 起 `docs/.vuepress/public/feature-media/` 已删除（八幕 16 张 WebP 的副本在上面的 `video-archive` 里，画廊图在上面的 7z 里）。`/new-index3` 现在使用 `public/new-index3/` 下的 S1 动图与 S5-B 素材，S5-A 视频走 123 云盘 HLS。
+2026-11-24 起 `docs/.vuepress/public/feature-media/` 已删除（八幕 16 张 WebP 的副本在上面的 `video-archive` 里，画廊图在上面的 7z 里）。`/new-index3` 现在使用 `public/dist-new-index3/` 下的 S1 动图与 S5-B 素材，S5-A 视频走 123 云盘 HLS。
 
 恢复视频时先查看本地归档及各制作工程 README；不要直接运行旧发布脚本覆盖当前图片。归档中的视频 manifest 与播放器需要一起恢复。归档不在 Git 中，迁移电脑前请另行复制整个 `media/` 目录。

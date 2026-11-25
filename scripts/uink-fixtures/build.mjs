@@ -2,7 +2,7 @@
 //
 // 运行：node scripts/uink-fixtures/build.mjs（或 pnpm fixtures:uink）
 // 输入：scripts/uink-fixtures/cases/*.json，每个样例一个文件，按文件名顺序处理。
-// 输出：docs/.vuepress/public/standard/uink-v11/ 下的 .uink、.uink.extra、fixtures.json、SHA256SUMS.txt。
+// 输出：docs/.vuepress/public/dist-standard/uink-v11/ 下的 .uink、.uink.extra、fixtures.json、SHA256SUMS.txt。
 //
 // 不依赖任何 npm 包。输出不含时间戳，重复运行逐字节一致。
 //
@@ -30,7 +30,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const casesDir = resolve(root, 'scripts/uink-fixtures/cases')
-const outDir = resolve(root, 'docs/.vuepress/public/standard/uink-v11')
+const outDir = resolve(root, 'docs/.vuepress/public/dist-standard/uink-v11')
 const specDir = resolve(root, 'docs/standard')
 
 const LEVELS = ['core', 'basic', 'standard', 'full', 'inkeys']

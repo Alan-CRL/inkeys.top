@@ -42,7 +42,7 @@ A minimal reader that can display UInk takes just three steps:
 <LinkCard title="Specification" href="/en-us/standard/intro" description="Start with the introduction and read page by page (in Chinese)." />
 <LinkCard title="Levels and Certification" href="/en-us/standard/levels" description="Decide which level to implement and check it against the checklist." />
 <LinkCard title="Public samples" href="/en-us/standard/conformance#公开样例" description="Check what your reader shows at each level using the sample files." />
-<LinkCard title="Single-file spec (for AI assistants)" href="/standard/uink-v11/spec.md" description="All specification pages combined into one Markdown file." />
+<LinkCard title="Single-file spec (for AI assistants)" href="/dist-standard/uink-v11/spec.md" description="All specification pages combined into one Markdown file." />
 </CardGrid>
 
-When an AI assistant helps you implement UInk, you can give it the [single-file spec](/standard/uink-v11/spec.md) or [llms.txt](/standard/llms.txt).
+When an AI assistant helps you implement UInk, you can give it the [single-file spec](/dist-standard/uink-v11/spec.md) or [llms.txt](/standard/llms.txt).

@@ -1,7 +1,7 @@
 """下载页插图卡片里的墨迹：由 InkeysRenderer 绘制，导出透明 WebP。
 
 用法（python3）：
-  python3 media/dl-tiles/tiles.py                 渲染全部，写入 docs/.vuepress/public/download/ink/
+  python3 media/dl-tiles/tiles.py                 渲染全部，写入 docs/.vuepress/public/dist-download/ink/
   python3 media/dl-tiles/tiles.py --only board    只出某一张
   python3 media/dl-tiles/tiles.py --reuse         场景没变的直接用上次的渲染结果
 
@@ -19,7 +19,7 @@ sys.path.insert(0, str(HERE.parent / 'nh3-scenes'))
 import build as nh3  # noqa: E402
 
 nh3.OUT = HERE / 'out'
-PUBLIC = ROOT / 'docs' / '.vuepress' / 'public' / 'download' / 'ink'
+PUBLIC = ROOT / 'docs' / '.vuepress' / 'public' / 'dist-download' / 'ink'
 
 K = 4
 SIZE = (160 * K, 120 * K)

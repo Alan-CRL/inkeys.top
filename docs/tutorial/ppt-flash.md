@@ -20,11 +20,11 @@ title: Microsoft Office 如何启用和正常播放 Flash 控件
 打开网址：[点击此处](https://www.flash.cn/download-wins)
 注意：**请先看完下方图例，再下载！！！**
 
-![在这里插入图片描述](/tutorial/ppt-flash/1.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/1.png)
 (神的，官网也能这么流氓！)
 
 **下滑后**，下载前两个并安装。
-![在这里插入图片描述](/tutorial/ppt-flash/2.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/2.png)
 安装完成后，请关闭你的 Office（如果 Office 打开）。
 
 ### 步骤二
@@ -33,13 +33,13 @@ title: Microsoft Office 如何启用和正常播放 Flash 控件
 
 打开压缩包，依次**将三个都**合入注册表。
 
-![在这里插入图片描述](/tutorial/ppt-flash/3.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/3.png)
  ### 大功告成
  重启你的 Office ，你应该会看到如下提示：
- ![在这里插入图片描述](/tutorial/ppt-flash/4.png)
+ ![在这里插入图片描述](/dist-tutorial/ppt-flash/4.png)
 勾上“我可以识别此内容。运行播放” 并点击继续。
 
-![在这里插入图片描述](/tutorial/ppt-flash/5.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/5.png)
 太好了，Flash 动起来了！
 
 ---
@@ -49,7 +49,7 @@ title: Microsoft Office 如何启用和正常播放 Flash 控件
 ### 附录
 小伙伴可能对 reg 的内容不放心，在此提供预览。
 
-![在这里插入图片描述](/tutorial/ppt-flash/6.png)
-![在这里插入图片描述](/tutorial/ppt-flash/7.png)
-![在这里插入图片描述](/tutorial/ppt-flash/8.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/6.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/7.png)
+![在这里插入图片描述](/dist-tutorial/ppt-flash/8.png)
 点个赞再走吧~

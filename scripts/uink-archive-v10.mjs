@@ -1,5 +1,5 @@
 // 一次性脚本：把 UInk 1.0 Beta（version 10）的规范页面拼成单文件存档，
-// 写入 docs/.vuepress/public/standard/uink-v10/spec.md。存档生成后不再更新。
+// 写入 docs/.vuepress/public/dist-standard/uink-v10/spec.md。存档生成后不再更新。
 //
 // 页面从 git 提交中读取，而不是工作区：docs/standard/ 已经改写为 1.1。
 // 默认提交 afc6765 是改写开始前 1.0 规范的最后版本；可以用第一个参数指定其他提交。
@@ -14,7 +14,7 @@ import { UINK_V10_PAGES, bundleSpec } from '../docs/.vuepress/plugins/uinkSpecBu
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const commit = process.argv[2] ?? 'afc6765'
-const out = resolve(root, 'docs/.vuepress/public/standard/uink-v10/spec.md')
+const out = resolve(root, 'docs/.vuepress/public/dist-standard/uink-v10/spec.md')
 
 const pages = UINK_V10_PAGES.map(path => ({
   path,
@@ -29,7 +29,7 @@ const spec = bundleSpec(pages, {
   notes: [
     '版本：UInk 1.0 Beta（`Header.version = 10`）。',
     '这是 version 10 规范的冻结存档，不再更新。当前版本见 https://www.inkeys.top/standard/ ，1.0 → 1.1 的变化与 1.0 勘误见 https://www.inkeys.top/standard/version.html',
-    '文中的页面链接指向网站当前页面，内容可能已经是新版本；1.0 的公开样例位于 https://www.inkeys.top/standard/uink-v10/',
+    '文中的页面链接指向网站当前页面，内容可能已经是新版本；1.0 的公开样例位于 https://www.inkeys.top/dist-standard/uink-v10/',
   ],
 })
 

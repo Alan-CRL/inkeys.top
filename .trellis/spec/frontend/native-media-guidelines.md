@@ -41,7 +41,7 @@ A WARP texture contains window content. Windows composites the desktop blur sepa
 
 ## Layered scene stills (new-index3 S2)
 
-The three S2 scene cards are static compositions assembled in the page, not videos. Source: `media/nh3-scenes/build.py` (run with `python3`; `--only <card> --light --preview --reuse` while iterating). Output: `docs/.vuepress/public/new-index3/s2/<card>-<layer>-<light|dark>.webp`, listed with hashes in `media/nh3-scenes/manifest.json`. Page side: `STAGES` in `SectionScenes.vue`.
+The three S2 scene cards are static compositions assembled in the page, not videos. Source: `media/nh3-scenes/build.py` (run with `python3`; `--only <card> --light --preview --reuse` while iterating). Output: `docs/.vuepress/public/dist-new-index3/s2/<card>-<layer>-<light|dark>.webp`, listed with hashes in `media/nh3-scenes/manifest.json`. Page side: `STAGES` in `SectionScenes.vue`.
 
 Contracts:
 - The panel design size is 1600x1000. Every position in `STAGES` is a percentage of it and must equal the pixel values in `CARDS` in `build.py`; a UI layer's width is its image width / 1600. Change both files together.
@@ -52,4 +52,4 @@ Contracts:
 - Content sheets (report page, slide) are drawn by the same script, so ink positions are computed from measured text widths and chart geometry instead of typed in by eye. Numbers shown in the artwork must be self-consistent; recheck sums and ratios when data changes.
 - UI is en-US for all three site languages until the renderer supports the other locales.
 
-Required checks: preview composite per card and theme, a 3x crop of line ends (blunt, no taper), `npx vuepress build docs`, headless screenshots of the three cards in both themes at desktop and narrow widths (`verify-stage.cjs` in the archived task `11-24-nh3-s2-scene-stills`). Remind the user to upload `public/new-index3/s2/` to 123pan.
+Required checks: preview composite per card and theme, a 3x crop of line ends (blunt, no taper), `npx vuepress build docs`, headless screenshots of the three cards in both themes at desktop and narrow widths (`verify-stage.cjs` in the archived task `11-24-nh3-s2-scene-stills`). Remind the user to upload `public/dist-new-index3/s2/` to 123pan.

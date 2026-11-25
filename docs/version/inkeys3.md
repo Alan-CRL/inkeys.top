@@ -7,15 +7,15 @@ tags:
 
 Inkeys3 是智绘教Inkeys 迄今为止最大的一次升级。我们重新设计了主栏，换上了全新的绘图引擎，让书写更跟手，操作更轻盈。屏幕批注、PPT 演示、自由白板这些熟悉的功能都还在，而且更好用了。
 
-![智绘教Inkeys 在屏幕、PPT 与白板上自由书写](/showcase/overview-light.webp#light)
-![智绘教Inkeys 在屏幕、PPT 与白板上自由书写](/showcase/overview-dark.webp#dark)
+![智绘教Inkeys 在屏幕、PPT 与白板上自由书写](/dist-showcase/overview-light.webp#light)
+![智绘教Inkeys 在屏幕、PPT 与白板上自由书写](/dist-showcase/overview-dark.webp#dark)
 
 ## 每一笔，都跟得上思路
 
 全新绘图引擎由 C++ 与 Direct3D 驱动，快速勾画不断线，细致书写有笔锋。手抖修正让线条更平稳，使用支持压感的笔时还能写出自然的粗细变化。硬笔清晰利落，软笔富有笔锋，荧光笔突出重点，激光笔写完自动消失；再加上丰富的形状与智能绘图，从随手圈画到精细作图都得心应手。
 
-![多样笔触与形状工具](/showcase/tools-light.webp#light)
-![多样笔触与形状工具](/showcase/tools-dark.webp#dark)
+![多样笔触与形状工具](/dist-showcase/tools-light.webp#light)
+![多样笔触与形状工具](/dist-showcase/tools-dark.webp#dark)
 
 ## 焕然一新的主栏与设置
 

@@ -1,7 +1,7 @@
 """S2 场景卡片的素材：内容底图、Inkeys 墨迹与界面，渲染后导出 WebP。
 
 用法（python3）：
-  python3 media/nh3-scenes/build.py                    渲染全部，写入 docs/.vuepress/public/new-index3/s2/
+  python3 media/nh3-scenes/build.py                    渲染全部，写入 docs/.vuepress/public/dist-new-index3/s2/
   python3 media/nh3-scenes/build.py --preview          另外合成预览图（只用于检查排版，不是成品）
   python3 media/nh3-scenes/build.py --only board --light   只出某一张、只出浅色，调排版时用
 
@@ -23,7 +23,7 @@ from PIL import Image, ImageDraw, ImageFont
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 OUT = HERE / 'out'
-PUBLIC = ROOT / 'docs' / '.vuepress' / 'public' / 'new-index3' / 's2'
+PUBLIC = ROOT / 'docs' / '.vuepress' / 'public' / 'dist-new-index3' / 's2'
 CLI = r'D:\Project\Inkeys\Inkeys Renderer\Repo\InkeysRenderer#1\packages\cli\bin\inkeys-render.js'
 FONTS = Path('C:/Windows/Fonts')
 

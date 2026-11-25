@@ -55,7 +55,7 @@ const STAGES: Stage[] = [
 
 const asset = useAssetUrl()
 const isDark = useDarkMode()
-const layer = (stage: Stage, file: string) => asset(`/new-index3/s2/${stage.name}-${file}-${isDark.value ? 'dark' : 'light'}.webp`)
+const layer = (stage: Stage, file: string) => asset(`/dist-new-index3/s2/${stage.name}-${file}-${isDark.value ? 'dark' : 'light'}.webp`)
 const box = ([left, top, width, height]: number[]) => ({ left: `${left}%`, top: `${top}%`, width: `${width}%`, height: height === undefined ? undefined : `${height}%` })
 </script>
 
