@@ -36,6 +36,8 @@ Read this before you add a page, translate a page, add a navbar or sidebar entry
 | Relative link to an untranslated page in a translated file (`../changelog/x`) | Works: resolves to the mirror. |
 | New translated page added in dev | Head-script path list and mirrors are computed at dev start; restart `pnpm start`. Production builds are unaffected. |
 | Mirror page given `filePath: null` | Plume drops it from post collections (version list loses changelogs). Keep the virtual `filePath`; chunks are written by `writeMirrorChunks`. |
+| `llmstxt: true` (plugin default `locale: '/'`) | Only zh-CN pages get `.md`; “复制页面” on zh-TW / en-US translations fetches a 404. `config.ts` sets `llmstxt.locale: 'all'` and overrides `alternateLinks` (the plugin links `/<locale>/llms.md`). |
+| Mirror page without a `.md` | Plume's `PageContextMenu` prefetches the `.md` on mount even when `llmstxt: false` hides the menu. `plugin.ts` `onGenerated` writes each mirror's body (with the notice) to its `.md`. |
 | Mirror page whose route imports the virtual `.md` | Rolldown `UNRESOLVED_IMPORT`. `chunkFilePath` must point to `temp/pages/<html>.vue`. |
 | `<any value>` (ASCII after `<`) in Markdown | Vue compile error "Element is missing end tag". Escape as `&lt;any value&gt;`. CJK text like `<任意值>` is safe. |
 | Shortcut added to `redirectPlugin.config` | Bypasses language matching. Add it to `SHORTCUTS` instead. |
