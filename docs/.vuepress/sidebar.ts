@@ -120,7 +120,7 @@ export const zhTWStandardSidebar = [
         text: '區塊規範',
         items: [
             { text: 'Header 區塊', link: '/zh-tw/standard/blocks/header' },
-            { text: 'Header Extension 區塊', link: '/zh-tw/standard/blocks/headerExtension' },
+            { text: 'Header Extension 區塊', link: '/zh-tw/standard/blocks/headerextension' },
             { text: 'Device 結構', link: '/zh-tw/standard/blocks/device' },
             { text: 'Canvas 區塊', link: '/zh-tw/standard/blocks/canvas' },
             { text: 'Ink 區塊', link: '/zh-tw/standard/blocks/ink' },
@@ -171,7 +171,7 @@ export const enUSStandardSidebar = [
         text: 'Blocks',
         items: [
             { text: 'Header Block', link: '/en-us/standard/blocks/header' },
-            { text: 'Header Extension Block', link: '/en-us/standard/blocks/headerExtension' },
+            { text: 'Header Extension Block', link: '/en-us/standard/blocks/headerextension' },
             { text: 'Device Structure', link: '/en-us/standard/blocks/device' },
             { text: 'Canvas Block', link: '/en-us/standard/blocks/canvas' },
             { text: 'Ink Block', link: '/en-us/standard/blocks/ink' },

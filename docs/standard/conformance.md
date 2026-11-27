@@ -36,7 +36,7 @@ title: 实现一致性与样例
 | SAVE | [保存、追加与恢复](incremental) | CLEAR | [Clear 块](blocks/clear) |
 | EXTRA | [资源包](file/extra) | COLOR | [Color Map](common/color) |
 | HDR | [Header 块](blocks/header) | NIB | [笔尖与端帽](common/nib) |
-| HEXT | [Header Extension 块](blocks/headerExtension) | PRESET | [图形预设注册表](appendix/shape-presets) |
+| HEXT | [Header Extension 块](blocks/headerextension) | PRESET | [图形预设注册表](appendix/shape-presets) |
 | DEV | [Device 结构](blocks/device) | | |
 
 编号发布后不再改变含义，也不会被复用；删除的规则记录在[版本与变更](version)中。

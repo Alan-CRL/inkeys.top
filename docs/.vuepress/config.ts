@@ -328,6 +328,48 @@ export default defineUserConfig({
         await fs.remove(app.dir.dest('sitemap.xsl'))
       },
     },
+    // Plume 生成的版本列表页（/version/、/zh-tw/version/、/en-us/version/）没有源文件，SEO 插件不处理，在这里补 canonical。
+    // 繁中、英文列表页列出的是简体更新日志的镜像，按镜像页规则处理：canonical 指向简体列表页、noindex、不进 sitemap。
+    {
+      name: 'inkeys-version-list-seo',
+      extendsPage(page) {
+        if (page.filePathRelative || page.path !== `${page.pathLocale}version/`)
+          return
+        const isRoot = page.pathLocale === '/'
+        const head = page.frontmatter.head ??= []
+        head.push(['link', { rel: 'canonical', href: `${siteHostname}/version/` }])
+        if (isRoot) {
+          // 其他语言的列表页不收录，sitemap 里也不列 hreflang 对照
+          const current = page.frontmatter.sitemap
+          page.frontmatter.sitemap = { ...(typeof current === 'object' && current ? current : {}), links: [] }
+        }
+        else {
+          head.push(['meta', { name: 'robots', content: 'noindex, follow' }])
+          page.frontmatter.sitemap = false
+        }
+      },
+    },
+    // Netlify 规则文件，构建时写入产物根目录（不放 public，免得进入备用通道的文件清单）：
+    // - _headers：页面的 .md 副本（“复制页面”用）不收录，避免被当作重复网页；
+    //   dist- 开头的发布目录除外（/dist-standard/**/spec.md 单文件规范可以收录），llms.txt 等 .txt 不受影响。
+    // - _redirects：public 子目录加 dist- 前缀前的 UInk 发布文件地址，301 到新位置；不带 !，不会遮住已有文件。
+    {
+      name: 'inkeys-netlify-rules',
+      async onGenerated(app) {
+        const dest = app.dir.dest()
+        const mdPaths = readdirSync(dest, { recursive: true, withFileTypes: true })
+          .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
+          .map(entry => `/${relative(dest, join(entry.parentPath, entry.name)).split(sep).join('/')}`)
+          .filter(path => !path.startsWith('/dist-'))
+          .sort()
+        await fs.writeFile(app.dir.dest('_headers'), mdPaths.map(path => `${path}\n  X-Robots-Tag: noindex\n`).join(''))
+        await fs.writeFile(app.dir.dest('_redirects'), [
+          '/standard/uink-v10/*  /dist-standard/uink-v10/:splat  301',
+          '/standard/uink-v11/*  /dist-standard/uink-v11/:splat  301',
+          '',
+        ].join('\n'))
+      },
+    },
     // 版本文章没有写 createTime，Plume rc.219 按时间排序时会退回文件名升序（旧版本在前）。
     // 这里只在内存中按文件名 YYYYMMDD + 字母 补上时间，同日多个版本按字母先后错开一分钟，不写回源文件。
     {

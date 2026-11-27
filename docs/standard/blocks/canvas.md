@@ -161,6 +161,6 @@ PPT 结束页：
 ## 相关
 
 - [墨迹主文件](../file/main)
-- [Header Extension 块](headerExtension)
+- [Header Extension 块](headerextension)
 - [Device 结构](device)
 - [保存、追加与恢复](../incremental)

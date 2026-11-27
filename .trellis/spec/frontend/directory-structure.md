@@ -47,6 +47,8 @@ The only shared composable is `docs/.vuepress/cdn/useAssetUrl.ts` (see below). N
 ## Naming
 
 - Vue component files and registration names use PascalCase: `GitHubCard.vue`, `SiteVisitCounter.vue`, and `VideoPlayerAmbilight.vue`.
+- Page file names are all lowercase (kebab-case when several words). Netlify 301-redirects any URL with an uppercase letter to its lowercase form, so `headerExtension.md` produced a canonical and sitemap URL that always redirected (renamed to `headerextension.md` on 2026-11-27).
+- Netlify `_headers` and `_redirects` are written into `dist/` by the `inkeys-netlify-rules` plugin in `config.ts`, not placed in `public/` (that would add them to the backup-mirror file list). `_headers` marks every page `.md` copy `X-Robots-Tag: noindex`, except files under `dist-*` (the `/dist-standard/**/spec.md` bundles stay indexable); `.txt` files such as `llms.txt` stay indexable. `_redirects` maps the pre-`dist-` UInk release paths `/standard/uink-v10/*` and `/standard/uink-v11/*` to `/dist-standard/`.
 - A public Markdown name may intentionally differ from the file name; `Swiper.vue` is registered as `SwiperSelf` in `client.ts`.
 - CSS classes use descriptive kebab-case, such as `download-info-wrapper`, `site-visit-counter`, and `swiper-slide-img`.
 - Follow the existing content area's page naming. Dated changelogs belong under `docs/version/changelog/`.

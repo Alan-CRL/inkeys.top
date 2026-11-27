@@ -138,5 +138,5 @@ Media 引用的图片、PDF 等资源放在同名的 `filename.uink.extra` ZIP �
 - [块类型与编码](../type)
 - [保存、追加与恢复](../incremental)
 - [资源包](extra)
-- [Header Extension 块](../blocks/headerExtension)
+- [Header Extension 块](../blocks/headerextension)
 - [Canvas 块](../blocks/canvas)

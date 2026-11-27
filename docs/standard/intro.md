@@ -46,7 +46,7 @@ UInk 把功能分成五个等级。只实现最基础的**核心级**——多�
 | 块 | 作用 |
 | --- | --- |
 | [Header](blocks/header) | 文件开头：身份与版本 |
-| [Header Extension](blocks/headerExtension) | 注册屏幕（Device）与场景（Workspace），可选 |
+| [Header Extension](blocks/headerextension) | 注册屏幕（Device）与场景（Workspace），可选 |
 | [Canvas](blocks/canvas) | 一页（在某块屏幕上的某个图层），以及页码、背景、PPT 绑定、平移缩放 |
 | [Ink](blocks/ink) | 一条笔迹：普通笔、荧光笔、橡皮 |
 | [Shape](blocks/shape) | 一个图形：直线、矩形、圆、多边形；复杂图形由多个部件组成 |

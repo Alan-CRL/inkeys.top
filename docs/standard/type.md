@@ -9,7 +9,7 @@ title: 块类型与编码
 | Type ID（uint16） | 块 | MessagePack 类型 | 读取器从哪一级开始需要支持 |
 | --- | --- | --- | --- |
 | `0` | [Header](blocks/header) | Array | 核心级 |
-| `1` | [Header Extension](blocks/headerExtension) | Map | 核心级 |
+| `1` | [Header Extension](blocks/headerextension) | Map | 核心级 |
 | `2` | [Canvas](blocks/canvas) | Map | 核心级 |
 | `3` | [Ink](blocks/ink) | Map | 核心级 |
 | `4` | [Media](blocks/media) | Map | 标准级 |

@@ -102,5 +102,5 @@ title: Device 结构
 
 ## 相关
 
-- [Header Extension 块](headerExtension)
+- [Header Extension 块](headerextension)
 - [Canvas 块](canvas)
