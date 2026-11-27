@@ -875,3 +875,25 @@ V3文字已确认；完成上方中心截面立方体、下方面积相减构造
 ### Status
 
 [OK] **Completed**
+
+
+## Session 30: 处理 GSC 索引问题
+<!-- trellis-session: v=2 fp=8a32a8c1a64b5434 -->
+
+**Date**: 2026-11-27
+**Task**: 处理 GSC 索引问题
+**Branch**: `main`
+
+### Summary
+
+排查 Search Console 报告的四类无法编入索引原因；修复 headerExtension 大小写导致的 canonical 跳转、版本列表页缺 canonical（繁中/英文按镜像页 noindex）、页面 .md 副本加 noindex（spec.md 与 .txt 除外）、旧 /standard/uink-v1x 发布地址 301 到 /dist-standard；/wiki 下线页面保持 404
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f5e345a` | fix(seo): 处理 GSC 报告的重定向、重复页与 404 |
+
+### Status
+
+[OK] **Completed**
